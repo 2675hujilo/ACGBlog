@@ -1291,6 +1291,99 @@ body[data-animation="rich"] [class*="drift"] { animation-duration: 3s !important
     margin-top: 4px;
 }
 .form-success::before { content: "✓ "; }
+
+/* ============================================================
+ * Bug8 修复：表单「内联红字」校验提示（注册 / 登录等认证表单）
+ * 需求：校验失败时不刷新整页，在对应输入框下方直接给出红色提示。
+ * 说明：颜色统一走 --c-danger 令牌，亮/暗主题均保持足够对比度。
+ * ============================================================ */
+.form-error-text,
+.field-error {
+    display: block;
+    margin: 6px 0 0;
+    padding: 7px 12px 7px 30px;
+    position: relative;
+    font-size: 12.5px;
+    line-height: 1.55;
+    font-weight: 600;
+    color: var(--c-danger, #e0557a);
+    background: rgba(224, 85, 122, .10);
+    border: 1px solid rgba(224, 85, 122, .34);
+    border-left: 3px solid var(--c-danger, #e0557a);
+    border-radius: 10px;
+    animation: fieldErrIn .28s ease;
+}
+/* 前缀小图标用伪元素，避免模板里塞装饰字符 */
+.form-error-text::before,
+.field-error::before {
+    content: "!";
+    position: absolute;
+    left: 10px;
+    top: 7px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--c-danger, #e0557a);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+}
+[hidden].form-error-text,
+[hidden].field-error { display: none !important; }
+/* 空提示（模板预置占位、本次无错误）不占位 */
+.form-error-text:empty,
+.field-error:empty { display: none !important; }
+:root[data-theme="dark"] .form-error-text,
+:root[data-theme="dark"] .field-error {
+    color: #ffa8c2;
+    background: rgba(224, 85, 122, .18);
+    border-color: rgba(255, 168, 194, .40);
+    border-left-color: #ff8fb1;
+}
+:root[data-theme="dark"] .form-error-text::before,
+:root[data-theme="dark"] .field-error::before { background: #ff8fb1; color: #2b2340; }
+@keyframes fieldErrIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+/* 出错的输入框：粉红描边 + 轻微抖动，一眼看出问题字段 */
+.auth-card input.is-invalid,
+input.is-invalid,
+textarea.is-invalid {
+    border-color: var(--c-danger, #e0557a) !important;
+    box-shadow: 0 0 0 3px rgba(224, 85, 122, .16) !important;
+}
+.reg-shake { animation: regShake .40s ease; }
+@keyframes regShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+}
+/* 认证表单顶部汇总红字（如「注册信息需要再检查一下」） */
+.auth-form-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-danger, #e0557a);
+    background: rgba(224, 85, 122, .10);
+    border: 1px solid rgba(224, 85, 122, .32);
+    border-radius: 12px;
+}
+:root[data-theme="dark"] .auth-form-alert {
+    color: #ffa8c2;
+    background: rgba(224, 85, 122, .18);
+    border-color: rgba(255, 168, 194, .38);
+}
+/* 表单提交中：按钮态，避免用户重复点击 */
+.auth-card button[type="submit"].is-loading { opacity: .72; cursor: progress; }
 .article-title {
     font-size: 2rem;
     font-weight: 800;
@@ -1398,6 +1491,17 @@ body[data-animation="rich"] [class*="drift"] { animation-duration: 3s !important
 @media (max-width: 640px) {
     .author-card { flex-wrap: wrap; }
     .author-card-link { width: 100%; text-align: center; }
+    /* ------------------------------------------------------------------
+     * Bug8 修复（移动端详情页底部操作条不可见 + 按钮被裁切）
+     * 问题根因：.article-paper 的 backdrop-filter 会创建新的包含块，
+     * 使内部 position:fixed 的 .article-extra-bar 不再相对视口定位，
+     * 而是跑到文章正文中部（实测 top=1911px，视口仅 932px），移动端
+     * 完全看不到点赞/收藏/分享/导出按钮。
+     * 修复：窄屏下去掉文章纸张的 backdrop-filter（同时降低移动端合成开销），
+     * fixed 定位恢复正常；并把横向滚动改为换行，避免「导出/更多」被裁掉。
+     * ------------------------------------------------------------------ */
+    .article-paper,
+    .article-paper .article-body { backdrop-filter: none; -webkit-backdrop-filter: none; }
     .article-extra-bar {
         position: fixed;
         left: 0;
@@ -1407,9 +1511,34 @@ body[data-animation="rich"] [class*="drift"] { animation-duration: 3s !important
         border-radius: 12px 12px 0 0;
         margin: 0;
         z-index: 850;
-        flex-wrap: nowrap;
-        overflow-x: auto;
+        /* 换行而非横向滚动：手机上所有按钮都可见可点，不再被裁切 */
+        flex-wrap: wrap;
+        row-gap: 6px;
+        justify-content: center;
+        max-height: 42vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 0 -6px 20px rgba(120, 90, 200, .18);
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     }
+    :root[data-theme="dark"] .article-extra-bar {
+        box-shadow: 0 -6px 20px rgba(0, 0, 0, .45);
+    }
+    /* 底部操作条固定占据视口底部（实测高度 ~211px）后，把左下角悬浮按钮抬到
+       操作条上方，避免「☰ 快捷菜单」被压住、点不到；回到顶部按钮再高一层。 */
+    #sidebar-toggle,
+    .sidebar-toggle-btn {
+        bottom: calc(165px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .quick-menu {
+        bottom: calc(225px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .back-to-top,
+    .back-to-top.show {
+        bottom: calc(232px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    /* 悬浮气泡提示在窄屏改为居中显示，避免被操作条裁切 */
+    .read-progress-tip { font-size: .82rem; padding: 8px 14px; }
 }
 
 @media (min-width: 769px) {

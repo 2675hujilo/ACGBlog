@@ -124,6 +124,8 @@ api_urlpatterns = [
     # Bug1：作者申请置顶/精华/热门；管理员直接切换
     path('article/<int:pk>/promotion-request/', views.api_article_promotion_request, name='api_promotion_request'),
     path('article/<int:pk>/toggle-promotion/', views.api_article_toggle_promotion, name='api_toggle_promotion'),
+    # Bug8：查询文章推广标记 + 当前用户申请状态（详情页按钮状态自检）
+    path('article/<int:pk>/promotion-status/', views.api_article_promotion_status, name='api_promotion_status'),
     # 分类列表（GET）+ 新建分类（POST）
     path('categories/', views.CategoryListCreateView.as_view(), name='api_category_list'),
     # 单个分类的详情 / 修改 / 删除

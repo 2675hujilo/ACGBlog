@@ -790,6 +790,115 @@ body.modal-open { overflow: hidden; }
 }
 .promo-toggle.promo-on:hover { filter: brightness(1.06); color: #fff; }
 
+/* ------------------------------------------------------------------
+ * Bug8 修复：作者申请按钮的三种状态（已经置顶 / 审核中 / 可申请）
+ * 需求：文章详情页申请置顶、加精华、热度按钮如果已经置顶，应改为
+ *       「已经置顶」且不可再次点击申请。
+ * 实现：服务端把状态写到 data-state + .promo-state-* 类；
+ *       disabled 按钮用降饱和 + 禁止手势，明确「已生效不可再点」。
+ * ------------------------------------------------------------------ */
+.promo-apply-btn[disabled],
+.promo-apply-btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .82;
+    box-shadow: none;
+    transform: none !important;
+}
+/* 已生效：渐变实心 + 对勾语义，与「申请中」明显区分 */
+.promo-apply-btn.promo-state-applied {
+    background: linear-gradient(135deg, var(--c-accent), var(--c-primary));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+}
+.promo-apply-btn.promo-state-applied:hover { color: #fff; filter: none; }
+/* 审核中：浅黄底 + 虚线描边，表达「处理中」 */
+.promo-apply-btn.promo-state-pending {
+    background: rgba(255, 196, 87, .16);
+    border: 1px dashed rgba(214, 158, 46, .68);
+    color: #b7791f;
+    font-weight: 600;
+}
+.promo-apply-btn.promo-state-pending:hover { background: rgba(255, 196, 87, .16); color: #b7791f; }
+:root[data-theme="dark"] .promo-apply-btn.promo-state-pending {
+    background: rgba(255, 196, 87, .14);
+    border-color: rgba(246, 201, 106, .58);
+    color: #f6c96a;
+}
+:root[data-theme="dark"] .promo-apply-btn.promo-state-pending:hover { color: #f6c96a; }
+/* 名额已满提示：跟随按钮换行，浅红胶囊 */
+.promo-limit-hint {
+    flex: 1 1 100%;
+    display: inline-block;
+    margin-top: 2px;
+    padding: 5px 12px;
+    font-size: .78rem;
+    line-height: 1.5;
+    color: var(--c-danger, #e0557a);
+    background: rgba(224, 85, 122, .10);
+    border: 1px dashed rgba(224, 85, 122, .42);
+    border-radius: 999px;
+}
+:root[data-theme="dark"] .promo-limit-hint {
+    color: #ffa8c2;
+    background: rgba(224, 85, 122, .16);
+    border-color: rgba(255, 168, 194, .44);
+}
+
+/* ------------------------------------------------------------------
+ * Bug8 新增：审核页「系统执行状态」徽章
+ * 需求：审核页增加系统执行状态，管理员一眼看出「已通过但未生效」。
+ * ------------------------------------------------------------------ */
+.exec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: .74rem;
+    font-weight: 700;
+    line-height: 1.7;
+    white-space: nowrap;
+}
+.exec-badge--success { background: rgba(56, 161, 105, .16); color: #2f855a; border: 1px solid rgba(56, 161, 105, .40); }
+.exec-badge--skipped { background: rgba(214, 158, 46, .18); color: #b7791f; border: 1px solid rgba(214, 158, 46, .48); }
+.exec-badge--failed  { background: rgba(224, 85, 122, .16); color: #c53030; border: 1px solid rgba(224, 85, 122, .46); }
+.exec-badge--not_run { background: var(--c-primary-soft); color: var(--c-text-dim); border: 1px solid var(--c-border); }
+:root[data-theme="dark"] .exec-badge--success { color: #68d391; }
+:root[data-theme="dark"] .exec-badge--skipped { color: #f6c96a; }
+:root[data-theme="dark"] .exec-badge--failed  { color: #ffa8c2; }
+/* 系统执行状态总览条（审核页推广申请标签页顶部） */
+.exec-summary {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    margin: 0 0 12px; padding: 10px 14px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 14px;
+    font-size: .84rem;
+}
+.exec-summary .es-title { font-weight: 700; color: var(--c-text); }
+.exec-summary .es-item { display: inline-flex; align-items: center; gap: 5px; color: var(--c-text-dim); }
+/* 已处理申请卡片：验收需要一眼看出执行明细 */
+.promo-done-row {
+    border-left: 3px solid var(--c-primary);
+    padding-left: 10px;
+}
+.promo-exec-note {
+    margin-top: 6px; padding: 6px 12px;
+    font-size: .82rem; line-height: 1.6;
+    background: var(--c-primary-soft);
+    border-radius: 10px;
+    color: var(--c-text-dim);
+}
+.promo-done-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    font-weight: 700; color: var(--c-text);
+}
+.promo-done-group-title {
+    margin: 18px 0 10px; font-weight: 700; color: var(--c-text);
+    display: flex; align-items: center; gap: 8px;
+}
+
 /* ---- 申请理由弹窗 ---- */
 .moe-modal { position: fixed; inset: 0; z-index: 1200;
     display: flex; align-items: center; justify-content: center; }

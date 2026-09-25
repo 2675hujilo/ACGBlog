@@ -317,10 +317,54 @@
         var modal = document.getElementById('promo-modal');
         if (apply && modal) {
             var requestUrl = apply.dataset.requestUrl;
+            var statusUrl = apply.dataset.statusUrl;
             var kindInput = document.getElementById('promo-modal-kind');
             var reasonInput = document.getElementById('promo-modal-reason');
             var submitBtn = document.getElementById('promo-modal-submit');
             var currentKind = '';
+            var currentBtn = null;
+
+            /* Bug8：把 data-state / 文案 / 禁用态同步到按钮上（服务端与前端共用一套状态） */
+            function paintButton(btn, state, kindLabel) {
+                if (!btn) return;
+                btn.dataset.state = state;
+                btn.classList.remove('promo-state-open', 'promo-state-applied', 'promo-state-pending');
+                btn.classList.add('promo-state-' + state);
+                if (state === 'applied') {
+                    btn.textContent = '已经' + kindLabel;
+                    btn.disabled = true;
+                    btn.setAttribute('aria-disabled', 'true');
+                    btn.title = '这篇文章已经' + kindLabel + '啦，无需再次申请';
+                } else if (state === 'pending') {
+                    btn.textContent = '⏳ ' + kindLabel + '审核中';
+                    btn.disabled = true;
+                    btn.setAttribute('aria-disabled', 'true');
+                    btn.title = kindLabel + '申请正在审核中，请耐心等待';
+                } else {
+                    btn.textContent = '申请' + kindLabel;
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-disabled');
+                    btn.title = '点这里申请把文章' + (kindLabel === '精华' ? '加精' : kindLabel === '热门' ? '加入热门' : kindLabel) ;
+                }
+            }
+
+            /* Bug8：提交后按服务端真实状态回填三个按钮（防止前端状态与服务端漂移） */
+            function refreshStates(cb) {
+                if (!statusUrl || !window.fetch) { if (cb) cb(); return; }
+                fetch(statusUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                   credentials: 'same-origin' })
+                    .then(function (r) { return r.json(); })
+                    .then(function (j) {
+                        var st = (j && j.data && j.data.states) || null;
+                        if (!st) { if (cb) cb(); return; }
+                        Object.keys(st).forEach(function (kind) {
+                            var btn = apply.querySelector('.promo-apply-btn[data-kind="' + kind + '"]');
+                            paintButton(btn, st[kind].state, st[kind].label);
+                        });
+                        if (cb) cb();
+                    }).catch(function () { if (cb) cb(); });
+            }
+
             function openModal(kind, label) {
                 currentKind = kind;
                 kindInput.textContent = label;
@@ -336,6 +380,16 @@
             apply.addEventListener('click', function (e) {
                 var btn = e.target.closest('.promo-apply-btn');
                 if (!btn) return;
+                // Bug8：已生效 / 审核中的按钮不可再点（disabled 已拦截，这里再兜底一次）
+                if (btn.disabled || btn.dataset.state === 'applied' || btn.dataset.state === 'pending') {
+                    if (window.moeToast) {
+                        moeToast(btn.dataset.state === 'applied'
+                            ? '这篇文章已经' + btn.dataset.label + '啦，不用再申请喵~'
+                            : btn.dataset.label + '申请正在审核中，请耐心等待喵~', 'info');
+                    }
+                    return;
+                }
+                currentBtn = btn;
                 openModal(btn.dataset.kind, btn.dataset.label);
             });
             // 点遮罩 / 取消按钮关闭
@@ -356,12 +410,20 @@
                 postForm(requestUrl, { kind: currentKind, reason: reason }, function (j) {
                     if (j.code === 0) {
                         closeModal();
-                        if (window.moeToast) moeToast(j.msg || '申请已提交~', 'success');
-                    } else if (window.moeToast) {
-                        moeToast(j.msg || '提交失败~', 'error');
+                        // Bug8：申请成功后立刻把按钮改为「审核中」并禁用，避免重复提交
+                        paintButton(currentBtn, 'pending',
+                            (currentBtn && currentBtn.dataset.label) || '');
+                        if (window.moeToast) moeToast(j.msg || '申请已提交~', j.notice ? 'info' : 'success');
+                        refreshStates();
+                    } else {
+                        // 409（已生效 / 已在审核中）时同步服务端真实状态
+                        if (j.code === 409) refreshStates();
+                        if (window.moeToast) moeToast(j.msg || '提交失败~', 'error');
                     }
                 });
             });
+            // 首次进页面自检一次，确保按钮状态与服务端一致
+            refreshStates();
         }
     }
 

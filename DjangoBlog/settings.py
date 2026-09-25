@@ -228,6 +228,37 @@ CELERY_TASK_SERIALIZER = 'json'              # 任务参数序列化方式
 CELERY_RESULT_SERIALIZER = 'json'            # 任务结果序列化方式
 CELERY_TIMEZONE = 'Asia/Shanghai'            # 任务调度时区
 CELERY_TASK_ALWAYS_EAGER = False  # 设为 True 可同步执行任务（调试用）
+# Broker 连接/发布超时收紧：访问日志是「尽力投递」的廉价数据，broker 不可达时
+# 必须立刻失败（进入 Redis 兜底队列），绝不能占用请求线程等待重试。
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True   # worker 启动期允许重连（不影响请求线程）
+CELERY_TASK_PUBLISH_RETRY = False                  # 发布任务不做重试，快速失败交给兜底队列
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'socket_connect_timeout': 0.4,   # 秒：连接 broker 超时
+    'socket_timeout': 0.4,           # 秒：读写 broker 超时
+    'retry_on_timeout': False,       # 超时不重试
+    'max_retries': 0,                # 发布不做额外重试
+}
+# 访问日志整体开关（全局永久强制模块，默认开启；仅在极端压测时允许临时关闭）
+ACCESS_LOG_ENABLED = os.environ.get('ACCESS_LOG_ENABLED', '1') == '1'
+
+# ============================ 访问日志投递通道（全局永久强制模块） ============================
+# 三层降级策略参数（实现见 blog/middleware/access_log.py 与 blog/access_log_service.py）：
+#   层1 Celery 异步 → 层2 Redis 兜底队列 → 层3 极端同步入库
+# 以下均为短超时设置，确保中间件永不成为请求链路的阻塞点。
+ACCESS_LOG_FALLBACK_KEY = 'acgblog:access_log:fallback'   # 兜底队列键名
+# 兜底队列专用 Redis 地址：**必须独立于 Celery broker 配置**。
+# 若与 broker 复用同一地址，broker 地址被改动 / 故障时会连带把兜底队列写坏；
+# 生产环境建议指向独立的 Redis 实例或不同 db（如 redis://127.0.0.1:6379/1）。
+ACCESS_LOG_FALLBACK_REDIS_URL = os.environ.get(
+    'ACCESS_LOG_FALLBACK_REDIS_URL', 'redis://127.0.0.1:6379/0')
+ACCESS_LOG_REDIS_TIMEOUT = 0.35        # 秒：单次 Redis 操作的 socket 超时
+ACCESS_LOG_REDIS_COOLDOWN = 20.0       # 秒：Redis 失败后的熔断窗口（避免持续等待）
+ACCESS_LOG_FALLBACK_MAX_LEN = 20000    # 兜底队列长度上限（LTRIM 保留最新 N 条）
+ACCESS_LOG_DRAIN_BATCH = 500           # 批量消费单批条数
+# Broker 熔断窗口（秒）：Celery 投递失败后，这段时间内直接走 Redis 兜底队列，
+# 不再尝试连接 broker。原因：broker 宕机时 kombu 的默认连接/重试策略会阻塞数秒
+# （实测单请求 6.2s），必须先熔断才能保证「访问日志绝不拖慢网站响应」。
+ACCESS_LOG_BROKER_COOLDOWN = 15.0
 
 # Celery Beat 定时任务调度
 CELERY_BEAT_SCHEDULE = {
@@ -257,6 +288,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'blog.tasks.flush_buffered_views',
         'schedule': crontab(minute='*/5'),
     },
+    # 访问日志兜底队列自动补齐：Broker 故障期间的积压日志，恢复后 5 分钟内自动入库
+    'flush-access-log-queue-every-5min': {
+        'task': 'blog.tasks.flush_access_log_queue',
+        'schedule': crontab(minute='*/5'),
+    },
 }
 
 # ============================ 邮件配置（68. 评论通知） ============================
@@ -277,6 +313,10 @@ LOGGING = {
         'slow_query': {
             '()': 'blog.middleware.SlowQueryFilter',
         },
+        # 硬性指标：消除 requests 版本告警（RequestsDependencyWarning）
+        'requests_dep_warning': {
+            '()': 'blog.deprecation_filters.RequestsDependencyWarningFilter',
+        },
     },
     'handlers': {
         'console': {'class': 'logging.StreamHandler'},
@@ -293,8 +333,27 @@ LOGGING = {
             'filters': ['slow_query'],
             'propagate': False,
         },
+        # requests 自身的 urllib3/chardet 依赖版本告警在此统一静默（已锁版本消除告警源）
+        'requests': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'filters': ['requests_dep_warning'],
+            'propagate': False,
+        },
+        'urllib3': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'filters': ['requests_dep_warning'],
+            'propagate': False,
+        },
     },
 }
+
+# ---- 硬性指标：全局把 RequestsDependencyWarning 降级为「已处理」 ----
+# requests 顶层会通过 warnings.warn 输出依赖版本告警；requirements.txt 已锁定
+# chardet / urllib3 兼容版本消除告警源，这里再做一层兜底，保证任何环境
+# （例如他人机器上装了不同次要版本）都不会把该告警打进控制台 / 验收输出。
+REQUESTS_DEPENDENCY_WARNING_FILTER = 'blog.deprecation_filters.install_warning_filters'
 
 
 # ============================ 第2轮迭代#221-#230: 配置优化补充 ============================

@@ -63,9 +63,12 @@
 - **软删除 + 回收站**：文章 / 评论删除先进回收站，可恢复或彻底删除
 - **审核日志 ModerationLog**：提交 / 通过 / 驳回 / 软删 / 恢复 / 彻底删除全程留痕
 - 运营看板：实时统计、14 天访问趋势、热门文章 Top、分类分布、待办计数
-- **站点设置（SiteInfo 单例）**：站名 / Logo / 副标题 / SEO 描述关键词 / 页脚文案在线编辑，保存后全站立即生效（带实时预览）
-- 访问日志中间件：Celery 异步入库（含 404 / 500），broker 故障时同步兜底，自动剔除静态资源
+- **站点设置（SiteInfo 单例）**：站名 / Logo / 副标题 / SEO 描述关键词 / 页脚文案在线编辑，保存后立即生效（带实时预览）
+- **访问日志三层降级投递**（全局永久强制模块）：Celery 异步优先 → Redis 兜底队列 →
+  Redis 完全不可用时才同步入库；管理命令一键批量补录，常态禁止全量同步入库
 - 一键刷新静态压缩与缓存（管理命令 + 看板按钮 + API）
+- **推广申请「系统执行状态」**：审批结论与系统真实落地结果分离记录，审核页一眼看出
+  「已通过但受名额限制未生效」，作者同步收到说明通知
 
 ### 前端体验
 - Live2D 看板娘（多套模型 / 服装、对话气泡、工具栏）
@@ -267,15 +270,56 @@ Blog/
 - 评论计数（`Article.comment_count`）在删除 / 恢复 / 举报处理三处统一改为
   **按 Comment 表实际存活数重算**，杜绝 `F(±1)` 在重复提交下的计数漂移。
 
-### 6.3 访问日志中间件（Bug 10）
-- 现 `process_response` 通过 Celery 异步任务 `save_access_log.delay()` 投递入库，
-  **不再在请求线程同步 INSERT**；任务先进入 Redis broker 队列，由 worker 消费后写库。
-- worker 暂未启动时任务停留在队列中不丢失（broker 在线即可）；**broker 不可用导致投递
-  失败时，降级为同步 `AccessLog.objects.create()` 入库并记录错误日志**，避免整天缺数据。
-- IP 合法性校验保留在 `save_access_log` 任务内，代理给出的非法 IP 会置空后入库。
-- `_is_asset()` 短路剔除 `/static/`、`/media/`、`favicon`、`robots.txt`，避免污染统计。
-- 本地开发需同时启动 Celery worker（Windows 用 solo 池），与 `runserver` 各占一个终端：
-  `D:\Python\python.exe -m celery -A DjangoBlog worker --pool=solo -l info`。
+### 6.3 访问日志中间件（全局永久强制模块，三层降级）
+
+> **本模块为项目全局永久强制模块，不可删除、不可破坏。** 完整实现见
+> `blog/middleware/access_log.py`（采集中间件）、`blog/access_log_service.py`（投递通道）、
+> `blog/tasks.py::save_access_log`（worker 落库）、
+> `blog/management/commands/accesslog_queue.py`（兜底队列运维命令）。
+
+**投递策略（严格三层，常态禁止全量同步入库）**
+
+```
+请求 → AccessLogMiddleware.process_response 采集元信息（IP/用户/路径/状态/耗时/UA/来源）
+   │
+   ├─ 层1 正常：save_access_log.delay(payload) ──► Redis broker ──► Celery worker ──► MySQL
+   │        请求线程只做一次入队，零数据库写入；worker 未启动时任务安全滞留队列
+   │
+   ├─ 层2 Broker 故障（delay() 抛错）：RPUSH acgblog:access_log:fallback
+   │        仍不写库；Broker 恢复后批量消费：
+   │          python manage.py accesslog_queue --drain
+   │        （Celery beat 每 5 分钟自动跑 flush_access_log_queue 兜底补齐）
+   │
+   └─ 层3 极端降级（Redis 也写不进去）：同步 AccessLog.objects.create()
+            仅此一层允许同步入库，并打 ERROR 告警；保证日志一条不丢
+```
+
+**关键实现约束**
+
+- 所有 Redis 操作使用**短超时**（`ACCESS_LOG_REDIS_TIMEOUT=0.35s`）+ **熔断窗口**
+  （`ACCESS_LOG_REDIS_COOLDOWN=20s`），Redis 挂掉时不会每次请求都白等一个超时；
+- 兜底队列带长度上限（`ACCESS_LOG_FALLBACK_MAX_LEN=20000`，`LTRIM` 保留最新），
+  防止 Redis 内存无限增长；批量消费用 `LPOP key count`，旧版 Redis 自动降级为
+  pipeline 逐条 `LPOP`；
+- `_is_asset()` 短路剔除 `/static/`、`/media/`、`favicon`、`robots.txt`，避免污染 PV/UV；
+- IP 合法性校验（`GenericIPAddressField.run_validators`）在 worker 与兜底消费两侧都做，
+  代理传入的非法 IP 置空后入库；
+- 三层各自吞掉自身异常，中间件**绝不向上抛错**、**绝不阻塞响应**（实测单请求开销毫秒级）。
+
+**运维命令**
+
+```powershell
+python manage.py accesslog_queue                 # 查看兜底队列积压（只读）
+python manage.py accesslog_queue --drain         # 批量消费入库（Broker 恢复后执行）
+python manage.py accesslog_queue --drain --batch 1000 --max-batches 50
+python manage.py accesslog_queue --dry-run       # 只统计不入库
+python manage.py accesslog_queue --reset-circuit # 清除 Redis 熔断窗口后重试
+python manage.py accesslog_queue --purge --yes    # 清空队列（危险，会丢弃未入库日志）
+```
+
+**本地开发**：需同时启动 Celery worker（Windows 用 solo 池），与 `runserver` 各占一个终端：
+`D:\Python\python.exe -m celery -A DjangoBlog worker --pool=solo -l info`。
+worker 未启动时会话日志会停留在 broker / 兜底队列中，**不会丢失**，启动后自动补齐。
 
 ### 6.4 通知中心（Bug 9）
 - 独立页面 `/notifications/`：全部 / 未读、类型图标、点击已读并跳转、分页、空状态。
@@ -506,20 +550,42 @@ server {
 
 ## 10. 测试与验收
 
-- **系统检查**：`python manage.py check`（含 `python -W default manage.py check`）→
-  **0 错误 0 警告**；requests / urllib3 版本告警已通过锁定兼容版本消除。
-- **安全测试**：`python manage.py security_test` → **40/40 全部通过，0 失败**。
-- **核心功能无回退**：首页列表、文章详情、评论、搜索、分类、置顶精华、暗色模式均正常。
-- **浏览器实测**：Chrome + Edge，明暗双主题，桌面（1366 / 1920）+ 移动（390 / 360）
-  共 40 帧矩阵 + 登录态 6 帧，逐张肉眼复核，布局 / 样式无异常（截图见 `docs/qa_screenshots/`）。
-- 工单 5 的逐条修复、补丁与采集脚本、`CHANGELOG_AND_FEATURES.md` 与
-  `VERIFICATION_REPORT.md` 见 `docs/bugfix_ticket5/`（工单提取件见 `docs/bug5_extract/`）。
-- **数据缺口说明**：9/23 等日期访问日志为 Celery broker / worker 宕机期间缺失、无法
-  回填；中间件已加同步兜底防止未来缺口（详见验证报告）。
+### 10.1 硬性指标
+
+| 项目 | 命令 / 方式 | 结果 |
+| --- | --- | --- |
+| 系统检查 | `python manage.py check` | **0 错误 0 警告（0 silenced）** |
+| requests 版本告警 | `python manage.py diag --deps` | **无 RequestsDependencyWarning**（requirements 锁定 + 全局告警过滤器双保险） |
+| 安全测试 | `python manage.py security_test` | **51/51 全部通过，0 失败**（原 40 项 + 访问日志模块专项 11 项） |
+| 访问日志三层降级 | `docs/bugfix_20260925_bug8/scripts/verify_accesslog_tiers.mjs` | **4/4 通过**（异步投递 / 兜底队列 / 批量补录 / 极端同步） |
+| 浏览器视觉矩阵 | `ui_matrix.mjs`（Chrome + Edge） | 8 档视口 × 亮暗双主题 × 6 个核心页面 = 每浏览器 96 帧，横向溢出 / 越界 / 控制台错误全部为 0 |
+
+### 10.2 本轮（工单 Bug8）验收结论
+
+- **核心功能无回退**：首页列表、文章详情、评论、搜索、分类、标签、置顶精华、暗黑模式
+  全部正常；文章发布 / 编辑 / 评论新增触发的 Django 信号（缓存失效、评论计数、徽章、
+  通知）逐一复测通过，访问日志采集链路未受影响。
+- **浏览器实测**：Chrome + Edge 双浏览器；8 档视口（1920×1080 / 1536×864 / 1366×768 /
+  1280×720 / 1024×768 / 768×1024 / 430×932 / 390×844）× 亮 / 暗双主题 ×
+  首页 / 详情 / 审核页 / 注册页 / 登录页 / 404 页；每帧同时做程序化断言
+  （横向溢出、元素越界、文字裁切、控制台异常、资源加载失败）。
+- **访问日志中间件独立复核**：异步投递、Broker 故障 Redis 兜底、极端同步兜底、
+  管理命令批量补录四条链路分别用真实 HTTP 请求验证，并测量单请求耗时
+  （异步 44ms / 兜底 43ms / 同步 46ms，均不阻塞）。
+- 逐条修复说明、修改清单与脚本见 `docs/bugfix_20260925_bug8/`：
+  `CHANGELOG_AND_FEATURES.md`（修改清单 + 功能文档）、
+  `VERIFICATION_REPORT.md`（独立验证报告）、
+  `ui_matrix_report_chrome.json` / `ui_matrix_report_edge.json`（视觉矩阵数据）、
+  `mobile_bar_fix_report.json`、`accesslog_degradation_report.json`。
+- 历史工单：工单 5 见 `docs/bugfix_ticket5/`（工单提取件 `docs/bug5_extract/`）；
+  工单 6 见 `docs/bug1/`、`docs/bug11/`、`docs/bug12/`。
+- **数据缺口说明（历史）**：9/23 等日期访问日志为早期 broker / worker 宕机期间缺失、
+  无法回填；中间件现已实现「异步 → Redis 兜底队列 → 极端同步」三层降级，
+  且新增 `accesslog_queue` 管理命令与 beat 自动补齐任务，从机制上杜绝再次缺口。
 
 ---
 
-## 11. 工单 6（本轮，12 项）变更说明
+## 11. 工单 6 变更说明（历史）
 
 本轮在不改动核心架构前提下完成 12 项工单，并在测试中发现、修复 2 个真实缺陷。
 逐条报告见 `docs/bug1/`、`docs/bug11/`、`docs/bug12/`，截图见 `docs/bug12/shots/`。
@@ -556,12 +622,139 @@ server {
    却没有 Celery worker 消费时，`.delay()` 不抛错、任务被丢弃（实测近 3 小时日志缺失）。
    访问日志是单条廉价 INSERT，已改为**同步直写**，任何环境都能完整记录用户 / 时间 / 路由。
 
-### 11.4 本轮验收结论
+### 11.4 工单 6 验收结论
 
 - `python manage.py check`：**0 错误 0 警告**，无 requests 版本告警；
 - `python manage.py security_test`：**40/40 通过**；
 - Chrome 桌面 / 移动 × 亮 / 暗矩阵 + Edge 桌面（首页 / 标签 / 详情）实测，布局样式无异常；
 - 核心功能（首页、详情、评论、搜索、分类、置顶精华、暗黑、审核流）无回退。
+
+---
+
+## 12. 工单 Bug8 变更说明（本轮）
+
+> 工单来源：`8.doc`（3 条缺陷）。逐条修复报告、修改清单、脚本与截图全部归档在
+> `docs/bugfix_20260925_bug8/`，本节给出结论与关键实现。
+
+### 12.1 Bug 1 · 注册页异常无红字提示，而是刷新页面
+
+- **原因**：注册表单是普通 POST 提交，服务端校验失败后整页重渲染，提示只出现在页面
+  顶部 flash 区，用户视野停在表单上，感觉「提交后页面刷新了一下，什么都没说」。
+- **修复**：
+  - 新增 `static/assets/js/auth_inline.js`（源）+ `auth_inline.min.js`（构建产物）：
+    拦截登录 / 注册表单提交，用 `fetch(..., {redirect:'manual'})` 提交；
+    成功（302）直接跳转，失败（200）解析服务端返回的 HTML，把校验提示渲染成
+    **对应输入框下方的红色内联提示**（`.field-error`），并高亮出错字段、轻微抖动、
+    聚焦首个错误项；原生 `required/pattern` 校验失败同样渲染内联红字。
+  - `register_view` 校验链改为「按字段收集错误」（`field_errors`），并回填
+    `form_values`（用户名 / 昵称 / 邮箱），避免刷新后输入丢失。
+  - `register.html` 恢复 `id="register-form"`、补 `err-<field>` 占位、补邮箱字段，
+    并预置卡片顶部汇总红条 `.auth-form-alert`；`login.html` 与注册页共用同一脚本
+    （原 `login_inline.js` 保留但不再引用）。
+  - 样式落在 `static/assets/css/ui_polish.css`，颜色统一走 `--c-danger` 令牌，
+    亮 / 暗主题均保证对比度。
+- **验收**：6 个场景（两次密码不一致 / 用户名为空 / 密码过短 / 邮箱格式错 /
+  用户名已存在 / 注册成功跳转）全部「无整页刷新 + 内联红字提示 + 输入值保留」。
+
+### 12.2 Bug 2 · 置顶上限无提示 + 审核页缺系统执行状态 + 申请按钮状态
+
+对应工单三条描述，拆成三个子项修复：
+
+1. **用户申请置顶、管理员已通过但超过置顶上限应有提示**
+   - `PromotionRequest` 新增 `execution_status`（未执行 / 执行成功 / 已达上限未执行 /
+     执行失败）、`execution_note`、`executed_at` 三字段（迁移 `0017`，历史数据由
+     迁移 `0018` 回填）。
+   - 审批通过时由 `_promo_execute()` 真实落地并回填执行结果：名额已满则
+     **审批仍记为通过，但系统执行状态明确记为「未执行·已达上限」**，
+     同时给作者发送「已通过（暂未生效）+ 原因」的站内通知；
+     管理员界面弹出 warning 提示，不再出现「显示已通过却没有置顶」的黑盒状态。
+   - 作者侧：名额已满时详情页直接给出 `📌 置顶名额已满（n/m）` 提示，
+     提交申请时接口也会把该提示随响应返回。
+2. **审核页增加系统执行状态**
+   - 「✨ 推广申请」标签页顶部新增 **系统执行状态总览条**（执行成功 / 已达上限未执行 /
+     执行失败 计数 + 当前置顶 n/m）。
+   - 待审申请卡片显示「⏳ 系统执行：未执行」+ **通过前预判**（名额是否充足）。
+   - 新增「🗂 已处理申请 · 系统执行状态」区块：逐条展示审批结论徽章、
+     系统执行徽章、执行说明与执行时间，超限记录额外给出「腾出名额后可手动置顶」指引。
+3. **详情页申请按钮已生效时应改为「已经置顶」且不可点击**
+   - 新增 `_promo_block_state()`，为置顶 / 精华 / 热门分别计算
+     `applied`（已生效）/ `pending`（审核中）/ `open`（可申请）三态。
+   - 模板按状态渲染：已生效 → `📌 已经置顶`（渐变实心、`disabled` +
+     `aria-disabled="true"`、`not-allowed` 光标、二次点击不弹窗）；
+     审核中 → `⏳ 置顶审核中`（黄底虚线，同样禁用）；可申请 → 原按钮。
+   - `round6.js` 增强：提交成功后立即置为「审核中」并禁用，
+     并通过新增的 `GET /api/article/<pk>/promotion-status/` 做一次服务端状态自检，
+     防止前端状态与服务端漂移。
+   - 服务端兜底：已生效的推广类型再次申请直接返回 409「已经置顶啦，不用再申请喵~」。
+
+### 12.3 Bug 3 · 定时发布与审核信号流程
+
+- **原因**：`check_scheduled_articles` 用 bulk `update()` 无条件把到点草稿置为
+  `published`，绕过了「新文章需审核」设置与 `post_save` 信号，
+  于是「开启审核时定时文章直接发布、关闭审核时又看不出差别」，审核页也看不到待审记录。
+- **修复**（`blog/tasks.py::check_scheduled_articles`）：
+  - 读取 `ModerationSettings.require_article_review`：开启时到点转入 **`pending`（待审核）**
+    并入队内容审核页，管理员通过后才真正发布；关闭时按原设计直接 `published`；
+  - 管理员（staff）发文始终可直接发布，与 `article_new` 的角色规则一致；
+  - 每条文章改为逐个 `save()`，**保证 `post_save` 信号照常触发**
+    （缓存失效、评论计数、徽章、搜索索引等），不再用 bulk update 绕过信号；
+  - 同时写入 `ModerationLog`（动作 SUBMIT，理由「定时发布时间已到，因开启文章审核转入待审核」）。
+- **审核页联动**：`Article.is_scheduled_pending` 属性识别「到点转入待审核」的文章，
+  列表打上 `⏰ 定时投稿·到点转入审核` 徽章；管理员通过时把 `published_at`
+  对齐到实际通过时刻，避免列表出现未来时间。
+- **验收**：关闭审核 → `draft → published`；开启审核 → `draft → pending`（不直接发布）→
+  审核页出现定时投稿标记 → 管理员通过 → `published`；缓存失效信号实测生效。
+
+### 12.4 访问日志中间件（全局永久强制模块）三层降级重构
+
+- **现状问题**：上一轮为保证「不被静默丢弃」改成了**每条请求同步写库**，
+  与「常态禁止全量同步入库、防止高并发压库」的强制要求冲突，也失去了异步削峰能力。
+- **重构后**（实现见 `blog/middleware/access_log.py` + `blog/access_log_service.py`）：
+  1. **层 1 异步优先**：`save_access_log.delay()` 经 Redis broker 交给 Celery worker 入库，
+     请求线程不产生任何数据库写入；
+  2. **层 2 Broker 故障**：投递失败把日志 `RPUSH` 进 Redis 兜底队列
+     （`acgblog:access_log:fallback`，带 `LTRIM` 长度上限），**仍不写库**；
+     恢复后 `python manage.py accesslog_queue --drain` 批量补录，
+     Celery beat 每 5 分钟还会自动跑 `flush_access_log_queue` 兜底补齐；
+  3. **层 3 极端降级**：Redis 完全不可用时才同步入库，并打 ERROR 告警，保证一条不丢。
+- **性能加固**：Redis 操作 0.35s 短超时 + 20s 熔断；Celery 发布关闭重试、
+  broker 连接/读写超时 0.4s，并新增 **Broker 熔断窗口**（15s）。
+  实测 broker 宕机时单请求耗时从 **6.2s 降到 43ms**，兜底队列接管写入，DB 零写入。
+- **新增/调整配置**：`ACCESS_LOG_FALLBACK_REDIS_URL`（兜底队列独立于 broker 地址）、
+  `ACCESS_LOG_REDIS_TIMEOUT` / `ACCESS_LOG_REDIS_COOLDOWN` / `ACCESS_LOG_FALLBACK_MAX_LEN` /
+  `ACCESS_LOG_DRAIN_BATCH` / `ACCESS_LOG_BROKER_COOLDOWN` / `ACCESS_LOG_ENABLED`。
+- **运维命令**：`python manage.py accesslog_queue`（查看积压 / `--drain` 消费 /
+  `--dry-run` / `--reset-circuit` / `--purge --yes`）。
+- **验收**：三层链路用真实 HTTP 分别复现通过；`security_test` 新增 11 项访问日志专项
+  （信息泄露、注入、降级链路、坏数据容错、不阻塞、静态资源剔除）。
+
+### 12.5 本轮顺带修复的移动端布局缺陷
+
+验收矩阵在 **430×932 / 390×844** 视口发现详情页底部操作条（点赞 / 收藏 / 分享 / 导出更多）
+异常，定位并修复了两个真实缺陷：
+
+1. **底部操作条跑到文章中部、移动端完全不可见**：`<main class="scroll-fade-in">` 的
+   `transform: translateY(0)`（以及 `.article-paper` 的 `backdrop-filter`）会创建
+   「包含块」，使内部 `position:fixed` 的操作条相对 main 定位（实测 top≈3214px，
+   视口仅 932px）。修复：主内容区入场效果改为纯 `opacity` 过渡（保留淡入、去掉位移），
+   窄屏下去掉文章纸张的 `backdrop-filter`。
+2. **操作条按钮被横向裁切**：`.article-extra-bar` 在窄屏用 `overflow-x:auto` +
+   `flex-wrap:nowrap`，「导出/更多」被挤出视口只能横向拖动。修复：改为换行布局，
+   所有按钮可见可点；同时把左下角悬浮按钮（☰ 快捷菜单 / 回到顶部）抬到操作条上方，
+   避免互相遮挡。
+   详见 `mobile_bar_fix_report.json` 与 `screenshots/bug8_mobile_bar_*.png`。
+
+### 12.6 数据结构变更告知（本轮）
+
+> 按约定「核心数据结构变更需提前告知」，本轮仅**新增字段**、未改动既有字段 / 表结构 /
+> 索引，且提供数据回填迁移，向后兼容：
+
+| 迁移 | 内容 |
+| --- | --- |
+| `0017_promotionrequest_executed_at_and_more` | `PromotionRequest` 新增 `execution_status` / `execution_note` / `executed_at` |
+| `0018_backfill_promotion_execution` | 按文章当前标记回填历史申请的 `execution_status` |
+
+回滚：`python manage.py migrate blog 0016`（新增字段随之删除，不影响既有数据）。
 
 
 🌸 愿这个小站也能让你写得开心、逛得治愈喵~

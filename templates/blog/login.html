@@ -10,7 +10,7 @@
     <div class="auth-card">
         <h1 class="auth-title">欢迎回来 🌸</h1>
         {# 登录失败红色内联提示（AJAX 失败或后端重渲染时显示，不整页刷新） #}
-        <div class="login-error" id="login-error" role="alert" {% if not login_error %}hidden{% endif %}>
+        <div class="login-error form-error-text" id="login-error" role="alert" {% if not login_error %}hidden{% endif %}>
             <span aria-hidden="true">😿</span><span id="login-error-text">{{ login_error|default:'用户名或密码不对呢~再试试喵' }}</span>
         </div>
         <form method="post" id="login-form" autocomplete="on" aria-autocomplete="list">
@@ -31,5 +31,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'assets/js/login_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# Bug8 修复：改为加载「认证表单」统一脚本（登录 + 注册共用免刷新内联红字逻辑） #}
+<script src="{% static 'assets/js/auth_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {% endblock %}

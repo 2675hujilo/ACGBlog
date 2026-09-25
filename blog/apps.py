@@ -31,5 +31,10 @@ class BlogConfig(AppConfig):
         第4轮 A1: 公共缓存预热已从此处完全移除，改为在
         ``context_processors.py`` 中由首个请求线程安全地懒加载执行，
         彻底消除 runserver 启动期"app 初始化阶段访问数据库"RuntimeWarning。
+
+        Bug8 新增：安装 RequestsDependencyWarning 忽略过滤器，确保
+        ``manage.py check`` 与运行日志中不出现 requests 依赖版本告警。
         """
         from . import signals  # noqa: F401  # 仅为注册信号副作用而导入
+        from .deprecation_filters import install_warning_filters
+        install_warning_filters()

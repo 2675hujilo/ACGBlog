@@ -425,6 +425,18 @@ class Article(models.Model):
         """58. 是否需要访问密码：password 非空即视为加密文章。"""
         return bool(self.password)
 
+    # ---- Bug8 新增：定时投稿进入审核态识别 ----
+    @property
+    def is_scheduled_pending(self):
+        """是否为「定时到点、因开启审核而转入待审核」的文章。
+
+        用途：内容审核页给这类待审文章打上「⏰ 定时投稿」标记，提醒管理员
+        这是到点自动流转进来的（区别于作者主动投稿）。
+        """
+        return (self.status == Article.Status.PENDING
+                and self.published_at is not None
+                and self.published_at <= timezone.now())
+
     # 迭代#46: Article.__str__方法docstring
     def __str__(self) -> str:
         """对象的可读表示：返回文章标题。
@@ -1783,6 +1795,18 @@ class PromotionRequest(models.Model):
         APPROVED = 'approved', '已通过'
         REJECTED = 'rejected', '已驳回'
 
+    class Execution(models.TextChoices):
+        """系统执行状态（Bug8 新增）：审核结论之外，单独记录「服务端有没有真正执行生效」。
+
+        背景（Bug 单）：管理员点了「通过置顶」，但全站置顶数已达上限时，系统并不会
+        真正置顶；此前只显示「已通过」，作者与管理员都看不出实际结果。现在把
+        「审批结论」与「系统执行」拆成两个维度，审核页直接展示系统执行状态。
+        """
+        NOT_RUN = 'not_run', '未执行'
+        SUCCESS = 'success', '执行成功'
+        SKIPPED = 'skipped', '未执行·已达上限'
+        FAILED = 'failed', '执行失败'
+
     # 申请对应的文章（文章删除则申请一并删除）
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE, related_name='promotion_requests',
@@ -1798,6 +1822,17 @@ class PromotionRequest(models.Model):
     # 审批状态，默认待审核
     status = models.CharField(
         max_length=10, choices=Status.choices, default=Status.PENDING, verbose_name='状态')
+    # ---- Bug8 新增：系统执行状态三件套（审批结论之外的真实落地结果） ----
+    # 审批通过后系统是否真的把标记写进了文章
+    execution_status = models.CharField(
+        max_length=10, choices=Execution.choices, default=Execution.NOT_RUN,
+        verbose_name='系统执行状态',
+        help_text='审批通过后系统实际落地结果：成功 / 已达上限未执行 / 失败')
+    # 系统执行说明（给管理员看的执行明细，例如「置顶已达上限 3 篇」）
+    execution_note = models.CharField(
+        max_length=200, blank=True, default='', verbose_name='系统执行说明')
+    # 系统执行时刻
+    executed_at = models.DateTimeField(null=True, blank=True, verbose_name='系统执行时间')
     # 审核人（账号删除置空）
     handled_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True,
@@ -1819,6 +1854,17 @@ class PromotionRequest(models.Model):
 
     def __str__(self):
         return f'{self.get_kind_display()}申请：文章{self.article_id}（{self.get_status_display()}）'
+
+    # ---- Bug8 新增：系统执行状态展示辅助 ----
+    @property
+    def is_applied(self) -> bool:
+        """审批通过后系统是否真的把标记写进了文章（审核页高亮用）。"""
+        return self.execution_status == self.Execution.SUCCESS
+
+    @property
+    def execution_label(self) -> str:
+        """系统执行状态的中文短标签（审核页徽章文案）。"""
+        return self.get_execution_status_display()
 
 
 class ModerationSettings(models.Model):

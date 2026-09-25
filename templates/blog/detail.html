@@ -219,7 +219,7 @@
                         </span>
                         {% endif %}
                         {# Bug1：管理员直接切换置顶/精华/热门；作者本人发起申请（弹窗填理由） #}
-                        {% if user.is_staff %}
+                        {% if user.is_staff and not qa_view_as_author %}
                         <div class="promo-manage" data-pk="{{ article.pk }}"
                              data-toggle-url="{% url 'api:api_toggle_promotion' article.pk %}">
                             <button type="button" class="btn-sm promo-toggle {% if article.is_pinned %}promo-on{% endif %}"
@@ -230,21 +230,44 @@
                                     data-action-on="hot" data-action-off="unhot">🔥 热门</button>
                         </div>
                         {% elif can_edit %}
+                        {% comment %}Bug8 修复：三个按钮始终可见，状态由 promo_state 决定；已生效（已经置顶/精华/热门）或审核中时按钮禁用不可再点，文案同步改为「已经置顶 / 置顶审核中」，避免重复申请。{% endcomment %}
                         <div class="promo-apply" data-pk="{{ article.pk }}"
-                             data-request-url="{% url 'api:api_promotion_request' article.pk %}">
-{#                                <button type="button" class="btn-sm promo-apply-btn" data-kind="pin" data-label="置顶">📌 申请置顶</button>#}
-{#                                <button type="button" class="btn-sm promo-apply-btn" data-kind="feature" data-label="精华">⭐ 申请精华</button>#}
-{#                                <button type="button" class="btn-sm promo-apply-btn" data-kind="hot" data-label="热门">🔥 申请热门</button>#}
-                            {% if not article.is_pinned %}
-                            <button type="button" class="btn-sm promo-apply-btn" data-kind="pin" data-label="置顶">📌 申请置顶</button>
+                             data-request-url="{% url 'api:api_promotion_request' article.pk %}"
+                             data-status-url="{% url 'api:api_promotion_status' article.pk %}">
+                            {% with st=promo_state.pin %}
+                            <button type="button"
+                                    class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
+                                    data-kind="pin" data-label="置顶"
+                                    data-state="{{ st.state|default:'open' }}"
+                                    {% if st.state == 'applied' or st.state == 'pending' %}disabled aria-disabled="true"{% endif %}
+                                    title="{% if st.state == 'applied' %}这篇文章已经置顶啦，无需再次申请{% elif st.state == 'pending' %}置顶申请正在审核中，请耐心等待{% else %}点这里申请把文章置顶{% endif %}">
+                                {% if st.state == 'applied' %}📌 已经置顶{% elif st.state == 'pending' %}⏳ 置顶审核中{% else %}📌 申请置顶{% endif %}
+                            </button>
+                            {% endwith %}
+                            {% with st=promo_state.feature %}
+                            <button type="button"
+                                    class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
+                                    data-kind="feature" data-label="精华"
+                                    data-state="{{ st.state|default:'open' }}"
+                                    {% if st.state == 'applied' or st.state == 'pending' %}disabled aria-disabled="true"{% endif %}
+                                    title="{% if st.state == 'applied' %}这篇文章已经是精华啦，无需再次申请{% elif st.state == 'pending' %}精华申请正在审核中，请耐心等待{% else %}点这里申请把文章加精{% endif %}">
+                                {% if st.state == 'applied' %}⭐ 已经精华{% elif st.state == 'pending' %}⏳ 精华审核中{% else %}⭐ 申请精华{% endif %}
+                            </button>
+                            {% endwith %}
+                            {% with st=promo_state.hot %}
+                            <button type="button"
+                                    class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
+                                    data-kind="hot" data-label="热门"
+                                    data-state="{{ st.state|default:'open' }}"
+                                    {% if st.state == 'applied' or st.state == 'pending' %}disabled aria-disabled="true"{% endif %}
+                                    title="{% if st.state == 'applied' %}这篇文章已经是热门啦，无需再次申请{% elif st.state == 'pending' %}热门申请正在审核中，请耐心等待{% else %}点这里申请加入热门{% endif %}">
+                                {% if st.state == 'applied' %}🔥 已经热门{% elif st.state == 'pending' %}⏳ 热门审核中{% else %}🔥 申请热门{% endif %}
+                            </button>
+                            {% endwith %}
+                            {# 名额已满的即时提醒：仅在置顶仍可申请但名额已满时展示（Bug8） #}
+                            {% if promo_state.pin.state == 'open' and promo_state.pin.limit_full %}
+                            <span class="promo-limit-hint" role="status">📌 置顶名额已满（{{ promo_state.pin.pinned_count }}/{{ promo_state.pin.max_pinned }}），审核通过也可能暂不生效喵~</span>
                             {% endif %}
-                            {% if not article.is_featured %}
-                            <button type="button" class="btn-sm promo-apply-btn" data-kind="feature" data-label="精华">⭐ 申请精华</button>
-                            {% endif %}
-                            {% if not article.is_hot %}
-                            <button type="button" class="btn-sm promo-apply-btn" data-kind="hot" data-label="热门">🔥 申请热门</button>
-                            {% endif %}
-
                         </div>
                         {% endif %}
                     </div>

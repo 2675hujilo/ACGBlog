@@ -124,11 +124,71 @@ class Command(BaseCommand):
         self.stdout.write(f'ALLOWED_HOSTS = {getattr(settings, "ALLOWED_HOSTS", None)}')
 
     def _check_deps(self):
-        """探测常用第三方包是否已安装可导入。"""
+        """探测常用第三方包是否已安装可导入，并核对 requests 依赖版本组合。"""
         for module in ('django', 'rest_framework', 'bleach', 'PIL', 'celery'):
             found = importlib_util.find_spec(module) is not None
             mark = self.style.SUCCESS('OK') if found else self.style.ERROR('MISSING')
             self.stdout.write(f'  {module:<16} {mark}')
+        self._check_requests_warning()
+
+    def _check_requests_warning(self):
+        """硬性指标核验：requests 导入不得产生 RequestsDependencyWarning。
+
+        验收要求「django check 0 错误 0 警告，消除 requests 版本告警」。
+        这里在 ``warnings.catch_warnings`` 中强制重载 requests，直接检查：
+          1. 是否抛出 RequestsDependencyWarning；
+          2. requests 内部解析出的 chardet / charset_normalizer / urllib3 版本组合；
+          3. 关键包的实际安装版本。
+        """
+        import warnings
+        try:
+            from requests.exceptions import RequestsDependencyWarning
+        except Exception:  # noqa: BLE001 requests 未安装
+            self.stdout.write(self.style.WARNING('  requests          未安装，跳过版本告警核验'))
+            return
+        # 强制重新执行 requests 模块顶层的版本兼容检查
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            try:
+                import requests
+                req_ver = requests.__version__
+            except Exception as exc:  # noqa: BLE001
+                self.stdout.write(self.style.ERROR(f'  requests 导入失败: {exc}'))
+                return
+        # requests.compat 在不同版本里暴露的符号不同，这里以「实际安装版本」为准
+        def _ver(module_name):
+            try:
+                mod = __import__(module_name)
+                return getattr(mod, '__version__', '未知')
+            except Exception:  # noqa: BLE001
+                return '未安装'
+
+        self.stdout.write(f'  requests          {req_ver}')
+        self.stdout.write(f'  urllib3           {_ver("urllib3")}')
+        self.stdout.write(f'  chardet           {_ver("chardet")}')
+        # requests 的兼容性检查在模块顶层只跑一次；若此前已被导入，上面的
+        # catch_warnings 捕获不到任何东西。这里主动重跑一次检查函数，
+        # 确保「有没有告警」的结论不被模块缓存掩盖。
+        rerun_error = ''
+        try:
+            with warnings.catch_warnings(record=True) as caught2:
+                warnings.simplefilter('always')
+                from requests import check_compatibility
+                check_compatibility(urllib3_version=_ver('urllib3'),
+                                    chardet_version=_ver('chardet'),
+                                    charset_normalizer_version=_ver('charset_normalizer'))
+            caught.extend(caught2)
+        except Exception as exc:  # noqa: BLE001 新版本可能没有该函数，按导入结果判定
+            rerun_error = str(exc)
+        dep_warnings = [w for w in caught if issubclass(w.category, RequestsDependencyWarning)]
+        if dep_warnings:
+            for w in dep_warnings:
+                self.stdout.write(self.style.ERROR(f'  RequestsDependencyWarning: {w.message}'))
+        else:
+            self.stdout.write(self.style.SUCCESS(
+                '  requests 版本告警核验   OK（无 RequestsDependencyWarning）'))
+        if rerun_error:
+            self.stdout.write(f'  （兼容性检查函数不可直接调用：{rerun_error[:80]}）')
 
     def _check_db(self):
         """测试数据库连接并显示当前 ENGINE。"""

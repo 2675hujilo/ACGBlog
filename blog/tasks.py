@@ -95,36 +95,104 @@ def clean_old_logs(days=90):
         return f'日志清理失败: {exc}'
 
 
+# ============================ 访问日志兜底队列自动补齐 ============================
+
+@shared_task
+def flush_access_log_queue(batch=500, max_batches=20):
+    """访问日志「Redis 兜底队列」自动补齐任务（Broker 恢复后把积压日志批量入库）。
+
+    背景：访问日志中间件的三层降级策略中，Broker 故障期间日志会先写入 Redis
+    列表（``acgblog:access_log:fallback``）。本任务由 Celery beat 每 5 分钟触发，
+    尝试批量消费该队列并落库；Broker 已恢复时队列为空，任务安全空转。
+
+    与 ``blog.tasks.save_access_log`` 的区别：后者是「一条请求一条任务」的正常
+    异步通道；本任务是「兜底队列补漏」通道，两者互不干扰。
+
+    Returns:
+        str: 简要执行结果描述。
+    """
+    from .access_log_service import drain_fallback
+    try:
+        result = drain_fallback(batch=batch, max_batches=max_batches)
+        if result['error']:
+            # Redis 仍不可用：不算任务失败，等下一轮再试（中间件此时走同步兜底）
+            logger.warning('访问日志兜底队列消费失败（Redis 不可用）: %s', result['error'])
+            return f'兜底队列消费跳过: {result["error"]}'
+        if result['ok'] or result['bad']:
+            logger.info('访问日志兜底队列补齐: 入库 %s 条，坏数据 %s 条，剩余 %s 条',
+                        result['ok'], result['bad'], result['remaining'])
+        return ('兜底队列补齐: ok=%s bad=%s remaining=%s'
+                % (result['ok'], result['bad'], result['remaining']))
+    except Exception as exc:  # noqa: BLE001
+        logger.error('访问日志兜底队列任务异常: %s', exc)
+        return f'兜底队列任务异常: {exc}'
+
+
 # 迭代#82: check_scheduled_articles任务docstring
 @shared_task
 def check_scheduled_articles():
-    """56. 定时发布检查任务（每分钟执行一次）。
+    """56 + Bug8. 定时发布检查任务（每分钟执行一次）。
 
-    把所有"草稿 + 已到发布时间（published_at <= now）"的文章自动转为已发布，
-    并刷新侧边栏缓存。
+    Bug8 修复要点（Bug 单原话：定时发布文章异常，若开启了审核定时发布后出现
+    draft；如果关闭审核，会直接发布）：
+
+    - 开启「普通作者新文章需审核」时：到点的定时文章 **不得直接发布**，而是
+      流转为 ``PENDING``（待审核）并入队内容审核页；管理员通过后才真正发布。
+      流转后 ``published_at`` 保持不变（保留作者预约的时间点，仅作为审核参考）。
+    - 关闭审核时：按原设计自动置为 ``PUBLISHED``（直接发布）。
+    - 每条文章改用 ``save()`` 逐个流转，确保 ``post_save`` 信号（缓存失效、
+      搜索索引刷新等）照常触发，不再用 bulk ``update()`` 绕过信号。
+    - 同时写入 ``ModerationLog`` 审核历史，管理员能看到「定时转入待审核」的动作。
+
+    Returns:
+        str: 简要执行结果描述。
     """
     from django.core.cache import cache
     from .cache_keys import invalidate_article, purge_prevnext
-    from .models import Article
+    from .models import Article, ModerationLog, ModerationSettings
     now = timezone.now()
-    due = Article.objects.filter(
+    due = list(Article.objects.filter(
         status=Article.Status.DRAFT,
+        is_deleted=False,
         published_at__isnull=False,
         published_at__lte=now,
-    )
+    ).select_related('author')[:200])  # 单轮上限，避免异常堆积时一次处理过多
+    if not due:
+        return '已自动发布 0 篇定时文章'
+    # 是否开启文章审核：决定「定时到点」后进入 PENDING 还是直接 PUBLISHED
+    require_review = ModerationSettings.load().require_article_review
+    target_status = (Article.Status.PENDING if require_review
+                     else Article.Status.PUBLISHED)
     try:
-        # bulk update() 不触发 post_save 信号，先取 pk 再手动失效详情缓存
-        due_pks = list(due.values_list('pk', flat=True))
-        count = due.update(status=Article.Status.PUBLISHED)
-        if count:
-            logger.info('定时发布: 自动发布 %s 篇文章', count)
-            for pk in due_pks:
-                invalidate_article(pk)
-            purge_prevnext()  # 新发布文章会改变全站「上一篇/下一篇」
-            # 文章状态变更：清除侧边栏 / 页脚统计缓存
-            cache.delete('sidebar_data')
-            cache.delete('footer_stats')
-        return f'已自动发布 {count} 篇定时文章'
+        changed_pks, published_cnt, pending_cnt = [], 0, 0
+        for article in due:
+            # 管理员发文始终可直接发布（与 article_new 的角色规则保持一致）
+            status = (Article.Status.PUBLISHED
+                      if article.author.is_staff else target_status)
+            article.status = status
+            article.save(update_fields=['status', 'updated_at'])   # 触发 post_save 信号
+            changed_pks.append(article.pk)
+            if status == Article.Status.PENDING:
+                pending_cnt += 1
+                ModerationLog.objects.create(
+                    moderator=None, moderator_name='系统·定时任务',
+                    action=ModerationLog.Action.SUBMIT, target_type='article',
+                    article=article, target_title=article.title,
+                    reason='定时发布时间已到（%s），因开启文章审核转入待审核'
+                           % article.published_at.strftime('%Y-%m-%d %H:%M'))
+            else:
+                published_cnt += 1
+        # 逐条 save() 虽已触发 post_save 缓存失效，这里再按 pk 精确失效一次，
+        # 覆盖详情页片段缓存中的 prev/next 与相关文章；新建发布不影响全站顺序
+        for pk in changed_pks:
+            invalidate_article(pk)
+        purge_prevnext()
+        cache.delete('sidebar_data')
+        cache.delete('footer_stats')
+        logger.info('定时发布: 直接发布 %s 篇，转入待审核 %s 篇（审核开关=%s）',
+                    published_cnt, pending_cnt, require_review)
+        return ('已处理定时文章 %d 篇：直接发布 %d 篇，转入待审核 %d 篇'
+                % (len(changed_pks), published_cnt, pending_cnt))
     except Exception as exc:
         logger.error('定时发布检查失败: %s', exc)
         return f'定时发布检查失败: {exc}'

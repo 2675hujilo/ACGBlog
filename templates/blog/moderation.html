@@ -48,6 +48,10 @@
     <div class="mod-item">
       <div class="mod-item-head">
         <span class="mod-item-title">📄 {{ article.title }}</span>
+        {# Bug8：定时投稿到点后因开启审核而自动转入待审核的，给出明确标记 #}
+        {% if article.is_scheduled_pending %}
+        <span class="exec-badge exec-badge--skipped">⏰ 定时投稿·到点转入审核</span>
+        {% endif %}
         <span class="mod-item-meta">{{ article.author.username }} · {{ article.created_at|date:'Y-m-d H:i' }}</span>
       </div>
       <div class="mod-item-body muted">{{ article.excerpt|default:'（暂无摘要）' }}</div>
@@ -162,6 +166,18 @@
       <button type="submit" class="mod-btn btn-approve">💾 保存设置</button>
     </form>
 
+    {# ---- Bug8 新增：系统执行状态总览（审批结论之外的真实落地结果）---- #}
+    <div class="exec-summary" role="status" aria-label="系统执行状态总览">
+      <span class="es-title">🛠 系统执行状态</span>
+      <span class="es-item"><span class="exec-badge exec-badge--success">✅ 执行成功</span>{{ exec_stats.success }} 条</span>
+      <span class="es-item"><span class="exec-badge exec-badge--skipped">⏸ 已达上限未执行</span>{{ exec_stats.skipped }} 条</span>
+      <span class="es-item"><span class="exec-badge exec-badge--failed">⚠️ 执行失败</span>{{ exec_stats.failed }} 条</span>
+      <span class="es-item">📌 当前置顶：{{ pinned_count }} / {{ moderation_settings.max_pinned }} 篇</span>
+      {% if pinned_count >= moderation_settings.max_pinned %}
+      <span class="es-item  muted">（名额已满：新通过的置顶申请会标记为「已达上限未执行」）</span>
+      {% endif %}
+    </div>
+
     {# ---- 待审核推广申请列表 ---- #}
     {% for pr in promo_page %}
     <div class="mod-item">
@@ -175,6 +191,19 @@
       <div class="mod-item-body">
         <strong>文章：</strong><a href="{% url 'article_detail' pr.article_id %}">{{ pr.article.title }}</a>
         <blockquote><strong>申请理由：</strong>{{ pr.reason|linebreaksbr }}</blockquote>
+        {# Bug8：审批前先给出「系统执行状态」预判，避免通过后才发现无法生效 #}
+        <div class="promo-exec-note" aria-label="系统执行状态">
+          <span class="exec-badge exec-badge--not_run">⏳ 系统执行：未执行</span>
+          {% if pr.kind == 'pin' %}
+            {% if pinned_count >= moderation_settings.max_pinned %}
+            <span class="exec-badge exec-badge--skipped">⚠️ 预判：置顶名额已满（{{ pinned_count }}/{{ moderation_settings.max_pinned }}），通过后系统将无法置顶</span>
+            {% else %}
+            <span class="exec-badge exec-badge--success">预判：置顶名额充足（{{ pinned_count }}/{{ moderation_settings.max_pinned }}），通过后系统可直接置顶</span>
+            {% endif %}
+          {% else %}
+          <span class="exec-badge exec-badge--success">预判：{{ pr.get_kind_display }}无名额限制，通过后系统可直接生效</span>
+          {% endif %}
+        </div>
       </div>
       <div class="mod-actions">
         <form method="post" action="{% url 'moderate_promotion' pr.pk %}">
@@ -200,6 +229,53 @@
       {% if promo_page.has_previous %}<a href="?tab=promotions&ppage={{ promo_page.previous_page_number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
       <span class="pager-info">第 {{ promo_page.number }} / {{ promo_page.paginator.num_pages }} 页</span>
       {% if promo_page.has_next %}<a href="?tab=promotions&ppage={{ promo_page.next_page_number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+
+    {# ---- Bug8 新增：已处理申请 + 系统执行状态明细（一眼看出「已通过但未生效」）---- #}
+    <div class="promo-done-group-title"><img src="{% static 'assets/icons/archive.svg' %}" alt="" class="icon icon-sm" aria-hidden="true">已处理申请 · 系统执行状态</div>
+    {% for pr in promo_done_page %}
+    <div class="mod-item promo-done-row">
+      <div class="promo-done-head">
+        <span>{% if pr.kind == 'pin' %}📌{% elif pr.kind == 'feature' %}⭐{% else %}🔥{% endif %}
+          {{ pr.applicant.username|default:'匿名' }} · {{ pr.get_kind_display }}</span>
+        {% if pr.status == 'approved' %}
+        <span class="exec-badge exec-badge--success">✅ 审批通过</span>
+        {% else %}
+        <span class="exec-badge exec-badge--failed">🚫 已驳回</span>
+        {% endif %}
+        {% if pr.execution_status == 'success' %}
+        <span class="exec-badge exec-badge--success">✅ 系统已执行</span>
+        {% elif pr.execution_status == 'skipped' %}
+        <span class="exec-badge exec-badge--skipped">⏸ 未执行·已达上限</span>
+        {% elif pr.execution_status == 'failed' %}
+        <span class="exec-badge exec-badge--failed">⚠️ 执行失败</span>
+        {% else %}
+        <span class="exec-badge exec-badge--not_run">⏳ 未执行</span>
+        {% endif %}
+        <span class="mod-item-meta">{{ pr.handled_at|date:'Y-m-d H:i'|default:'—' }}
+          {% if pr.handled_by %}· 处理人 {{ pr.handled_by.username }}{% endif %}</span>
+      </div>
+      <div class="mod-item-body">
+        <strong>文章：</strong><a href="{% url 'article_detail' pr.article_id %}">{{ pr.article.title }}</a>
+        <div class="promo-exec-note">🛠 <b>系统执行说明：</b>{{ pr.execution_note|default:'（无）' }}
+          {% if pr.executed_at %}· 执行于 {{ pr.executed_at|date:'Y-m-d H:i:s' }}{% endif %}</div>
+      </div>
+      <div class="mod-actions">
+        <a class="mod-btn btn-ghost" href="{% url 'article_detail' pr.article_id %}">👁 查看文章</a>
+        {% if pr.execution_status == 'skipped' %}
+        <span class="mod-btn btn-ghost" role="note">💡 腾出置顶名额后，可在文章详情页手动置顶</span>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="mod-empty"><div class="me">📭</div><p>还没有已处理的推广申请喵~</p></div>
+    {% endfor %}
+    {% if promo_done_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="已处理推广申请分页">
+      {% if promo_done_page.has_previous %}<a href="?tab=promotions&pdpage={{ promo_done_page.previous_page_number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ promo_done_page.number }} / {{ promo_done_page.paginator.num_pages }} 页</span>
+      {% if promo_done_page.has_next %}<a href="?tab=promotions&pdpage={{ promo_done_page.next_page_number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
     </nav>
     {% endif %}
 

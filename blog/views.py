@@ -1013,6 +1013,10 @@ def article_detail(request: HttpRequest, pk: int) -> HttpResponse:
     # 编辑权限：必须已登录，且是文章作者本人，或是管理员
     can_edit = request.user.is_authenticated and (
         request.user == article.author or request.user.is_staff)
+    # QA 辅助（仅 DEBUG 生效）：?as_author=1 时即使当前是管理员，也按「普通作者」
+    # 视角渲染详情页操作区，便于对作者申请按钮做浏览器视觉验收。
+    # 生产环境（DEBUG=False）该参数完全无效，不影响任何真实权限判定。
+    qa_as_author = bool(settings.DEBUG and request.GET.get('as_author') == '1' and can_edit)
     # ---- 点赞状态：从 session 读取该会话已点赞的文章 id 集合 ----
     # session 中以 'liked_article_ids' 列表存储，判断当前文章是否已赞过
     liked_ids = request.session.get('liked_article_ids', [])
@@ -1131,6 +1135,12 @@ def article_detail(request: HttpRequest, pk: int) -> HttpResponse:
     ctx = {
         'article': article,
         'can_edit': can_edit,
+        # QA 辅助标记（仅 DEBUG + ?as_author=1 时为 True）：模板据此强制走「作者申请」
+        # 分支渲染，用于自动化视觉验收管理员之外的作者视角；生产环境恒为 False。
+        'qa_view_as_author': qa_as_author,
+        # Bug8：置顶/精华/热门三按钮状态（已生效 / 审核中 / 可申请），
+        # 已生效时模板渲染为不可点击的「已经置顶」等按钮
+        'promo_state': _promo_block_state(article, request.user) if can_edit else {},
         # 第4轮 C1: 相关文章（QuerySet/list，前端推荐卡片用）
         'related_articles': related_articles,
         # 第4轮 C2: 中文字数与阅读时长（整数）
@@ -1389,12 +1399,14 @@ def article_new(request: HttpRequest) -> HttpResponse:
             # 密码 / 封面任一存在都需要把改动持久化（修复密码丢失）
             if need_save:
                 article.save()
-            # 57. 置顶数量校验：全站最多 3 篇置顶，超出则取消本次置顶
+            # 57. 置顶数量校验：上限取自审核全局设置（默认 3），
+            #     超出则取消本次置顶（只统计未软删除的文章，与 _promo_execute 口径一致）
+            _max_pinned_new = ModerationSettings.load().max_pinned
             if article.is_pinned and Article.objects.filter(
-                    is_pinned=True).exclude(pk=article.pk).count() >= 3:
+                    is_pinned=True, is_deleted=False).exclude(pk=article.pk).count() >= _max_pinned_new:
                 article.is_pinned = False
                 article.save(update_fields=['is_pinned'])
-                messages.warning(request, '置顶最多 3 篇哦~这篇没有置顶喵📌')
+                messages.warning(request, '置顶最多 %s 篇哦~这篇没有置顶喵📌' % _max_pinned_new)
             # 设置多对多标签：get_or_create 自动创建不存在的标签名，
             # set() 全量替换关联（新建时即初次设置）
             if data['tag_names']:
@@ -1488,7 +1500,7 @@ def article_edit(request: HttpRequest, pk: int) -> HttpResponse:
             # Bug1：置顶上限取自审核全局设置，超出则取消本篇置顶并提示
             _max_pinned = ModerationSettings.load().max_pinned
             if article.is_pinned and Article.objects.filter(
-                    is_pinned=True).exclude(pk=article.pk).count() >= _max_pinned:
+                    is_pinned=True, is_deleted=False).exclude(pk=article.pk).count() >= _max_pinned:
                 article.is_pinned = False
                 article.save(update_fields=['is_pinned'])
                 messages.warning(request, '置顶最多 %s 篇哦~这篇没有置顶喵📌' % _max_pinned)
@@ -2065,39 +2077,53 @@ def register_view(request: HttpRequest) -> HttpResponse:
     """
     if request.user.is_authenticated:
         return redirect('index')
+    # Bug8 修复：保留用户本次填写的值（校验失败时不丢输入），并把错误按字段标记，
+    # 供模板渲染「输入框下方红色内联提示」——不再依赖整页刷新后的顶部 flash。
+    form_values = {'username': '', 'nickname': '', 'email': ''}
+    field_errors = []
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
         password2 = request.POST.get('password2', '')
         # 迭代#184: 邮箱格式验证（提前读取，纳入统一校验链）
         email = request.POST.get('email', '').strip()
+        nickname = request.POST.get('nickname', '').strip()
+        form_values = {'username': username, 'nickname': nickname, 'email': email}
         # 逐项校验，任一项不通过即提示并重新渲染表单，绝不创建用户
         # 迭代#183: 用户名长度验证
         # D1修复：所有校验合并为单一 if/elif/else 链，确保密码不一致等
         # 任一校验失败都不会落入 else 执行 create_user
+        # Bug8 修复：每条错误带字段名，前端据此渲染内联红字
         if not username or not password:
-            messages.error(request, '用户名和密码都要填喵~📝')
+            field_errors.append(('username', '用户名和密码都要填喵~📝'))
         elif len(username) > 150:
-            messages.error(request, '用户名太长啦~ 最多 150 个字符哦')
+            field_errors.append(('username', '用户名太长啦~ 最多 150 个字符哦'))
         elif password != password2:
-            messages.error(request, '两次密码不一样呢~再确认一下喵🔍')
+            field_errors.append(('password2', '两次密码不一样呢~再确认一下喵🔍'))
         elif email and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
-            messages.error(request, '邮箱格式不对呢~再检查一下喵~📧')
+            field_errors.append(('email', '邮箱格式不对呢~再检查一下喵~📧'))
         elif User.objects.filter(username=username).exists():
-            messages.error(request, '这个名字已经被别的小伙伴用了呢~换一个吧😢')
+            field_errors.append(('username', '这个名字已经被别的小伙伴用了呢~换一个吧😢'))
         elif len(password) < 8:
-            messages.error(request, '密码至少要 8 位哦~为了安全嘛🔒')
+            field_errors.append(('password', '密码至少要 8 位哦~为了安全嘛🔒'))
         else:
             # create_user 会自动哈希密码，nickname 为可选昵称
             user = User.objects.create_user(
                 username=username, password=password,
-                nickname=request.POST.get('nickname', '').strip())
+                nickname=nickname)
             login(request, user)
             # 迭代#185: 用户注册日志
             logger.info('用户注册: %s', user.username)
             messages.success(request, '注册成功啦~欢迎加入喵~🎉')
             return redirect('index')
-    return render(request, 'blog/register.html', {'active_nav': 'register'})
+        # 校验失败：同步写 flash（无 JS 时仍可见）并交给模板渲染内联红字
+        for _field, _msg in field_errors:
+            messages.error(request, _msg)
+    return render(request, 'blog/register.html', {
+        'active_nav': 'register',
+        'field_errors': field_errors,
+        'form_values': form_values,
+    })
 
 
 # 迭代#186: logout_view视图docstring
@@ -4190,6 +4216,21 @@ def moderation_queue(request: HttpRequest) -> HttpResponse:
                     .order_by('created_at', 'id'))
         promo_page = Paginator(promo_qs, 10).get_page(req.GET.get('ppage'))
 
+        # ---- Bug8：已处理推广申请（含系统执行状态），默认折叠展示最近 10 条 ----
+        promo_done_page = Paginator(
+            PromotionRequest.objects.exclude(status=PromotionRequest.Status.PENDING)
+            .select_related('article', 'applicant', 'handled_by')
+            .order_by('-handled_at', '-id'), 10).get_page(req.GET.get('pdpage'))
+        # 系统执行状态汇总：供审核页顶部「系统执行状态」总览条展示
+        exec_stats = {
+            'success': PromotionRequest.objects.filter(
+                execution_status=PromotionRequest.Execution.SUCCESS).count(),
+            'skipped': PromotionRequest.objects.filter(
+                execution_status=PromotionRequest.Execution.SKIPPED).count(),
+            'failed': PromotionRequest.objects.filter(
+                execution_status=PromotionRequest.Execution.FAILED).count(),
+        }
+
         # ---- 审核历史：可按动作筛选 + 分页 ----
         history_qs = (ModerationLog.objects.select_related('moderator')
                       .order_by('-created_at', '-id'))
@@ -4211,6 +4252,10 @@ def moderation_queue(request: HttpRequest) -> HttpResponse:
             'pending_page': pending_page,
             'reports_page': reports_page,
             'promo_page': promo_page,
+            # Bug8：已处理推广申请 + 系统执行状态总览
+            'promo_done_page': promo_done_page,
+            'exec_stats': exec_stats,
+            'pinned_count': Article.objects.filter(is_pinned=True, is_deleted=False).count(),
             'history_page': history_page,
             'trash_articles_page': trash_articles_page,
             'trash_comments_page': trash_comments_page,
@@ -4246,12 +4291,20 @@ def moderate_article(request: HttpRequest, pk: int) -> HttpResponse:
         article = get_object_or_404(Article, pk=pk, is_deleted=False)
         action = req.POST.get('action', '')
         if action == 'approve':
+            # Bug8：定时投稿（published_at 已到点）在此刻才真正发布，
+            # 因此把发布时间对齐到「实际通过时刻」，避免文章列表出现未来时间。
+            is_scheduled = bool(article.published_at and article.published_at <= timezone.now())
             article.status = Article.Status.PUBLISHED
-            article.save(update_fields=['status', 'updated_at'])
+            fields = ['status', 'updated_at']
+            if is_scheduled:
+                article.published_at = timezone.now()
+                fields.append('published_at')
+            article.save(update_fields=fields)
             ModerationLog.objects.create(
                 moderator=req.user, moderator_name=str(req.user),
                 action=ModerationLog.Action.APPROVE, target_type='article',
-                article=article, target_title=article.title)
+                article=article, target_title=article.title,
+                reason='通过审核并发布（定时投稿到点转入审核）' if is_scheduled else '')
             messages.success(req, '《%s》已通过并发布~ 🌸' % article.title)
         elif action == 'reject':
             reason = (req.POST.get('reason') or '').strip()[:500]
@@ -4490,12 +4543,103 @@ _PROMO_FIELD = {
     PromotionRequest.Kind.HOT: ('is_hot', ModerationLog.Action.HOT, ModerationLog.Action.UNHOT),
 }
 
+# 推广类型 → 中文短名（提示文案统一走这里，避免各处硬编码）
+_PROMO_LABEL = {
+    PromotionRequest.Kind.PIN: '置顶',
+    PromotionRequest.Kind.FEATURE: '精华',
+    PromotionRequest.Kind.HOT: '热门',
+}
+
+
+def _promo_execute(pr, actor):
+    """Bug8：把一条「审批通过」的推广申请真正落地到文章，并回填系统执行状态。
+
+    抽成独立函数的原因：审核页审批（moderate_promotion）与后续可能的批量/自动
+    审批都要复用同一套「能不能落地 + 落地结果怎么写」的判定，避免两处逻辑漂移。
+
+    Args:
+        pr: 待执行的 PromotionRequest（status 已由调用方置为 APPROVED）。
+        actor: 执行人（管理员 User），仅用于日志文案。
+
+    Returns:
+        tuple: (applied: bool, execution_status: str, note: str)
+            - applied：本次是否真的修改了文章标记；
+            - execution_status：PromotionRequest.Execution 取值；
+            - note：写入 pr.execution_note 的系统执行说明。
+    """
+    field, act_on, _act_off = _PROMO_FIELD[pr.kind]
+    label = _PROMO_LABEL.get(pr.kind, pr.get_kind_display())
+    try:
+        # 已经是对应状态：无需重复写库，直接记为执行成功（幂等）
+        if getattr(pr.article, field):
+            return True, PromotionRequest.Execution.SUCCESS, '文章已是%s状态，无需重复设置' % label
+        # 置顶上限校验：已达上限则不实际置顶，但保留「审批通过」的结论，
+        # 并由系统执行状态明确告知「已通过但未执行（已达上限）」。
+        if pr.kind == PromotionRequest.Kind.PIN:
+            max_pinned = ModerationSettings.load().max_pinned
+            current = Article.objects.filter(is_pinned=True, is_deleted=False).count()
+            if current >= max_pinned:
+                return (False, PromotionRequest.Execution.SKIPPED,
+                        '置顶名额已满（%d/%d 篇），系统未执行置顶' % (current, max_pinned))
+        setattr(pr.article, field, True)
+        pr.article.save(update_fields=[field, 'updated_at'])
+        return True, PromotionRequest.Execution.SUCCESS, '系统已执行：文章已设为%s' % label
+    except Exception as exc:  # noqa: BLE001 执行失败不得中断审批流程，但要如实记录
+        logger.error('推广申请系统执行失败: pr=%s kind=%s err=%s', pr.pk, pr.kind, exc,
+                     exc_info=True)
+        return False, PromotionRequest.Execution.FAILED, '系统执行异常：%s' % exc
+
+
+def _promo_block_state(article, user):
+    """Bug8：计算详情页「申请置顶 / 申请精华 / 申请热门」三个按钮的状态。
+
+    返回结构（供模板直接渲染，避免模板里写复杂判断）：
+        {kind: {'applied', 'pending', 'state', 'label', 'text', 'limit_full'}}
+    其中 state 取值：
+        - ``applied``：已经生效 → 按钮改为「已经置顶/精华/热门」且不可点击；
+        - ``pending``：已有待审核申请 → 按钮改为「XX审核中」且不可点击；
+        - ``open``：可申请 → 原「申请XX」按钮可点击。
+    ``limit_full`` 仅对置顶有意义：全站置顶名额已满时为 True，用于提示作者
+    「即使审核通过也可能暂不生效」（Bug 单：大于置顶上限应该有提示）。
+    """
+    state = {}
+    labels = _PROMO_LABEL
+    fields = {k: v[0] for k, v in _PROMO_FIELD.items()}
+    pending_kinds = set()
+    if user.is_authenticated:
+        pending_kinds = set(PromotionRequest.objects.filter(
+            article=article, applicant=user,
+            status=PromotionRequest.Status.PENDING).values_list('kind', flat=True))
+    # 置顶名额是否已满（排除软删除文章，与 _promo_execute 口径保持一致）
+    max_pinned = ModerationSettings.load().max_pinned
+    pinned_count = Article.objects.filter(is_pinned=True, is_deleted=False).count()
+    pin_full = pinned_count >= max_pinned
+    for kind, field in fields.items():
+        applied = bool(getattr(article, field, False))
+        pending = kind in pending_kinds
+        if applied:
+            st, text = 'applied', '已经%s' % labels[kind]
+        elif pending:
+            st, text = 'pending', '%s审核中' % labels[kind]
+        else:
+            st, text = 'open', '申请%s' % labels[kind]
+        state[kind] = {'applied': applied, 'pending': pending, 'state': st,
+                       'label': labels[kind], 'text': text,
+                       'limit_full': bool(pin_full and kind == PromotionRequest.Kind.PIN),
+                       'pinned_count': pinned_count, 'max_pinned': max_pinned}
+    return state
+
 
 def api_article_promotion_request(request, pk):
     """作者申请置顶/精华/热门：POST /api/article/<pk>/promotion-request/。
 
     仅文章作者本人可申请（管理员直接用切换接口）；同文章同类型已有待审核
     申请时拒绝重复提交。成功生成 PENDING 的 PromotionRequest 并写审核日志。
+
+    Bug8 增强：
+    - 已生效（已经置顶/精华/热门）时直接拒绝，提示「已经置顶」不再受理；
+    - 申请置顶但全站置顶名额已满时明确告知「已通过也可能无法置顶」，
+      并把该提示随响应返回，便于前端弹窗直接展示。
     """
     if not request.user.is_authenticated:
         return JsonResponse({'code': 403, 'msg': '请先登录喵~'}, status=403)
@@ -4507,6 +4651,14 @@ def api_article_promotion_request(request, pk):
     kind = request.POST.get('kind', '')
     if kind not in PromotionRequest.Kind.values:
         return JsonResponse({'code': 400, 'msg': '申请类型不正确'}, status=400)
+    # Bug8：已经生效的推广不再受理申请（按钮侧也已禁用，这里做服务端兜底）
+    field = _PROMO_FIELD[kind][0]
+    label = _PROMO_LABEL[kind]
+    if getattr(article, field):
+        return JsonResponse(
+            {'code': 409, 'msg': '这篇文章已经%s啦，不用再申请喵~' % label,
+             'data': {'already_applied': True, 'kind': kind}},
+            status=409)
     reason = (request.POST.get('reason') or '').strip()[:500]
     if not reason:
         return JsonResponse({'code': 400, 'msg': '请填写申请理由喵~'}, status=400)
@@ -4515,6 +4667,14 @@ def api_article_promotion_request(request, pk):
             article=article, kind=kind,
             status=PromotionRequest.Status.PENDING).exists():
         return JsonResponse({'code': 409, 'msg': '已经提交过申请，正在审核中哦~'}, status=409)
+    # Bug8：置顶名额已满时提前告知，避免「管理员通过了却没置顶」的预期落差
+    notice = ''
+    if kind == PromotionRequest.Kind.PIN:
+        max_pinned = ModerationSettings.load().max_pinned
+        current = Article.objects.filter(is_pinned=True, is_deleted=False).count()
+        if current >= max_pinned:
+            notice = ('当前置顶名额已满（%d/%d 篇），即使审核通过系统也可能暂时无法置顶喵~'
+                      % (current, max_pinned))
     pr = PromotionRequest.objects.create(
         article=article, applicant=request.user, kind=kind, reason=reason)
     ModerationLog.objects.create(
@@ -4522,8 +4682,28 @@ def api_article_promotion_request(request, pk):
         action=ModerationLog.Action.SUBMIT, target_type='article',
         article=article, target_title=article.title,
         reason='【%s申请】%s' % (pr.get_kind_display(), reason))
-    return JsonResponse({'code': 0, 'msg': '申请已提交，等待管理员审核喵~',
+    msg = '申请已提交，等待管理员审核喵~'
+    if notice:
+        msg = notice + ' 申请已提交喵~'
+    return JsonResponse({'code': 0, 'msg': msg, 'notice': notice,
                          'data': {'id': pr.id}})
+
+
+def api_article_promotion_status(request, pk):
+    """Bug8 新增：查询某文章三个推广标记 + 当前用户申请状态（详情页按钮自检用）。
+
+    GET /api/article/<pk>/promotion-status/  → JSON
+    作者或任意登录用户均可查询自己的申请状态；返回结构与 ``_promo_block_state`` 一致。
+    """
+    article = get_object_or_404(Article, pk=pk, is_deleted=False)
+    return JsonResponse({'code': 0, 'data': {
+        'states': _promo_block_state(article, request.user),
+        'is_pinned': article.is_pinned,
+        'is_featured': article.is_featured,
+        'is_hot': article.is_hot,
+        'max_pinned': ModerationSettings.load().max_pinned,
+        'pinned_count': Article.objects.filter(is_pinned=True, is_deleted=False).count(),
+    }})
 
 
 def api_article_toggle_promotion(request, pk):
@@ -4551,7 +4731,8 @@ def api_article_toggle_promotion(request, pk):
     # 置顶上限校验（仅在「设置置顶」且当前未置顶时）
     if kind == PromotionRequest.Kind.PIN and target:
         max_pinned = ModerationSettings.load().max_pinned
-        if not article.is_pinned and Article.objects.filter(is_pinned=True).count() >= max_pinned:
+        if not article.is_pinned and Article.objects.filter(
+                is_pinned=True, is_deleted=False).count() >= max_pinned:
             return JsonResponse({'code': 409, 'msg': '置顶已达上限（%s 篇）喵~' % max_pinned}, status=409)
     setattr(article, field, target)
     article.save(update_fields=[field, 'updated_at'])
@@ -4559,19 +4740,22 @@ def api_article_toggle_promotion(request, pk):
         moderator=request.user, moderator_name=str(request.user),
         action=act_on if target else act_off, target_type='article',
         article=article, target_title=article.title)
-    labels = {PromotionRequest.Kind.PIN: '置顶',
-              PromotionRequest.Kind.FEATURE: '精华',
-              PromotionRequest.Kind.HOT: '热门'}
+    labels = _PROMO_LABEL
     return JsonResponse({'code': 0,
                          'msg': '已%s%s~' % ('设置' if target else '取消', labels[kind]),
-                         'data': {field: target}})
+                         'data': {field: target,
+                                  'states': _promo_block_state(article, request.user)}})
 
 
 def moderate_promotion(request, pk):
     """管理员审批推广申请：POST /console/moderation/promotion/<pk>/，approve/reject。
 
-    通过则把对应 Article 标记置 True（置顶受上限约束，超限时不应用但仍标记通过），
-    写日志并通知作者；驳回则置 REJECTED、写日志并通知作者驳回理由。
+    Bug8 重构：审批结论（status）与系统执行结果（execution_status）分离记录 ——
+    - 通过：立即调用 ``_promo_execute`` 尝试落地；置顶名额已满时不落地，但把
+      execution_status 记为「未执行·已达上限」并在审核页醒目展示，同时给作者
+      发一条说明「已通过但受名额限制暂未生效」的通知，避免出现「显示已通过却
+      没有置顶」的黑盒状态；
+    - 驳回：置 REJECTED、写日志并通知作者驳回理由。
     """
     if not (request.user.is_authenticated and request.user.is_staff):
         return redirect('login')
@@ -4584,48 +4768,62 @@ def moderate_promotion(request, pk):
     if pr.status != PromotionRequest.Status.PENDING:
         messages.warning(request, '这条申请已经处理过啦~')
         return redirect('/console/moderation/?tab=promotions')
-    field, act_on, _ = _PROMO_FIELD[pr.kind]
+    label = _PROMO_LABEL.get(pr.kind, pr.get_kind_display())
+    _field, act_on, _act_off = _PROMO_FIELD[pr.kind]
     if action == 'approve':
-        applied = True
-        # 置顶上限：已达上限则不实际置顶
-        if pr.kind == PromotionRequest.Kind.PIN:
-            max_pinned = ModerationSettings.load().max_pinned
-            if not pr.article.is_pinned and Article.objects.filter(is_pinned=True).count() >= max_pinned:
-                applied = False
-        if applied:
-            setattr(pr.article, field, True)
-            pr.article.save(update_fields=[field, 'updated_at'])
         pr.status = PromotionRequest.Status.APPROVED
         pr.handled_by = request.user
         pr.handled_at = timezone.now()
-        pr.save(update_fields=['status', 'handled_by', 'handled_at'])
+        # ---- Bug8：真实落地 + 记录系统执行状态 ----
+        applied, exec_status, exec_note = _promo_execute(pr, request.user)
+        pr.execution_status = exec_status
+        pr.execution_note = exec_note[:200]
+        pr.executed_at = timezone.now()
+        pr.save(update_fields=['status', 'handled_by', 'handled_at',
+                               'execution_status', 'execution_note', 'executed_at'])
         ModerationLog.objects.create(
             moderator=request.user, moderator_name=str(request.user),
             action=act_on, target_type='article', article=pr.article,
             target_title=pr.article.title,
-            reason='通过%s申请：%s' % (pr.get_kind_display(), pr.reason))
+            reason='通过%s申请：%s（系统执行：%s）' % (label, pr.reason, exec_note))
+        # 通知作者：已通过但未执行时，文案里必须写清楚原因
+        if applied:
+            notify_title = '你的%s申请已通过' % label
+            notify_body = '《%s》已设置%s啦~' % (pr.article.title[:30], label)
+        else:
+            notify_title = '你的%s申请已通过（暂未生效）' % label
+            # 文案避免重复堆叠：exec_note 已含原因（如「置顶名额已满（5/5 篇），系统未执行置顶」）
+            notify_body = ('《%s》的%s申请管理员已通过，但%s。'
+                           '腾出名额后可以再来申请，或联系管理员手动处理喵~'
+                           % (pr.article.title[:30], label, exec_note))
         Notification.objects.create(
             user=pr.applicant or pr.article.author, type=Notification.Type.SYSTEM,
-            title='你的%s申请已通过' % pr.get_kind_display(),
-            content=('《%s》已设置%s啦~' % (pr.article.title[:30], pr.get_kind_display()))
-                    if applied else '置顶已达上限，暂未置顶哦~')
-        messages.success(request, '已通过%s申请~ 🌸' % pr.get_kind_display())
+            title=notify_title, content=notify_body)
+        if applied:
+            messages.success(request, '已通过%s申请并已生效~ 🌸' % label)
+        else:
+            messages.warning(request, '已通过%s申请，但%s，本次未生效。' % (label, exec_note))
     elif action == 'reject':
         pr.status = PromotionRequest.Status.REJECTED
         pr.handled_by = request.user
         pr.handled_at = timezone.now()
-        pr.save(update_fields=['status', 'handled_by', 'handled_at'])
+        # 驳回属于「审批结论即为终态」，系统执行状态保持未执行并写清原因
+        pr.execution_status = PromotionRequest.Execution.NOT_RUN
+        pr.execution_note = '申请被驳回，系统无需执行'
+        pr.save(update_fields=['status', 'handled_by', 'handled_at',
+                               'execution_status', 'execution_note'])
         ModerationLog.objects.create(
             moderator=request.user, moderator_name=str(request.user),
             action=ModerationLog.Action.REJECT, target_type='article', article=pr.article,
             target_title=pr.article.title,
-            reason='驳回%s申请：%s %s' % (pr.get_kind_display(), pr.reason, note))
+            reason='驳回%s申请：%s %s' % (label, pr.reason, note))
         Notification.objects.create(
             user=pr.applicant or pr.article.author, type=Notification.Type.SYSTEM,
-            title='你的%s申请未通过' % pr.get_kind_display(),
+            title='你的%s申请未通过' % label,
             content=note or '很遗憾，你的申请没有通过，再接再厉哦~')
-        messages.warning(request, '已驳回%s申请~' % pr.get_kind_display())
+        messages.warning(request, '已驳回%s申请~' % label)
     return redirect('/console/moderation/?tab=promotions')
+
 
 
 def moderation_settings_save(request):

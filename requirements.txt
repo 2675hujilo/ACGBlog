@@ -23,8 +23,11 @@ Pillow==10.3.0
 # ---- HTML 净化（评论 / 富文本白名单清洗）----
 bleach==6.4.0
 
-# ---- HTTP 客户端（传递依赖，锁定 chardet 兼容版本以消除 RequestsDependencyWarning）----
+# ---- HTTP 客户端（传递依赖，锁定 chardet / urllib3 兼容版本以消除 RequestsDependencyWarning）----
+# requests 2.32.3 支持 urllib3 <3 与 chardet 3.0.2~5.2.0；此前环境里 urllib3 为 1.26.20，
+# 虽仍在兼容区间，但为避免不同机器解析出不一致的次要版本导致告警回归，这里显式锁定。
 requests==2.32.3
+urllib3==2.2.3
 chardet==5.2.0
 
 # ---- 第5轮新增：搜索拼音 / 文章导出 / 二维码 ----

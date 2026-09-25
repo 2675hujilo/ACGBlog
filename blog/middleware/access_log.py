@@ -1,22 +1,44 @@
 # -*- coding: utf-8 -*-
-"""访问日志中间件（从原 blog/middleware.py 拆出，工单 15；工单 10 增加同步降级）。
+"""访问日志中间件 —— 「全局永久强制模块」，不可删除、不可破坏。
 
 职责：为每个非静态资源请求采集访问元信息（IP / 用户 / 路径 / 状态码 / 耗时 /
-UA / 来源等），优先异步投递给 Celery worker 落库；当 Redis broker 不可用、
-任务投递失败时，**降级为同步写入**，保证访问数据不因基础设施故障而整天缺失
-（此前 broker 宕机期间的访问日志会被直接丢弃，导致看板趋势出现空白天）。
+UA / 来源等），并按下面的三层降级策略投递入库，**永不阻塞 Web 请求**：
+
+    ┌ 层 1 · 正常 ────────────────────────────────────────────────┐
+    │ save_access_log.delay(payload) → Redis broker → Celery worker│
+    │ 异步入库；请求线程只做一次入队，不产生任何数据库写入。        │
+    └─────────────────────────────────────────────────────────────┘
+                   │ delay() 抛错（broker 连不上）
+                   ▼
+    ┌ 层 2 · Broker 故障 ────────────────────────────────────────┐
+    │ RPUSH acgblog:access_log:fallback（Redis 兜底队列，带短超时）│
+    │ 不写库；Broker 恢复后用管理命令批量消费：                    │
+    │     python manage.py accesslog_queue --drain                 │
+    └─────────────────────────────────────────────────────────────┘
+                   │ Redis 也写不进去（完全不可用）
+                   ▼
+    ┌ 层 3 · 极端降级 ──────────────────────────────────────────┐
+    │ 同步 AccessLog.objects.create() 保证日志不丢，并打 ERROR 告警│
+    │ 仅此一层允许同步入库；常态严禁全量同步，防止高并发压库。     │
+    └─────────────────────────────────────────────────────────────┘
+
+相关实现：``blog/access_log_service.py``（投递通道）、
+``blog/tasks.py::save_access_log``（worker 落库）、
+``blog/management/commands/accesslog_queue.py``（兜底队列运维命令）。
 """
+import logging
 import time
 
 from django.utils.deprecation import MiddlewareMixin
 
-import logging
+from ..access_log_service import (broker_available, enqueue_fallback,
+                                  mark_broker_broken)
 
 logger = logging.getLogger(__name__)
 
 
 class AccessLogMiddleware(MiddlewareMixin):
-    """访问日志中间件：记录每次请求的元信息并持久化（异步优先，失败同步兜底）。"""
+    """访问日志中间件：异步优先 → Redis 兜底 → 极端同步（三层，见模块 docstring）。"""
 
     def process_request(self, request):
         """请求进入时记录开始时间戳，用于响应时计算耗时。"""
@@ -24,6 +46,9 @@ class AccessLogMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         """响应返回前采集日志并投递；静态 / 媒体资源直接跳过。"""
+        from django.conf import settings
+        if not getattr(settings, 'ACCESS_LOG_ENABLED', True):
+            return response
         if self._is_asset(request.path):
             return response
         start_time = getattr(request, '_access_log_start_time', None)
@@ -34,7 +59,10 @@ class AccessLogMiddleware(MiddlewareMixin):
 
         session_key = ''
         if hasattr(request, 'session'):
-            session_key = request.session.session_key or ''
+            try:
+                session_key = request.session.session_key or ''
+            except Exception:  # noqa: BLE001 会话不可用不影响日志采集
+                session_key = ''
 
         ip_address = self._get_client_ip(request)
         user_agent = request.META.get('HTTP_USER_AGENT', '')
@@ -59,17 +87,43 @@ class AccessLogMiddleware(MiddlewareMixin):
             'view_func': view_func, 'view_args': '', 'view_kwargs': '',
         }
 
-        # ---- 访问日志落库 ----
-        # Bug12修复：原逻辑 save_access_log.delay() 仅在「broker 连不上」时才同步兜底；
-        # 但当 Redis 正常、却没有 Celery worker 消费时，.delay() 不会抛错，任务被静默
-        # 丢弃（实测近 3 小时日志全部缺失）。访问日志只是一条廉价的单行 INSERT，
-        # 为保证任何环境都能完整记录「用户/时间/路由」，这里直接同步写入，不再依赖 worker。
+        self._dispatch(log_data, request.path)
+        return response
+
+    # ------------------------------------------------------------------
+    # 三层投递
+    # ------------------------------------------------------------------
+    def _dispatch(self, log_data, path):
+        """按「异步 → Redis 兜底 → 同步」顺序投递一条访问日志。
+
+        关键性能约束：任何一层都不得让请求线程长时间等待。
+        - 层1 通过 ``broker_available()`` 熔断判断：broker 已知不可用时**直接跳过**，
+          不会每次请求都去白白等待连接超时（实测未熔断时单请求要 6.2s）；
+        - 层2 Redis 客户端带 0.35s socket 超时 + 20s 熔断；
+        - 层3 只有前两层都失败才同步写库。
+        """
+        # ---- 层 1：Celery 异步（正常路径，不写库、不阻塞）----
+        if broker_available():
+            try:
+                from ..tasks import save_access_log
+                save_access_log.delay(log_data)
+                return
+            except Exception as exc:  # noqa: BLE001 broker 不可用 → 熔断并进入层 2
+                mark_broker_broken(exc)
+
+        # ---- 层 2：Redis 兜底队列（仍不写库，等 Broker 恢复后批量消费）----
+        if enqueue_fallback(log_data):
+            logger.info('[accesslog] 已写入 Redis 兜底队列（Broker 恢复后请执行 '
+                        'manage.py accesslog_queue --drain）')
+            return
+
+        # ---- 层 3：极端降级，Redis 完全不可用时才同步入库，保证不丢日志 ----
         try:
             from ..models import AccessLog
             AccessLog.objects.create(**log_data)
+            logger.error('[accesslog] Redis 与 Broker 均不可用，已同步入库兜底: %s', path)
         except Exception:  # noqa: BLE001 写入失败时记录明确错误，不影响正常响应
-            logger.error('[accesslog] 访问日志写入失败: %s', request.path, exc_info=True)
-        return response
+            logger.error('[accesslog] 访问日志写入失败: %s', path, exc_info=True)
 
     def _is_asset(self, path):
         """静态 / 媒体资源不记入访问日志，避免污染 PV/UV/趋势统计。"""
@@ -87,7 +141,7 @@ class AccessLogMiddleware(MiddlewareMixin):
         """轻量 UA 解析：识别常见浏览器与操作系统，无需第三方库。"""
         browser = '未知'
         os_name = '未知'
-        ua_lower = ua.lower()
+        ua_lower = (ua or '').lower()
         if 'edg' in ua_lower:
             browser = 'Edge'
         elif 'chrome' in ua_lower and 'safari' in ua_lower:

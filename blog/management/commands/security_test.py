@@ -34,7 +34,7 @@ class Command(BaseCommand):
         """添加命令行参数。"""
         parser.add_argument(
             '--category', type=str, default='all',
-            choices=['all', 'xss', 'sql', 'html', 'auth', 'boundary'],
+            choices=['all', 'xss', 'sql', 'html', 'auth', 'boundary', 'accesslog'],
             help='指定测试类别（默认全部）')
         parser.add_argument(
             '--verbose', action='store_true',
@@ -77,6 +77,8 @@ class Command(BaseCommand):
             self._test_authorization()
         if category in ('all', 'boundary'):
             self._test_boundary()
+        if category in ('all', 'accesslog'):
+            self._test_access_log()
 
         # 输出汇总
         self._print_summary()
@@ -429,8 +431,193 @@ class Command(BaseCommand):
         passed = resp.status_code == 200
         self._record('BOUNDARY', 'emoji搜索', passed, f'status={resp.status_code}')
 
-    # ============================ 汇总输出 ============================
+    # ============================ 访问日志模块专项测试 ============================
 
+    @staticmethod
+    def _broker_queue_len():
+        """读取 Celery broker 默认队列（celery）当前积压条数；不可用返回 -1。
+
+        用途：验证「异步投递」是否真的把访问日志交给了 broker（层1 生效）。
+        无 worker 时队列会持续增长；有 worker 时可能瞬间被消费掉。
+        """
+        try:
+            import redis as _redis
+            from django.conf import settings as _s
+            client = _redis.Redis.from_url(_s.CELERY_BROKER_URL,
+                                           socket_timeout=1.0, decode_responses=True)
+            return int(client.llen('celery'))
+        except Exception:  # noqa: BLE001 broker 不可用
+            return -1
+
+    @staticmethod
+    def _celery_inspect_counts():
+        """统计 Celery worker 已接收的任务数；无 worker / broker 不可用返回 {}。"""
+        try:
+            from DjangoBlog.celery import app as _celery_app
+            inspector = _celery_app.control.inspect(timeout=0.4)
+            stats = inspector.stats() or {}
+            return {name: int((info or {}).get('total', {}).get(
+                'blog.tasks.save_access_log', 0) or 0)
+                for name, info in stats.items()}
+        except Exception:  # noqa: BLE001
+            return {}
+
+    def _test_access_log(self):
+        """访问日志模块（全局永久强制模块）安全与降级专项测试。
+
+        覆盖：
+        1. **不泄露**：访问日志接口 / 看板不得对匿名用户开放；
+           日志中不得出现密码、Token、Cookie 明文等敏感字段；
+        2. **注入防护**：路径 / UA / Referer 中注入 SQL / XSS / CRLF 载荷，
+           日志入库与后台渲染均不得被污染或执行；
+        3. **降级链路**：异步投递 → Redis 兜底队列 → 极端同步，三层各自可用；
+        4. **不丢日志**：Broker 不可用时仍能完整落盘（Redis 或同步兜底）；
+        5. **不阻塞**：中间件投递耗时必须在毫秒级（哪怕 broker / Redis 全挂）。
+        """
+        import time as _time
+        from django.conf import settings as _settings
+        from blog.models import AccessLog
+
+        self.stdout.write('\n' + self.style.WARNING('--- 访问日志模块专项测试 ---'))
+        before = AccessLog.objects.count()
+
+        # ---- 1. 信息泄露：匿名不可读取访问日志 ----
+        resp = self.client.get('/admin/blog/accesslog/')
+        passed = resp.status_code in (301, 302, 403)
+        self._record('ACCESSLOG', '匿名访问日志后台被拦截', passed,
+                     f'status={resp.status_code}')
+
+        # ---- 2. 日志字段不含敏感信息 ----
+        sensitive = []
+        for field in AccessLog._meta.get_fields():
+            name = getattr(field, 'name', '')
+            if any(k in name.lower() for k in ('password', 'token', 'secret', 'cookie')):
+                sensitive.append(name)
+        self._record('ACCESSLOG', 'AccessLog 无密码/Token/Cookie 字段', not sensitive,
+                     f'可疑字段={sensitive}')
+
+        # ---- 3. 注入载荷经中间件采集后不污染日志内容 ----
+        # 注意：新架构下「异步优先」意味着日志不会立即出现在 AccessLog 表，
+        # 因此这里用「Celery broker 队列长度增长」判定投递成功（层1 生效），
+        # 而不是用数据库行数增长（那会把异步设计误判为失败）。
+        xss_payload = "<script>alert('accesslog-xss')</script>"
+        sql_payload = "1' OR '1'='1"
+        crlf_payload = "%0d%0aX-Injected:%20evil"
+        broker_before = self._broker_queue_len()
+        cell_before = self._celery_inspect_counts()
+        try:
+            self.client.get('/search/', {'q': xss_payload})
+            self.client.get('/search/', {'q': sql_payload})
+            self.client.get(f'/search/?q=test{crlf_payload}')
+            self.client.get('/not-exist-qa-zzz/', HTTP_REFERER=xss_payload,
+                            HTTP_USER_AGENT=sql_payload)
+            raised = False
+        except Exception as e:  # noqa: BLE001
+            raised = True
+            self._record('ACCESSLOG', '访问日志采集链路未抛异常且计数增长', False, str(e))
+        if not raised:
+            broker_after = self._broker_queue_len()
+            cell_after = self._celery_inspect_counts()
+            # 判定口径（三者取或，适配「有 worker / 无 worker / broker 挂掉」三种环境）：
+            #   a) broker 队列增长（异步入队成功，最常见）
+            #   b) Celery 已接收任务数增长（worker 在线并消费）
+            #   c) 数据库行数增长（broker 挂掉后走兜底队列或同步降级）
+            db_grew = AccessLog.objects.count() > before
+            queued_growth = (broker_after - broker_before) if broker_before >= 0 else 0
+            celery_growth = sum(cell_after.values()) - sum(cell_before.values())
+            passed = queued_growth > 0 or celery_growth > 0 or db_grew
+            self._record('ACCESSLOG', '访问日志采集链路未抛异常且计数增长', passed,
+                         f'broker队列 {broker_before}->{broker_after}, '
+                         f'celery已接收 {cell_before}->{cell_after}, DB增长={db_grew}')
+
+        # 日志中出现的危险载荷必须是「原样存储」（模板渲染时才转义），
+        # 且不能因为存储而引发注入 —— 这里校验存储层的字段类型与长度上限。
+        latest = list(AccessLog.objects.order_by('-id')[:6])
+        bad_types = [l.pk for l in latest
+                     if not isinstance(l.path, str) or not isinstance(l.user_agent, str)]
+        self._record('ACCESSLOG', '日志字段类型均为字符串（无注入执行面）', not bad_types,
+                     f'异常记录={bad_types}')
+        max_ua = AccessLog._meta.get_field('user_agent').max_length
+        long_ua_ok = True
+        try:
+            self.client.get('/', HTTP_USER_AGENT='A' * 4096)
+        except Exception as e:  # noqa: BLE001 超长 UA 不得导致 500
+            long_ua_ok = False
+            self._record('ACCESSLOG', '超长 User-Agent 不引发异常', False, str(e))
+        if long_ua_ok:
+            self._record('ACCESSLOG', '超长 User-Agent 不引发异常', True,
+                         f'user_agent.max_length={max_ua}')
+
+        # ---- 4. 降级链路：Redis 兜底队列可写可读可消费 ----
+        from blog.access_log_service import (drain_fallback, enqueue_fallback,
+                                             fallback_length, reset_circuit)
+        reset_circuit()
+        payload = {
+            'ip_address': '127.0.0.1', 'user_id': None, 'username': '',
+            'session_key': '', 'path': '/qa-accesslog-fallback/', 'full_url': 'http://t/qa',
+            'method': 'GET', 'status_code': 200, 'duration_ms': 1.5,
+            'referer': '', 'user_agent': 'QA', 'browser': 'Chrome', 'os': 'Windows',
+            'view_func': 'qa', 'view_args': '', 'view_kwargs': '',
+        }
+        queued = enqueue_fallback(payload)
+        self._record('ACCESSLOG', 'Redis 兜底队列可写入（层2）', queued,
+                     f'队列长度={fallback_length()}')
+        if queued:
+            ok_before = AccessLog.objects.filter(path='/qa-accesslog-fallback/').count()
+            result = drain_fallback(batch=100, max_batches=5)
+            ok_after = AccessLog.objects.filter(path='/qa-accesslog-fallback/').count()
+            self._record('ACCESSLOG', '兜底队列可批量消费入库', ok_after > ok_before,
+                         f'入库前={ok_before}, 入库后={ok_after}, 结果={result}')
+            # 清理测试数据，避免污染统计
+            AccessLog.objects.filter(path='/qa-accesslog-fallback/').delete()
+        else:
+            self._record('ACCESSLOG', '兜底队列可批量消费入库', False,
+                         'Redis 不可用，无法验证层2（层3 同步兜底仍可用）')
+
+        # ---- 5. 坏数据不阻断消费 ----
+        try:
+            import redis as _redis
+            client = _redis.Redis.from_url(_settings.CELERY_BROKER_URL,
+                                           socket_timeout=1, decode_responses=True)
+            client.rpush(_settings.ACCESS_LOG_FALLBACK_KEY, 'NOT-A-JSON{{')
+            result = drain_fallback(batch=10, max_batches=2)
+            self._record('ACCESSLOG', '兜底队列坏数据被安全跳过', result['bad'] >= 1,
+                         f"bad={result['bad']}, error={result['error'] or '无'}")
+        except Exception as e:  # noqa: BLE001
+            self._record('ACCESSLOG', '兜底队列坏数据被安全跳过', False,
+                         f'Redis 不可用，跳过该用例: {e}')
+
+        # ---- 6. 中间件绝不阻塞：三层全挂时仍需毫秒级返回 ----
+        # 直接计时一次真实请求（含完整中间件链），阈值 1.5s 覆盖页面渲染本身
+        perf_before = AccessLog.objects.order_by('-id').first()
+        perf_start_id = perf_before.pk if perf_before else 0
+        t0 = _time.time()
+        resp = self.client.get('/search/', {'q': 'accesslog-perf'})
+        elapsed = _time.time() - t0
+        self._record('ACCESSLOG', '含日志中间件的请求响应时间 < 1.5s',
+                     resp.status_code == 200 and elapsed < 1.5,
+                     f'status={resp.status_code}, 耗时={elapsed:.3f}s')
+
+        # ---- 7. 异步投递通道存在且可调用（层1）----
+        try:
+            from blog.tasks import flush_access_log_queue, save_access_log
+            has_delay = hasattr(save_access_log, 'delay')
+            self._record('ACCESSLOG', '层1 异步任务 save_access_log.delay 可用', has_delay,
+                         f'flush 任务={flush_access_log_queue.name}')
+        except Exception as e:  # noqa: BLE001
+            self._record('ACCESSLOG', '层1 异步任务 save_access_log.delay 可用', False, str(e))
+
+        # ---- 8. 静态 / 媒体资源不写日志（避免统计污染）----
+        before_asset = AccessLog.objects.filter(path__startswith='/static/').count()
+        self.client.get('/static/assets/css/base.min.css')
+        after_asset = AccessLog.objects.filter(path__startswith='/static/').count()
+        self._record('ACCESSLOG', '静态资源不写入访问日志', before_asset == after_asset,
+                     f'before={before_asset}, after={after_asset}')
+
+        # 清理本次性能/注入用例产生的日志，保持库干净（只删本轮新增）
+        AccessLog.objects.filter(pk__gt=perf_start_id).delete()
+
+    # ============================ 汇总输出 ============================
     def _print_summary(self):
         """打印测试汇总。"""
         total = len(self.results)

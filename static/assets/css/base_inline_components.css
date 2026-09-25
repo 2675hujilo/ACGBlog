@@ -97,6 +97,19 @@
         .moe-loading-cat { font-size: 2.5rem; animation: bounce 1s ease-in-out infinite; }
         .moe-loading-text { margin-top: 8px; font-size: .9rem; color: var(--c-text-dim); }
         body.contrast-mode { filter: contrast(1.15); }
-        .scroll-fade-in { opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease; }
-        .scroll-fade-in.visible { opacity: 1; transform: translateY(0); }
+        /* ------------------------------------------------------------------
+         * Bug8 修复：主内容区入场效果只用 opacity，不用 transform。
+         * 原因：任何作用于 <main> 的 transform（哪怕是 translateY(0)、
+         * 或动画 forwards 填充产生的零值矩阵）都会让 <main> 成为「包含块」，
+         * 导致详情页底部 position:fixed 的 .article-extra-bar
+         * （点赞 / 收藏 / 分享 / 导出更多）相对 main 定位，移动端因此跑到
+         * 文章中部（实测 top≈3214px，视口仅 932px）而完全不可见。
+         * 处理：入场淡入保留（纯 opacity 过渡），去掉位移动画；
+         * 过渡结束后不留任何 transform，fixed 元素恢复相对视口定位。
+         * ------------------------------------------------------------------ */
+        .scroll-fade-in { opacity: 0; transition: opacity .5s ease; }
+        .scroll-fade-in.visible { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-fade-in { transition: none; }
+        }
     
