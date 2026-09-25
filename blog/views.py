@@ -56,6 +56,8 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
+# Bug9 任务3：功能开关切换端点需要限制为 POST（原 features_round5 使用 require_POST）
+from django.views.decorators.http import require_POST
 from PIL import Image
 from rest_framework.decorators import action
 from rest_framework import filters, permissions, status, throttling, viewsets
@@ -70,6 +72,9 @@ from .models import (AccessLog, Article, Badge, Category, Comment, CommentReport
                      EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
                      Rating, Series, ShortLink, SiteNotice, Tag, User, UserBadge,
                      PromotionRequest, ModerationSettings)
+
+# Bug9 任务2：全站文案统一从 blog/site_messages.py 取词（禁止再硬编码中文提示）
+from .site_messages import msg
 from .serializers import (ArticleDetailV2Serializer, ArticleListSerializer,
                           ArticleSerializer, CategorySerializer, TagSerializer)
 
@@ -214,6 +219,36 @@ def _safe_jsonld(data):
 
 
 # 迭代#110: _build_website_jsonld函数docstring完善
+def api_site_messages(request):
+    """Bug9 任务「2」：把全站文案包下发给前端脚本（``GET /api/site-messages/``）。
+
+    前端在 ``base.html`` 中通过内联 ``window.SITE_MSG`` 拿到主要文案；
+    本端点用于：①Service Worker / 离线页等无法渲染模板的场景；
+    ②前端脚本懒加载补充文案；③自动化测试核对文案一致性。
+
+    缓存策略：文案是**代码内置常量**，随构建版本号变化，
+    因此按 ``BUILD_TOKEN`` 作为缓存键长久缓存（版本不变则浏览器直接用缓存）。
+
+    Returns:
+        JsonResponse: ``{'code': 0, 'data': {...文案键值...}, 'build': 构建号}``
+    """
+    from .site_messages import MESSAGES, js_payload
+    from .context_processors import build_token as _build_token
+    token = (_build_token(request) or {}).get('BUILD_TOKEN', 'dev')
+    payload = js_payload()
+    response = JsonResponse({
+        'code': 0,
+        'build': token,
+        'count': len(MESSAGES),
+        'data': payload,
+    }, json_dumps_params={'ensure_ascii': False})
+    # 版本号变化即视为新资源；未变化时允许浏览器与 CDN 长时间复用
+    response['Cache-Control'] = 'public, max-age=86400'
+    response['X-Messages-Build'] = token
+    return response
+
+
+# 迭代#110: _build_website_jsonld函数docstring完善
 def _build_website_jsonld(request):
     """构造首页 Website + SearchAction 结构化数据（Schema.org）。
 
@@ -241,6 +276,174 @@ def _build_website_jsonld(request):
     })
 
 
+# ============================ 功能开关（Feature Flag）管理 ============================
+# Bug9 任务「3」：以下注册表与两个端点原位于 blog/features_round5/ 子应用，
+# 本轮按「不保留 feature/round 开头文件」的要求并入 views.py / urls.py。
+# 语义与行为保持不变（含 /api/round5/ 路径与 JSON 结构），仅换了实现位置。
+
+
+class Round5FeatureRegistry:
+    """功能开关注册表（进程内），供「真实功能」声明可运维的启用/停用开关。
+
+    为什么需要它：站点提供了一批可独立开关的功能（阅读增强、彩蛋等），
+    需要一个统一的注册与查询入口，让管理员在运行时确认「哪些功能处于开启状态」，
+    而不必翻代码。注册表是**真实被装饰器填充**的——使用方式::
+
+        from blog.views import Round5FeatureRegistry
+
+        @Round5FeatureRegistry.register('reading', 'focus_mode', '专注阅读模式')
+        def focus_mode_view(request): ...
+
+    未注册任何功能时列表为空（属正常状态），端点仍返回合法 JSON 结构。
+    """
+
+    #: 功能领域中文名（用于前端分组展示）
+    DOMAINS = {
+        'content': '内容创作生产域',
+        'reading': '沉浸式阅读域',
+        'comment': '评论社区互动域',
+        'user': '用户成长与社交域',
+        'ui': 'UI装扮个性化域',
+        'search': '搜索内容推荐域',
+        'operation': '站点运营活动域',
+        'analytics': '数据分析监控域',
+        'seo': 'SEO与性能扩展域',
+        'accessibility': '无障碍增强域',
+        'api': 'API与第三方集成域',
+        'easter': '彩蛋趣味工具域',
+    }
+
+    #: 进程内注册表：feature_id -> 元信息字典
+    _registry = {}
+
+    @classmethod
+    def register(cls, domain, name, description='', default_enabled=True):
+        """功能注册装饰器：把视图登记进注册表，并在调用前检查开关状态。
+
+        Args:
+            domain: 领域标识（须在 ``DOMAINS`` 中，否则原样展示）。
+            name: 功能短名，与领域拼成 ``feature_id``（``域名_短名``）。
+            description: 中文描述，用于管理界面与关闭提示。
+            default_enabled: 默认是否启用（可被 settings.ROUND5_FEATURES 覆盖）。
+
+        Returns:
+            callable: 装饰器；装饰后的视图在被调用时会先校验开关。
+        """
+        from functools import wraps
+
+        def decorator(view_func):
+            feature_id = '%s_%s' % (domain, name)
+            cls._registry[feature_id] = {
+                'id': feature_id,
+                'domain': domain,
+                'domain_name': cls.DOMAINS.get(domain, domain),
+                'name': name,
+                'description': description,
+                'default_enabled': default_enabled,
+            }
+
+            @wraps(view_func)
+            def wrapper(request, *args, **kwargs):
+                # 功能被关闭时返回 403 + 明确文案，而不是静默失败
+                if not cls.is_enabled(feature_id):
+                    return JsonResponse({
+                        'ok': False,
+                        'error': 'feature_disabled',
+                        'message': '功能「%s」已关闭喵~' % description,
+                        'feature_id': feature_id,
+                    }, status=403)
+                return view_func(request, *args, **kwargs)
+
+            wrapper.feature_id = feature_id
+            return wrapper
+
+        return decorator
+
+    @classmethod
+    def is_enabled(cls, feature_id):
+        """查询功能是否启用：settings 覆盖 > 注册默认值 > 未知功能视为启用。"""
+        override = getattr(settings, 'ROUND5_FEATURES', {}) or {}
+        if feature_id in override:
+            return bool(override[feature_id])
+        info = cls._registry.get(feature_id)
+        return info['default_enabled'] if info else True
+
+    @classmethod
+    def all_features(cls):
+        """返回全部已注册功能（按 id 排序的元信息 + 当前启用状态）。"""
+        out = []
+        for fid, info in sorted(cls._registry.items()):
+            item = dict(info)
+            item['enabled'] = cls.is_enabled(fid)
+            out.append(item)
+        return out
+
+    @classmethod
+    def stats(cls):
+        """按领域统计功能数量与启用数量，供管理页总览。"""
+        result = {}
+        for domain, domain_name in cls.DOMAINS.items():
+            items = [f for f in cls.all_features() if f['domain'] == domain]
+            result[domain] = {
+                'name': domain_name,
+                'total': len(items),
+                'enabled': sum(1 for f in items if f['enabled']),
+            }
+        result['_total'] = len(cls._registry)
+        return result
+
+
+def round5_feature_list(request: HttpRequest) -> JsonResponse:
+    """功能开关列表：``GET /api/round5/features/``。
+
+    返回全部已注册功能、领域分组、按领域的启用统计，以及当前生效的覆盖配置。
+    只读端点，无需登录（暴露的仅是功能名与开关状态，无敏感信息）。
+    """
+    features = Round5FeatureRegistry.all_features()
+    return JsonResponse({
+        'ok': True,
+        'total': len(features),
+        'domains': Round5FeatureRegistry.DOMAINS,
+        'stats': Round5FeatureRegistry.stats(),
+        'features': features,
+        'overrides': getattr(settings, 'ROUND5_FEATURES', {}) or {},
+    })
+
+
+@require_POST
+def round5_feature_toggle(request: HttpRequest, feature_id: str) -> JsonResponse:
+    """切换功能开关：``POST /api/round5/features/<feature_id>/toggle/``（仅管理员）。
+
+    请求体可选 ``{"enabled": true/false}``；不传则取反当前值。
+    说明：覆盖值写入**进程内 settings**（运行时生效），重启后回到默认值；
+    生产环境如需持久化，可改为写入 SiteInfo 或环境变量（README 有说明）。
+    """
+    if not (request.user.is_authenticated and request.user.is_staff):
+        return JsonResponse({'ok': False, 'error': 'permission_denied',
+                             'message': msg('err.admin_only')}, status=403)
+    if feature_id not in Round5FeatureRegistry._registry:
+        return JsonResponse({'ok': False, 'error': 'feature_not_found',
+                             'message': msg('err.feature_not_found_short')}, status=404)
+    try:
+        payload = json.loads(request.body) if request.body else {}
+    except (ValueError, TypeError):
+        payload = {}
+    enabled = payload.get('enabled')
+    if enabled is None:
+        enabled = not Round5FeatureRegistry.is_enabled(feature_id)
+    if not hasattr(settings, 'ROUND5_FEATURES'):
+        settings.ROUND5_FEATURES = {}
+    settings.ROUND5_FEATURES[feature_id] = bool(enabled)
+    return JsonResponse({
+        'ok': True,
+        'feature_id': feature_id,
+        'enabled': bool(enabled),
+        'message': '功能「%s」已%s喵~' % (
+            Round5FeatureRegistry._registry[feature_id]['description'],
+            '开启' if enabled else '关闭'),
+    })
+
+
 # ============================ 页面视图 ============================
 
 # 迭代#111: _base_qs函数docstring
@@ -251,13 +454,15 @@ def _base_qs(request: HttpRequest, own_drafts: bool = False) -> QuerySet:
 
     所有文章列表 / 详情视图都应基于此查询集，以保证权限一致：
     - 匿名游客：只能看到 ``status=已发布`` 的文章，看不到任何人的草稿；
-    - 已登录用户：可以看到所有已发布文章 + 自己的草稿（别人的草稿仍不可见）。
+    - 已登录用户：可以看到所有已发布文章 + 自己的草稿（别人的草稿仍不可见）；
+    - 管理员（staff）：own_drafts=True 时可预览全部状态（含待审核 / 软删除）。
 
     同时使用 ``select_related`` / ``prefetch_related`` 预加载关联对象，
     避免模板渲染时逐行查询造成 N+1 性能问题。
 
     Args:
         request: 当前 HttpRequest 对象，用于判断用户是否已登录。
+        own_drafts: 是否为「详情页预览」语义（True 时作者 / 管理员可见未发布内容）。
 
     Returns:
         QuerySet: 已按权限过滤、并预加载了 author / category / tags 的文章查询集。
@@ -283,11 +488,21 @@ def _base_qs(request: HttpRequest, own_drafts: bool = False) -> QuerySet:
                 Q(status=Article.Status.PUBLISHED) | Q(author=request.user))
     else:
         qs = qs.filter(status=Article.Status.PUBLISHED)
-    # 56. 定时发布：设置了未来发布时间且仍是草稿 / 待审核的文章，到达时间前不对外显示。
-    #     （作者本人仍可通过 /edit/<pk>/ 直接编辑，那里不走 _base_qs）
-    qs = qs.exclude(
-        status__in=[Article.Status.DRAFT, Article.Status.PENDING],
-        published_at__gt=now)
+    # ------------------------------------------------------------------
+    # Bug9-1 修复：定时（未到点）文章的可见性
+    # ------------------------------------------------------------------
+    # 原实现无条件 exclude(published_at > now)，导致「作者 / 管理员打开自己
+    # 定时未发布的文章」也直接 404，无法预览与核对；而管理员在审核页点「预览」
+    # 同样打不开。新口径：
+    #   · 作者本人 / 管理员（own_drafts 语义）→ 放行，允许预览定时文章，
+    #     页面顶部给出「⏰ 定时投稿·X 后自动发布」提示（模板 scheduled_notice）；
+    #   · 其他登录用户 / 游客 → 仍排除，定时内容绝不提前泄露。
+    # 注意：这里只对 own_drafts=True 放行；列表流（own_drafts=False）不经过本段，
+    # 因为列表本身已限定 status=PUBLISHED。
+    if not (own_drafts and is_auth):
+        qs = qs.exclude(
+            status__in=[Article.Status.DRAFT, Article.Status.PENDING],
+            published_at__gt=now)
     return qs
 
 
@@ -963,7 +1178,7 @@ def article_detail(request: HttpRequest, pk: int) -> HttpResponse:
     # 缓存穿透防护：命中"不存在墓碑"直接 404，避免恶意 id 打穿数据库
     keys = detail_keys(pk)
     if cache_get(keys['missing']) is not None:
-        raise Http404('文章不存在喵~')
+        raise Http404(msg('err.not_found_short'))
     # 文章内容（不含评论/登录态）走缓存；仅"已发布 + 未软删除 + 无访问密码"的
     # 文章跨用户缓存——草稿 / 待审核 / 软删除 / 密码文按用户实时判定，不入缓存
     article = cache_get(keys['article'])
@@ -998,7 +1213,7 @@ def article_detail(request: HttpRequest, pk: int) -> HttpResponse:
                     request.session.modified = True
                     # 校验通过后继续正常渲染文章
                 else:
-                    messages.error(request, '密码不对呢~再试试喵🔒')
+                    messages.error(request, msg('auth.login_failed'))
                     return render(request, 'blog/password_gate.html',
                                   {'article': article, 'active_nav': 'home'})
             else:
@@ -1017,6 +1232,31 @@ def article_detail(request: HttpRequest, pk: int) -> HttpResponse:
     # 视角渲染详情页操作区，便于对作者申请按钮做浏览器视觉验收。
     # 生产环境（DEBUG=False）该参数完全无效，不影响任何真实权限判定。
     qa_as_author = bool(settings.DEBUG and request.GET.get('as_author') == '1' and can_edit)
+    # ------------------------------------------------------------------
+    # Bug9-1 / Bug9-2：定时投稿预览提示
+    # ------------------------------------------------------------------
+    # 作者本人或管理员打开「定时未发布 / 待审核」的文章时，页面顶部给出明确状态条，
+    # 说明当前状态、预约时间、剩余时间与到点后的去向，避免"以为已发布"的误解。
+    scheduled_notice = None
+    if can_edit and article.published_at:
+        now_ts = timezone.now()
+        if article.published_at > now_ts and article.status in (
+                Article.Status.DRAFT, Article.Status.PENDING):
+            # 未到点：展示倒计时式的「定时投稿」提示
+            scheduled_notice = {
+                'kind': 'scheduled',
+                'status': article.get_status_display(),
+                'at': article.published_at,
+                'left': article.published_at - now_ts,
+            }
+        elif article.status == Article.Status.DRAFT and article.published_at <= now_ts:
+            # 已到点但仍是草稿：兜底扫描器会在 30 秒内流转，这里给出解释避免困惑
+            scheduled_notice = {
+                'kind': 'due',
+                'status': article.get_status_display(),
+                'at': article.published_at,
+                'left': None,
+            }
     # ---- 点赞状态：从 session 读取该会话已点赞的文章 id 集合 ----
     # session 中以 'liked_article_ids' 列表存储，判断当前文章是否已赞过
     liked_ids = request.session.get('liked_article_ids', [])
@@ -1138,6 +1378,8 @@ def article_detail(request: HttpRequest, pk: int) -> HttpResponse:
         # QA 辅助标记（仅 DEBUG + ?as_author=1 时为 True）：模板据此强制走「作者申请」
         # 分支渲染，用于自动化视觉验收管理员之外的作者视角；生产环境恒为 False。
         'qa_view_as_author': qa_as_author,
+        # Bug9：定时投稿状态提示（仅作者 / 管理员可见；未到点或刚到点但尚未流转时给出）
+        'scheduled_notice': scheduled_notice,
         # Bug8：置顶/精华/热门三按钮状态（已生效 / 审核中 / 可申请），
         # 已生效时模板渲染为不可点击的「已经置顶」等按钮
         'promo_state': _promo_block_state(article, request.user) if can_edit else {},
@@ -1382,7 +1624,7 @@ def article_new(request: HttpRequest) -> HttpResponse:
                             article.pk, article.title, request.user.username)
             except DatabaseError as db_exc:
                 logger.error('文章创建失败: %s', db_exc)
-                messages.error(request, '文章保存失败，请稍后再试喵~')
+                messages.error(request, msg('article.save_failed'))
                 return redirect('index')
             # 58. 设置访问密码（哈希存储，不明文）。工单5：原先无封面时
             # 设置密码后缺少 save()，密码丢失导致游客可无密码访问；统一标记落库。
@@ -1406,7 +1648,7 @@ def article_new(request: HttpRequest) -> HttpResponse:
                     is_pinned=True, is_deleted=False).exclude(pk=article.pk).count() >= _max_pinned_new:
                 article.is_pinned = False
                 article.save(update_fields=['is_pinned'])
-                messages.warning(request, '置顶最多 %s 篇哦~这篇没有置顶喵📌' % _max_pinned_new)
+                messages.warning(request, msg('promo.limit_cancel', _max_pinned_new))
             # 设置多对多标签：get_or_create 自动创建不存在的标签名，
             # set() 全量替换关联（新建时即初次设置）
             if data['tag_names']:
@@ -1424,9 +1666,9 @@ def article_new(request: HttpRequest) -> HttpResponse:
                     moderator=request.user, moderator_name=str(request.user),
                     action=ModerationLog.Action.SUBMIT, target_type='article',
                     article=article, target_title=article.title)
-                messages.success(request, '文章已提交审核，通过后就会和大家见面喵~ ⏳')
+                messages.success(request, msg('article.submitted_review'))
             else:
-                messages.success(request, '文章已发布喵~✨')
+                messages.success(request, msg('article.published'))
             return redirect(article)
     # GET：渲染空表单，categories / tags 供下拉选择，preset_kind 预设类型
     ctx = {'categories': Category.objects.all(), 'tags': Tag.objects.all(),
@@ -1459,7 +1701,7 @@ def article_edit(request: HttpRequest, pk: int) -> HttpResponse:
     article = get_object_or_404(Article, pk=pk)
     # 权限拦截：非作者且非管理员，直接拒绝并提示
     if request.user != article.author and not request.user.is_staff:
-        messages.error(request, '只能编辑自己的文章呢~😤')
+        messages.error(request, msg('err.only_own_article'))
         return redirect(article)
     if request.method == 'POST':
         data, error = _parse_form(request, article)
@@ -1503,7 +1745,7 @@ def article_edit(request: HttpRequest, pk: int) -> HttpResponse:
                     is_pinned=True, is_deleted=False).exclude(pk=article.pk).count() >= _max_pinned:
                 article.is_pinned = False
                 article.save(update_fields=['is_pinned'])
-                messages.warning(request, '置顶最多 %s 篇哦~这篇没有置顶喵📌' % _max_pinned)
+                messages.warning(request, msg('promo.limit_cancel', _max_pinned))
             # 全量替换标签关联（get_or_create 自动补建新标签）
             article.tags.set(
                 [Tag.objects.get_or_create(name=n)[0] for n in set(tag_names)])
@@ -1514,7 +1756,7 @@ def article_edit(request: HttpRequest, pk: int) -> HttpResponse:
             cache.delete(SIDEBAR_CACHE_KEY)
             cache.delete('footer_stats')
             cache.delete('sidebar_stats')
-            messages.success(request, '修改已保存啦~🌸')
+            messages.success(request, msg('article.saved'))
             return redirect(article)
     # GET：回填现有文章数据，is_new=False 表示编辑模式
     # 56. datetime-local 需要 "YYYY-MM-DDTHH:MM" 格式的值回填
@@ -1545,7 +1787,7 @@ def article_delete(request: HttpRequest, pk: int) -> HttpResponse:
     """
     article = get_object_or_404(Article, pk=pk)
     if request.user != article.author and not request.user.is_staff:
-        messages.error(request, '喵？你没有权限删除这个呢~🚫')
+        messages.error(request, msg('err.permission_denied'))
         return redirect(article)
     # 仅响应 POST：GET 访问到此 URL 不做任何操作，避免 CSRF / 误点误删
     if request.method == 'POST':
@@ -1561,7 +1803,7 @@ def article_delete(request: HttpRequest, pk: int) -> HttpResponse:
         cache.delete(SIDEBAR_CACHE_KEY)
         cache.delete('footer_stats')
         cache.delete('sidebar_stats')
-        messages.success(request, '文章已收进回收站，需要时还能找回喵~ 🗑️')
+        messages.success(request, msg('article.trashed'))
     return redirect('index')
 
 
@@ -1909,13 +2151,13 @@ def comment_create(request: HttpRequest, article_pk: int) -> JsonResponse:
     """
     # 仅接受 POST，GET 访问拒绝
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': '请用 POST 提交评论喵~'}, status=405)
+        return JsonResponse({'success': False, 'error': msg('comment.post_failed')}, status=405)
     # 只能对已发布文章评论（草稿不可见，自然也不开放评论）
     article = get_object_or_404(Article, pk=article_pk, status=Article.Status.PUBLISHED)
     content = (request.POST.get('content') or '').strip()
     # 空内容校验
     if not content:
-        return JsonResponse({'success': False, 'error': '评论内容不能为空喵~ 📝'}, status=400)
+        return JsonResponse({'success': False, 'error': msg('comment.empty_content')}, status=400)
     # 长度硬截断到 10000 字符，防止超长内容撑库 / 拖慢渲染
     content = content[:10000]
     # bleach 净化：只保留 strong/em/a/code 少量行内标签
@@ -1923,7 +2165,7 @@ def comment_create(request: HttpRequest, article_pk: int) -> JsonResponse:
     # 净化后若纯文本为空（用户只发了被剥离的标签），同样视为空评论
     plain = re.sub(r'<[^>]+>', '', content).strip()
     if not plain:
-        return JsonResponse({'success': False, 'error': '评论内容不能为空喵~ 📝'}, status=400)
+        return JsonResponse({'success': False, 'error': msg('comment.empty_content')}, status=400)
     # 父评论：必须属于同一篇文章且已审核，否则当作顶级评论
     parent = None
     parent_id = (request.POST.get('parent_comment_id') or '').strip()
@@ -2050,10 +2292,10 @@ def login_view(request: HttpRequest) -> HttpResponse:
             login(request, user)
             # 迭代#180: 用户登录日志
             logger.info('用户登录: %s', user.username)
-            messages.success(request, f'欢迎回来喵~{user.username}🌸')
+            messages.success(request, msg('auth.welcome_back', user.username))
             # next 参数为登录前试图访问的页面，登录成功后回跳过去
             return redirect(request.GET.get('next') or 'index')
-        login_error = '用户名或密码不对呢~再试试喵😿'
+        login_error = msg('auth.login_failed')
         messages.error(request, login_error)
     return render(request, 'blog/login.html',
                   {'active_nav': 'login', 'login_error': login_error})
@@ -2114,7 +2356,7 @@ def register_view(request: HttpRequest) -> HttpResponse:
             login(request, user)
             # 迭代#185: 用户注册日志
             logger.info('用户注册: %s', user.username)
-            messages.success(request, '注册成功啦~欢迎加入喵~🎉')
+            messages.success(request, msg('auth.register_success'))
             return redirect('index')
         # 校验失败：同步写 flash（无 JS 时仍可见）并交给模板渲染内联红字
         for _field, _msg in field_errors:
@@ -2142,12 +2384,108 @@ def logout_view(request: HttpRequest) -> HttpResponseRedirect:
     # 迭代#188: 用户登出日志
     logger.info('用户登出: %s', request.user.username if request.user.is_authenticated else 'anonymous')
     logout(request)
-    messages.success(request, '已退出登录，下次再来玩喵~👋')
+    messages.success(request, msg('auth.logout_success'))
     return redirect('index')
 
 
 # 迭代#189: user_profile视图docstring
 # 迭代#190: user_profile(request, username) -> HttpResponse 类型提示
+def _build_badge_panel(profile_user, viewer_is_owner: bool) -> dict:
+    """Bug9 任务「1」：构造个人中心「徽章 / 成就」可视化面板数据。
+
+    需求原文：站内徽章、成就没有明确的可视化面板，应该在个人中心有自己已经获得的
+    成绩和徽章，折叠未获得的徽章和成就，折叠可展开，并说明如何获得。
+
+    实现要点：
+    - **已获得**：按获得时间倒序排在前面，每张卡片显示图标 / 名称 / 说明 / 获得时间；
+    - **未获得**：默认折叠，展开后每张卡片额外显示「进度条 + 还差多少」，
+      让用户明确知道离解锁还有多远（进度按 ``condition_type`` 实时统计）；
+    - 进度与 ``check_and_award_badges`` 的统计口径**完全一致**
+      （articles=已发布文章数、comments=评论数、likes=文章累计获赞、
+      views=文章累计阅读、days=注册天数），避免「进度显示已达标却没发徽章」。
+
+    Args:
+        profile_user: 被访问主页的用户。
+        viewer_is_owner: 访问者是否为主页主人（决定是否提示「去解锁」引导文案）。
+
+    Returns:
+        dict: {
+            'obtained': [badge dict...], 'locked': [badge dict...],
+            'total', 'obtained_count', 'locked_count', 'rate'(百分比),
+            'has_any', 'is_owner'
+        }
+    """
+    # ---- 1. 一次性统计该用户的各项进度（与发徽章口径一致，全部走聚合查询）----
+    pub_articles = Article.objects.filter(
+        author=profile_user, status=Article.Status.PUBLISHED)
+    stats = {
+        'articles': pub_articles.count(),
+        'comments': Comment.objects.filter(user=profile_user).count(),
+        'likes': pub_articles.aggregate(s=Sum('likes'))['s'] or 0,
+        'views': pub_articles.aggregate(s=Sum('views'))['s'] or 0,
+        'days': ((timezone.now() - profile_user.date_joined).days
+                 if profile_user.date_joined else 0),
+    }
+    # ---- 2. 已获得徽章映射：badge_id -> 获得时间 ----
+    earned = {ub.badge_id: ub.earned_at
+              for ub in UserBadge.objects.filter(user=profile_user)}
+    obtained, locked = [], []
+    for badge in Badge.objects.all().order_by('condition_type', 'condition_value', 'id'):
+        current = stats.get(badge.condition_type, 0) or 0
+        need = badge.condition_value or 1
+        # 进度百分比（0~100），已达标固定 100
+        percent = 100 if current >= need else int(current * 100 / need)
+        item = {
+            'id': badge.id,
+            'name': badge.name,
+            'icon': badge.icon or '🏅',
+            'description': badge.description,
+            # 获取方式：优先用后台填写的说明，缺失时按条件类型生成兜底文案
+            'how_to': badge.description or _BADGE_HOW_TO.get(badge.condition_type, '继续活跃即可解锁喵~'),
+            'current': current,
+            'need': need,
+            'percent': percent,
+            'remaining': max(0, need - current),
+            'unit': _BADGE_UNITS.get(badge.condition_type, ''),
+            'earned_at': earned.get(badge.id),
+            'obtained': badge.id in earned,
+        }
+        (obtained if item['obtained'] else locked).append(item)
+    # 已获得：最近获得的排最前；未获得：进度高的排前面（更容易达成的优先展示）
+    obtained.sort(key=lambda x: (x['earned_at'] is None, -(x['earned_at'].timestamp() if x['earned_at'] else 0)))
+    locked.sort(key=lambda x: (-x['percent'], x['need']))
+    total = len(obtained) + len(locked)
+    return {
+        'obtained': obtained,
+        'locked': locked,
+        'total': total,
+        'obtained_count': len(obtained),
+        'locked_count': len(locked),
+        'rate': int(len(obtained) * 100 / total) if total else 0,
+        'has_any': bool(obtained),
+        'is_owner': viewer_is_owner,
+    }
+
+
+#: 徽章条件类型 → 进度单位（用于面板上的「12/50 篇」这类展示）
+_BADGE_UNITS = {
+    'articles': '篇',
+    'comments': '条',
+    'likes': '个赞',
+    'views': '次阅读',
+    'days': '天',
+}
+
+#: 徽章条件类型 → 兜底「如何获得」文案（后台未填写 description 时使用）
+_BADGE_HOW_TO = {
+    'articles': '发布更多文章即可解锁喵~',
+    'comments': '多和大家互动评论即可解锁喵~',
+    'likes': '写出让大家喜欢的内容，收获更多点赞即可解锁喵~',
+    'views': '让更多人读到你的文章即可解锁喵~',
+    'days': '常回来看看，陪伴站点更久即可解锁喵~',
+}
+
+
 def user_profile(request: HttpRequest, username: str) -> HttpResponse:
     """用户个人主页：展示指定用户的资料卡、统计数据与已发布文章列表。
 
@@ -2155,7 +2493,9 @@ def user_profile(request: HttpRequest, username: str) -> HttpResponse:
     - 仅展示该用户的"已发布"文章（草稿不对访客公开）；
     - 统计数据：文章总数、总阅读量、总点赞数、总评论数、收藏数；
     - 同时展示该用户收藏的文章列表（仅收藏公开文章）；
-    - 若访问者本人就是主页主人，额外显示"编辑资料"按钮。
+    - 若访问者本人就是主页主人，额外显示"编辑资料"按钮；
+    - Bug9 任务「1」：追加「徽章 / 成就」可视化面板（已获得在前，
+      未获得默认折叠可展开，并逐条说明获取方式与当前进度）。
 
     Args:
         request: 当前 HttpRequest 对象。
@@ -2200,6 +2540,8 @@ def user_profile(request: HttpRequest, username: str) -> HttpResponse:
         'user_stats': user_stats,
         'fav_articles': fav_articles,
         'is_own_profile': is_own_profile,
+        # Bug9 任务1：徽章 / 成就可视化面板（已获得 + 折叠的未获得）
+        'badge_panel': _build_badge_panel(profile_user, is_own_profile),
         'active_nav': 'home',
     }
     return render(request, 'blog/user_profile.html', ctx)
@@ -2244,21 +2586,21 @@ def user_settings(request: HttpRequest) -> HttpResponse:
             request.user.nickname = nickname
             request.user.introduction = introduction
             request.user.save(update_fields=['nickname', 'introduction'])
-            messages.success(request, '基本资料已更新喵~ 🌸')
+            messages.success(request, msg('auth.profile_updated'))
             return redirect('user_settings')
 
         elif 'avatar_form' in request.POST:
             # ---- 区域B：头像上传 ----
             avatar_file = request.FILES.get('avatar')
             if not avatar_file:
-                messages.error(request, '请选择要上传的头像文件喵~ 📷')
+                messages.error(request, msg('auth.avatar_choose'))
             else:
                 # 验证扩展名白名单
                 ext = os.path.splitext(avatar_file.name)[1].lower()
                 if ext not in AVATAR_EXTS:
-                    messages.error(request, '只支持 jpg / png / gif / webp 格式的图片哦~ 🖼')
+                    messages.error(request, msg('auth.avatar_invalid_type'))
                 elif avatar_file.size > AVATAR_MAX_BYTES:
-                    messages.error(request, '头像不能超过 2MB 呢~ 太大了喵~ 📦')
+                    messages.error(request, msg('auth.avatar_too_large'))
                 else:
                     # 用 Pillow 验证是否为真实图片（防止伪装扩展名）
                     try:
@@ -2266,11 +2608,11 @@ def user_settings(request: HttpRequest) -> HttpResponse:
                         img.verify()
                         avatar_file.seek(0)
                     except Exception:
-                        messages.error(request, '文件不是有效的图片呢~ 换一个吧喵~ 😿')
+                        messages.error(request, msg('auth.avatar_not_image'))
                     else:
                         request.user.avatar = avatar_file
                         request.user.save(update_fields=['avatar'])
-                        messages.success(request, '头像已更新啦~ ✨')
+                        messages.success(request, msg('auth.avatar_updated'))
             return redirect('user_settings')
 
         elif 'password_form' in request.POST:
@@ -2280,17 +2622,17 @@ def user_settings(request: HttpRequest) -> HttpResponse:
             confirm_password = request.POST.get('confirm_password', '')
             # 校验旧密码
             if not request.user.check_password(old_password):
-                messages.error(request, '旧密码不对呢~ 再试试喵~ 🔍')
+                messages.error(request, msg('auth.old_password_wrong'))
             elif len(new_password) < 8:
-                messages.error(request, '新密码至少要 8 位哦~ 🔒')
+                messages.error(request, msg('auth.new_password_too_short'))
             elif new_password != confirm_password:
-                messages.error(request, '两次输入的新密码不一样呢~ 🔑')
+                messages.error(request, msg('auth.new_password_mismatch'))
             else:
                 request.user.set_password(new_password)
                 request.user.save()
                 # 修改密码后重新登录，保持会话有效
                 login(request, request.user)
-                messages.success(request, '密码已修改成功喵~ 🔐')
+                messages.success(request, msg('auth.password_changed'))
             return redirect('user_settings')
 
     # GET：渲染设置表单，回填当前用户数据
@@ -2402,7 +2744,7 @@ def series_create(request: HttpRequest) -> HttpResponse:
         description = (request.POST.get('description') or '').strip()[:500]
         if not title:
             ctx = {
-                'error': '系列名称不能为空喵~📝',
+                'error': msg('misc.series_name_required'),
                 'form_title': title, 'form_desc': description,
                 'active_nav': 'series', 'meta_title': '创建系列',
             }
@@ -2414,7 +2756,7 @@ def series_create(request: HttpRequest) -> HttpResponse:
         if cover:
             series.cover_image = cover
         series.save()
-        messages.success(request, '系列创建成功喵~现在写文章就能归入它啦✨')
+        messages.success(request, msg('misc.series_created'))
         return redirect('series_detail', pk=series.pk)
     ctx = {'active_nav': 'series',
            'meta_title': f'创建系列 - {settings.SITE_NAME}'}
@@ -2744,7 +3086,7 @@ def rate_article(request: HttpRequest, pk: int) -> JsonResponse:
         score = 0
     # 迭代#215: 评分范围验证（1-5）
     if score not in dict(Rating.Score.choices):
-        return JsonResponse({'success': False, 'error': '评分必须是 1~5 星哦~⭐'}, status=400)
+        return JsonResponse({'success': False, 'error': msg('interact.rating_required')}, status=400)
     # unique_together 保证每用户每文章一条；存在则更新分数
     rating, _ = Rating.objects.update_or_create(
         user=request.user, article=article,
@@ -3202,17 +3544,9 @@ def custom_404(request: HttpRequest, exception: Exception) -> HttpResponse:
 
 # 迭代#237: custom_500视图docstring
 # 迭代#238: custom_500(request) -> HttpResponse 类型提示
-
-def test_404_page(request: HttpRequest) -> HttpResponse:
-    """第6轮: 404 页面手动测试路由（GET /test-404/）。
-
-    生产环境 DEBUG=False 时自定义 404 模板难以直接调试，
-    本路由直接渲染 404.html（含接樱花小游戏），返回 200 状态码便于浏览器验证。
-    验证内容：404 文案、搜索框、热门文章链接、暗黑模式、接樱花 canvas 小游戏。
-    """
-    hot = list(Article.objects.filter(status=Article.Status.PUBLISHED)
-               .order_by('-views')[:5])
-    return render(request, '404.html', {'hot_articles': hot})
+# Bug9 任务「3」：原 test_404_page（/test-404/ 调试路由）已归档移除，
+# 归档说明见 docs/archived_feature_stubs/debug_routes/README.md。
+# 404 页由 CuteErrorPagesMiddleware + custom_404 统一渲染，任意不存在路径即可验证。
 
 def custom_500(request: HttpRequest) -> HttpResponse:
     """500 页面：服务器酱正在罢工中…（注意：500 handler 不需要 exception 参数）"""
@@ -3313,7 +3647,7 @@ def api_user_preferences(request: HttpRequest) -> JsonResponse:
     if request.method == 'PUT':
         # 仅登录用户可写
         if not request.user.is_authenticated:
-            return JsonResponse({'code': 401, 'msg': '请先登录'}, status=401)
+            return JsonResponse({'code': 401, 'msg': msg('auth.login_required')}, status=401)
         try:
             body = json.loads(request.body.decode('utf-8') or '{}')
         except (ValueError, UnicodeDecodeError):
@@ -3600,7 +3934,7 @@ def api_favorite_folder_detail(request: HttpRequest, pk: int) -> JsonResponse:
 def api_notification_list(request: HttpRequest) -> JsonResponse:
     """通知列表：GET /api/notifications/（分页，未读优先）。"""
     if not request.user.is_authenticated:
-        return JsonResponse({'code': 401, 'msg': '请先登录'}, status=401)
+        return JsonResponse({'code': 401, 'msg': msg('auth.login_required')}, status=401)
     qs = request.user.notifications.all().order_by('-is_read', '-created_at')
     page_size = _clean_page_size(request.GET.get('page_size')) or settings.PAGE_SIZE
     paginator = Paginator(qs, page_size)
@@ -4013,7 +4347,7 @@ def site_settings_page(request: HttpRequest) -> HttpResponse:
                 messages.error(request, err)
         else:
             info.save()  # save() 强制单例并清缓存
-            messages.success(request, '站点信息已保存，全站立即生效喵~')
+            messages.success(request, msg('misc.site_saved'))
             return redirect('site_settings')
 
     return render(request, 'blog/site_settings.html', {
@@ -4305,7 +4639,7 @@ def moderate_article(request: HttpRequest, pk: int) -> HttpResponse:
                 action=ModerationLog.Action.APPROVE, target_type='article',
                 article=article, target_title=article.title,
                 reason='通过审核并发布（定时投稿到点转入审核）' if is_scheduled else '')
-            messages.success(req, '《%s》已通过并发布~ 🌸' % article.title)
+            messages.success(req, msg('article.approved', article.title))
         elif action == 'reject':
             reason = (req.POST.get('reason') or '').strip()[:500]
             # 退回草稿（不删除内容），作者修改后可重新提交审核
@@ -4319,7 +4653,7 @@ def moderate_article(request: HttpRequest, pk: int) -> HttpResponse:
                 user=article.author, type=Notification.Type.SYSTEM,
                 title='你的文章《%s》未通过审核' % article.title[:30],
                 content=reason or '内容还需要调整一下哦，修改后可以重新提交~')
-            messages.warning(req, '《%s》已退回作者修改~ 📝' % article.title)
+            messages.warning(req, msg('article.rejected', article.title))
         return redirect('/console/moderation/?tab=articles')
 
     return _inner(request)
@@ -4359,7 +4693,7 @@ def moderate_report(request: HttpRequest, pk: int) -> HttpResponse:
                 target_title=(re.sub(r'<[^>]+>', '', comment.content or '') or '')[:40],
                 reason='举报不成立：%s' % (report.reason or ''))
             report.delete()
-            messages.success(req, '已标记举报不成立，评论予以保留~')
+            messages.success(req, msg('comment.report_dismissed'))
         elif action == 'delete_comment' and comment is not None:
             path = _moderation_backup('comment', _comment_snapshot(comment))
             cid = comment.id
@@ -4379,7 +4713,7 @@ def moderate_report(request: HttpRequest, pk: int) -> HttpResponse:
                 comment_count=Comment.objects.filter(article_id=art_id, is_deleted=False).count())
             # 移除该评论的全部举报
             CommentReport.objects.filter(comment=comment).delete()
-            messages.warning(req, '违规评论 #%s 已隐藏，已备份至 %s' % (
+            messages.warning(req, msg('comment.hidden_backup', 
                 cid, os.path.relpath(path, settings.BASE_DIR)))
         return redirect('/console/moderation/?tab=reports')
 
@@ -4408,7 +4742,7 @@ def restore_article(request: HttpRequest, pk: int) -> HttpResponse:
     cache.delete(SIDEBAR_CACHE_KEY)
     cache.delete('footer_stats')
     cache.delete('sidebar_stats')
-    messages.success(request, '《%s》已从回收站找回啦~ ✨' % article.title)
+    messages.success(request, msg('article.restored', article.title))
     return redirect('/console/moderation/?tab=trash')
 
 
@@ -4427,7 +4761,7 @@ def hard_delete_article(request: HttpRequest, pk: int) -> HttpResponse:
     cache.delete(SIDEBAR_CACHE_KEY)
     cache.delete('footer_stats')
     cache.delete('sidebar_stats')
-    messages.warning(request, '《%s》已彻底删除，无法找回了哦~ 🔥' % title)
+    messages.warning(request, msg('article.hard_deleted', title))
     return redirect('/console/moderation/?tab=trash')
 
 
@@ -4448,7 +4782,7 @@ def restore_comment(request: HttpRequest, pk: int) -> HttpResponse:
         article_id=comment.article_id, comment=comment,
         target_title=_plain_snippet(comment.content))
     invalidate_article(comment.article_id)
-    messages.success(request, '评论 #%s 已恢复显示~ ✨' % pk)
+    messages.success(request, msg('comment.restored', pk))
     return redirect('/console/moderation/?tab=trash')
 
 
@@ -4467,7 +4801,7 @@ def hard_delete_comment(request: HttpRequest, pk: int) -> HttpResponse:
         target_title=_plain_snippet(comment.content))
     comment.delete()
     invalidate_article(art_id)
-    messages.warning(request, '评论 #%s 已彻底删除，无法找回了哦~ 🔥' % pk)
+    messages.warning(request, msg('comment.hard_deleted', pk))
     return redirect('/console/moderation/?tab=trash')
 
 
@@ -4499,6 +4833,42 @@ def api_refresh_assets(request):
 
 
 # ============================ 调试：缓存查看端点（仅 DEBUG） ============================
+def dev_sync_state(request):
+    """DEBUG 专用：把「外部脚本改过的数据库设置」同步到本服务进程的缓存。
+
+    解决的问题：``ModerationSettings.load()`` 使用进程内 LocMemCache，
+    验收脚本（独立进程）改了 ``require_article_review`` 等设置后，
+    runserver 进程里的缓存仍是旧值，导致「脚本设 A、服务端按 B 执行」的假失败。
+
+    机制：脚本先写入桥接文件 ``docs/bugfix_20260926_bug9/.sync_request``，
+    再请求本端点；本端点读取该文件 → 清空本进程缓存 → 删除桥接文件。
+
+    安全：仅 ``settings.DEBUG`` 且本机访问时可用；生产（DEBUG=False）返回 404。
+    """
+    if not settings.DEBUG:
+        return JsonResponse({'ok': False, 'error': msg('err.debug_only')}, status=404)
+    is_local = request.META.get('REMOTE_ADDR') in ('127.0.0.1', '::1')
+    if not (is_local or getattr(request.user, 'is_superuser', False)):
+        return JsonResponse({'ok': False, 'error': 'permission_denied'}, status=403)
+    bridge = os.path.join(settings.BASE_DIR, 'docs',
+                          'bugfix_20260926_bug9', '.sync_request')
+    payload = ''
+    if os.path.exists(bridge):
+        try:
+            with open(bridge, encoding='utf-8') as fh:
+                payload = fh.read().strip()
+            os.remove(bridge)
+        except OSError:
+            payload = ''
+    # 清空本进程缓存，使下次请求重新从数据库读取设置
+    cleared = True
+    try:
+        cache.clear()
+    except Exception:  # noqa: BLE001 清缓存失败也要如实告知
+        cleared = False
+    return JsonResponse({'ok': True, 'payload': payload, 'cleared': cleared})
+
+
 def debug_cache_dump(request):
     """DEBUG 专用：返回当前进程缓存快照（key / 剩余 TTL / 详情页片段命中统计）。
 
@@ -4508,7 +4878,7 @@ def debug_cache_dump(request):
     仅当 settings.DEBUG 且为本机访问（127.0.0.1 / ::1）或超级用户时可用。
     """
     if not settings.DEBUG:
-        return JsonResponse({'ok': False, 'error': '仅 DEBUG 模式可用'}, status=404)
+        return JsonResponse({'ok': False, 'error': msg('err.debug_only')}, status=404)
     is_local = request.META.get('REMOTE_ADDR') in ('127.0.0.1', '::1')
     if not (is_local or (request.user.is_authenticated and request.user.is_superuser)):
         return JsonResponse({'ok': False, 'error': 'permission_denied'}, status=403)
@@ -4642,31 +5012,31 @@ def api_article_promotion_request(request, pk):
       并把该提示随响应返回，便于前端弹窗直接展示。
     """
     if not request.user.is_authenticated:
-        return JsonResponse({'code': 403, 'msg': '请先登录喵~'}, status=403)
+        return JsonResponse({'code': 403, 'msg': msg('auth.login_required')}, status=403)
     if request.method != 'POST':
-        return JsonResponse({'code': 405, 'msg': '请用 POST 提交'}, status=405)
+        return JsonResponse({'code': 405, 'msg': msg('err.method_not_allowed')}, status=405)
     article = get_object_or_404(Article, pk=pk, is_deleted=False)
     if request.user != article.author and not request.user.is_staff:
-        return JsonResponse({'code': 403, 'msg': '只能给自己的文章申请哦~'}, status=403)
+        return JsonResponse({'code': 403, 'msg': msg('promo.only_own')}, status=403)
     kind = request.POST.get('kind', '')
     if kind not in PromotionRequest.Kind.values:
-        return JsonResponse({'code': 400, 'msg': '申请类型不正确'}, status=400)
+        return JsonResponse({'code': 400, 'msg': msg('promo.bad_kind')}, status=400)
     # Bug8：已经生效的推广不再受理申请（按钮侧也已禁用，这里做服务端兜底）
     field = _PROMO_FIELD[kind][0]
     label = _PROMO_LABEL[kind]
     if getattr(article, field):
         return JsonResponse(
-            {'code': 409, 'msg': '这篇文章已经%s啦，不用再申请喵~' % label,
+            {'code': 409, 'msg': msg('promo.already_applied', label),
              'data': {'already_applied': True, 'kind': kind}},
             status=409)
     reason = (request.POST.get('reason') or '').strip()[:500]
     if not reason:
-        return JsonResponse({'code': 400, 'msg': '请填写申请理由喵~'}, status=400)
+        return JsonResponse({'code': 400, 'msg': msg('promo.reason_required')}, status=400)
     # 已有同类型待审核申请，不允许重复提交
     if PromotionRequest.objects.filter(
             article=article, kind=kind,
             status=PromotionRequest.Status.PENDING).exists():
-        return JsonResponse({'code': 409, 'msg': '已经提交过申请，正在审核中哦~'}, status=409)
+        return JsonResponse({'code': 409, 'msg': msg('promo.duplicate')}, status=409)
     # Bug8：置顶名额已满时提前告知，避免「管理员通过了却没置顶」的预期落差
     notice = ''
     if kind == PromotionRequest.Kind.PIN:
@@ -4713,9 +5083,9 @@ def api_article_toggle_promotion(request, pk):
     置顶时若超过全局上限则拒绝。
     """
     if not (request.user.is_authenticated and request.user.is_staff):
-        return JsonResponse({'code': 403, 'msg': '仅管理员可操作'}, status=403)
+        return JsonResponse({'code': 403, 'msg': msg('err.admin_only')}, status=403)
     if request.method != 'POST':
-        return JsonResponse({'code': 405, 'msg': '请用 POST 提交'}, status=405)
+        return JsonResponse({'code': 405, 'msg': msg('err.method_not_allowed')}, status=405)
     article = get_object_or_404(Article, pk=pk, is_deleted=False)
     action = request.POST.get('action', '')
     # action → (申请类型, 目标布尔值)
@@ -4725,7 +5095,7 @@ def api_article_toggle_promotion(request, pk):
         'hot': (PromotionRequest.Kind.HOT, True), 'unhot': (PromotionRequest.Kind.HOT, False),
     }
     if action not in mapping:
-        return JsonResponse({'code': 400, 'msg': '操作不正确'}, status=400)
+        return JsonResponse({'code': 400, 'msg': msg('err.bad_request')}, status=400)
     kind, target = mapping[action]
     field, act_on, act_off = _PROMO_FIELD[kind]
     # 置顶上限校验（仅在「设置置顶」且当前未置顶时）
@@ -4733,7 +5103,7 @@ def api_article_toggle_promotion(request, pk):
         max_pinned = ModerationSettings.load().max_pinned
         if not article.is_pinned and Article.objects.filter(
                 is_pinned=True, is_deleted=False).count() >= max_pinned:
-            return JsonResponse({'code': 409, 'msg': '置顶已达上限（%s 篇）喵~' % max_pinned}, status=409)
+            return JsonResponse({'code': 409, 'msg': msg('promo.limit_reached', max_pinned)}, status=409)
     setattr(article, field, target)
     article.save(update_fields=[field, 'updated_at'])
     ModerationLog.objects.create(
@@ -4742,7 +5112,7 @@ def api_article_toggle_promotion(request, pk):
         article=article, target_title=article.title)
     labels = _PROMO_LABEL
     return JsonResponse({'code': 0,
-                         'msg': '已%s%s~' % ('设置' if target else '取消', labels[kind]),
+                         'msg': msg('promo.toggle_ok', '设置' if target else '取消', labels[kind]),
                          'data': {field: target,
                                   'states': _promo_block_state(article, request.user)}})
 
@@ -4766,7 +5136,7 @@ def moderate_promotion(request, pk):
     action = request.POST.get('action', '')
     note = (request.POST.get('reason') or '').strip()[:500]
     if pr.status != PromotionRequest.Status.PENDING:
-        messages.warning(request, '这条申请已经处理过啦~')
+        messages.warning(request, msg('moderation.already_handled'))
         return redirect('/console/moderation/?tab=promotions')
     label = _PROMO_LABEL.get(pr.kind, pr.get_kind_display())
     _field, act_on, _act_off = _PROMO_FIELD[pr.kind]
@@ -4800,9 +5170,9 @@ def moderate_promotion(request, pk):
             user=pr.applicant or pr.article.author, type=Notification.Type.SYSTEM,
             title=notify_title, content=notify_body)
         if applied:
-            messages.success(request, '已通过%s申请并已生效~ 🌸' % label)
+            messages.success(request, msg('promo.approved_ok', label))
         else:
-            messages.warning(request, '已通过%s申请，但%s，本次未生效。' % (label, exec_note))
+            messages.warning(request, msg('promo.approved_not_applied', label, exec_note))
     elif action == 'reject':
         pr.status = PromotionRequest.Status.REJECTED
         pr.handled_by = request.user
@@ -4821,7 +5191,7 @@ def moderate_promotion(request, pk):
             user=pr.applicant or pr.article.author, type=Notification.Type.SYSTEM,
             title='你的%s申请未通过' % label,
             content=note or '很遗憾，你的申请没有通过，再接再厉哦~')
-        messages.warning(request, '已驳回%s申请~' % label)
+        messages.warning(request, msg('promo.rejected', label))
     return redirect('/console/moderation/?tab=promotions')
 
 
@@ -4844,5 +5214,5 @@ def moderation_settings_save(request):
     except (TypeError, ValueError):
         pass
     s.save()
-    messages.success(request, '审核全局设置已保存喵~ ⚙️')
+    messages.success(request, msg('moderation.settings_saved'))
     return redirect('/console/moderation/?tab=promotions')

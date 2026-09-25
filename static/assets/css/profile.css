@@ -175,3 +175,149 @@
 .profile-online-dot { position: absolute; bottom: 8px; right: 8px; width: 14px; height: 14px; }
 .badge-grid { grid-template-columns: repeat(auto-fill,minmax(80px,1fr)); gap: 12px; margin-top: 10px; }
 .badge-item { text-align: center; padding: 10px; background: var(--c-card); border-radius: var(--radius-sm); }
+
+/* ==================================================================
+ * Bug9 任务「1」：个人中心「徽章 / 成就」可视化面板
+ * ------------------------------------------------------------------
+ * 结构：.badge-panel
+ *         ├ .badge-panel-head   标题 + 总进度条（已获得/总数 + 百分比）
+ *         ├ .badge-grid--obtained  已获得徽章卡片（渐变描边、彩色、可点悬浮）
+ *         └ details.badge-locked   未获得徽章（原生折叠，展开后含进度与获取方式）
+ * 设计语言：延续粉紫蓝萌系 —— 大圆角、柔和投影、玻璃拟态、悬浮上浮；
+ *          已获得=彩色高亮，未获得=灰度降饱和但仍保持可读性。
+ * ================================================================== */
+.badge-panel {
+    margin: 22px 0;
+    padding: 18px 20px;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(10px);
+}
+/* 头部：标题与进度同一行，窄屏自动换行 */
+.badge-panel-head {
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 10px;
+}
+.badge-panel .profile-section-title { margin: 0; }
+.badge-panel-meta { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--c-text-dim); }
+.badge-panel-count b { color: var(--c-primary); font-size: 1.05rem; }
+/* 总进度条：细长胶囊，内部渐变填充由内联 width 控制 */
+.badge-panel-bar {
+    display: inline-block; width: 120px; height: 8px; border-radius: 999px;
+    background: var(--c-primary-soft); overflow: hidden;
+}
+.badge-panel-bar-fill {
+    display: block; height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
+    transition: width .4s ease;
+}
+.badge-panel-rate { font-weight: 700; color: var(--c-primary); }
+.badge-panel-sub { margin: 6px 0 14px; font-size: .82rem; }
+
+/* ---- 徽章网格：自适应列数，已获得与未获得共用 ---- */
+.badge-panel .badge-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px; margin-top: 0;
+}
+.badge-card {
+    position: relative; display: flex; flex-direction: column; gap: 6px;
+    padding: 14px 12px 12px; border-radius: var(--radius);
+    background: var(--c-surface); border: 1px solid var(--c-border);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+/* 悬浮：轻微上浮 + 粉色投影，与全站卡片交互语言一致 */
+.badge-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.badge-card-icon { font-size: 1.9rem; line-height: 1.1; }
+.badge-card-name { font-weight: 800; font-size: .92rem; color: var(--c-text); }
+.badge-card-desc { font-size: .76rem; line-height: 1.5; }
+.badge-card-foot {
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 6px; margin-top: auto;
+}
+.badge-card-time { font-size: .7rem; }
+
+/* ---- 已获得：渐变描边 + 微光，视觉上「亮」 ---- */
+.badge-card--on {
+    border-color: transparent;
+    background-image: linear-gradient(var(--c-surface), var(--c-surface)),
+                      linear-gradient(135deg, var(--c-pink), var(--c-purple), var(--c-blue));
+    background-origin: border-box; background-clip: padding-box, border-box;
+}
+.badge-card--on::after {
+    content: '✨'; position: absolute; top: 8px; right: 10px;
+    font-size: .8rem; opacity: .85;
+}
+/* ---- 未获得：灰度降饱和，悬浮时恢复一点亮度提示「可以查看如何获得」 ---- */
+.badge-card--off { opacity: .92; }
+.badge-card--off .badge-card-icon--off { filter: grayscale(1); opacity: .55; }
+.badge-card--off:hover { opacity: 1; }
+.badge-card--off:hover .badge-card-icon--off { filter: grayscale(.2); opacity: .9; }
+
+/* ---- 徽章状态胶囊 ---- */
+.badge-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 10px; border-radius: 999px;
+    font-size: .7rem; font-weight: 700;
+}
+.badge-chip--on { background: rgba(56,161,105,.16); color: #2f855a; }
+.badge-chip--off { background: var(--c-primary-soft); color: var(--c-text-dim); }
+:root[data-theme="dark"] .badge-chip--on { color: #68d391; }
+
+/* ---- 「如何获得」说明块 ---- */
+.badge-card-howto { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; }
+.badge-howto-label { font-size: .7rem; font-weight: 700; color: var(--c-primary); }
+.badge-howto-text { font-size: .74rem; line-height: 1.5; color: var(--c-text-dim); }
+
+/* ---- 单枚徽章进度条 ---- */
+.badge-progress {
+    height: 6px; border-radius: 999px; overflow: hidden;
+    background: var(--c-primary-soft);
+}
+.badge-progress-fill {
+    display: block; height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--c-blue), var(--c-purple));
+    transition: width .4s ease;
+}
+.badge-card-progress-text { font-size: .7rem; }
+
+/* ---- 未获得区块：原生 details 折叠 ---- */
+.badge-locked { margin-top: 16px; border-top: 1px dashed var(--c-border); padding-top: 12px; }
+.badge-locked-summary {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; list-style: none; user-select: none;
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    background: var(--c-primary-soft); color: var(--c-primary);
+    font-weight: 700; font-size: .86rem;
+    transition: background .18s ease, color .18s ease;
+}
+.badge-locked-summary:hover { background: linear-gradient(135deg, var(--c-pink), var(--c-purple)); color: #fff; }
+/* 去掉各浏览器默认的三角标记，改用自定义箭头 */
+.badge-locked-summary::-webkit-details-marker { display: none; }
+.badge-locked-summary::marker { content: ''; }
+.badge-locked-summary-icon { font-size: 1rem; }
+.badge-locked-summary-text { flex: 1; }
+.badge-locked-toggle::before { content: '▾'; display: inline-block; transition: transform .2s ease; }
+/* 展开后箭头翻转 + 网格顶部留白 */
+.badge-locked[open] .badge-locked-toggle::before { transform: rotate(180deg); }
+.badge-locked[open] .badge-grid--locked { margin-top: 12px; animation: badgeUnfold .28s ease; }
+@keyframes badgeUnfold {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- 空状态（一枚都没有） ---- */
+.badge-empty { text-align: center; padding: 22px 12px; color: var(--c-text-dim); }
+.badge-empty-emoji { font-size: 2.2rem; margin-bottom: 6px; }
+
+/* ---- 窄屏：单列 / 两列，避免徽章卡片被压扁导致文字溢出 ---- */
+@media (max-width: 640px) {
+    .badge-panel { padding: 14px 14px; }
+    .badge-panel .badge-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .badge-panel-bar { width: 80px; }
+    .badge-card-name { font-size: .86rem; }
+}
+@media (max-width: 400px) {
+    .badge-panel .badge-grid { grid-template-columns: 1fr 1fr; }
+}

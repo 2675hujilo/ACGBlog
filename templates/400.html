@@ -5,7 +5,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,follow">
-<title>400 - 请求有点奇怪喵</title>
+{# Bug9 任务2：错误页文案取自后端文案表（{{ MSG.err.* }}） #}
+<title>{{ MSG.err.400_title }}</title>
 {# Bug27: 400 错误请求萌系页，自包含样式不依赖 base.html，500/异常场景也能安全渲染 #}
 <script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <link rel="stylesheet" href="{% static 'assets/css/error400.min.css' %}?v={{ BUILD_TOKEN }}">
@@ -18,9 +19,10 @@
     <span class="float">📮</span>
     <div class="card" role="group" aria-label="错误请求提示">
         <div class="illust" role="img" aria-label="请求异常">📮😿❓</div>
-        <h1>请求有点奇怪喵</h1>
-        <p class="sub" id="err-desc">发来的请求服务器酱看不懂呢，检查一下链接或表单吧~</p>
-        <a class="btn-home" href="/" aria-label="返回首页">回到首页喵</a>
+        <h1>{{ MSG.err.400_heading }}</h1>
+        <p class="sub" id="err-desc">{{ MSG.err.400_desc }}</p>
+        <p class="sub">{{ MSG.err.400_hint }}</p>
+        <a class="btn-home" href="/" aria-label="返回首页">{{ MSG.btn.back_home }}</a>
     </div>
 </body>
 </html>

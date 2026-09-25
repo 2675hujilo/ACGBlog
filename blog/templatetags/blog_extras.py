@@ -67,6 +67,36 @@ def time_ago(dt):
     return f'{int(secs // 86400 // 365)}年前'
 
 
+@register.filter(name='time_until')
+def time_until(delta):
+    """把 timedelta 格式化为「还有多久」的中文倒计时文案（Bug9 定时投稿提示用）。
+
+    与 ``time_ago`` 互为反向：``time_ago`` 描述过去，``time_until`` 描述未来。
+
+    Args:
+        delta: ``datetime.timedelta``（通常为 ``published_at - now``）。
+
+    Returns:
+        str: 形如「3 分钟」「2 小时 15 分」「1 天 3 小时」的简洁倒计时；
+             已过时（<=0）返回「即将」。
+    """
+    if delta is None:
+        return ''
+    secs = int(delta.total_seconds())
+    if secs <= 0:
+        return '即将'
+    days, rem = divmod(secs, 86400)
+    hours, rem = divmod(rem, 3600)
+    minutes = rem // 60
+    if days:
+        return f'{days} 天 {hours} 小时' if hours else f'{days} 天'
+    if hours:
+        return f'{hours} 小时 {minutes} 分' if minutes else f'{hours} 小时'
+    if minutes:
+        return f'{minutes} 分钟'
+    return f'{secs} 秒'
+
+
 # 迭代#249: highlight过滤器docstring完善
 @register.filter(name='highlight')
 def highlight(text, query):

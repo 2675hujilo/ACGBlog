@@ -163,6 +163,24 @@
                     <span class="pending-banner-txt">这篇内容正在等待管理员审核，<strong>目前只有作者本人和管理员能看到</strong>，审核通过后才会公开喵~</span>
                 </div>
                 {% endif %}
+                {# Bug9-1/Bug9-2：定时投稿预览提示（仅作者 / 管理员可见） #}
+                {% if scheduled_notice %}
+                <div class="scheduled-banner scheduled-banner--{{ scheduled_notice.kind }}" role="note">
+                    <span class="scheduled-banner-ico" aria-hidden="true">{% if scheduled_notice.kind == 'due' %}⏰{% else %}🕐{% endif %}</span>
+                    <span class="scheduled-banner-txt">
+                        {% if scheduled_notice.kind == 'scheduled' %}
+                        这是一篇<strong>定时投稿</strong>：当前状态为「{{ scheduled_notice.status }}」，
+                        计划于 <strong>{{ scheduled_notice.at|date:"Y-m-d H:i" }}</strong> 自动发布
+                        （约 {{ scheduled_notice.left|time_until }}）。
+                        只有<strong>你本人与管理员</strong>能看到，到点后按站点审核设置转为「待审核」或「已发布」喵~
+                        {% else %}
+                        这篇定时投稿已到发布时间（{{ scheduled_notice.at|date:"Y-m-d H:i" }}），
+                        系统将在 30 秒内自动流转为「待审核 / 已发布」，稍后刷新即可；
+                        当前仍为「{{ scheduled_notice.status }}」，只有<strong>你本人与管理员</strong>可见喵~
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
                 <header class="article-head">
                     <div>
                         {% if article.kind == 'note' %}<span class="badge badge-note">笔记</span>{% endif %}

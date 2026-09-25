@@ -9,8 +9,12 @@
 <div class="auth-wrap">
     <div class="auth-card">
         <h1 class="auth-title">欢迎回来 🌸</h1>
-        {# 登录失败红色内联提示（AJAX 失败或后端重渲染时显示，不整页刷新） #}
-        <div class="login-error form-error-text" id="login-error" role="alert" {% if not login_error %}hidden{% endif %}>
+        {# 登录失败红色内联提示（AJAX 失败或后端重渲染时显示，不整页刷新）
+           Bug9：同时用 .is-visible 类与 [hidden] 双通道控制显隐 ——
+           避免个别浏览器/脚本组合下 hidden 属性未被移除导致提示不可见。 #}
+        <div class="login-error form-error-text{% if login_error %} is-visible{% endif %}"
+             id="login-error" role="alert" aria-live="assertive"
+             {% if not login_error %}hidden{% endif %}>
             <span aria-hidden="true">😿</span><span id="login-error-text">{{ login_error|default:'用户名或密码不对呢~再试试喵' }}</span>
         </div>
         <form method="post" id="login-form" autocomplete="on" aria-autocomplete="list">

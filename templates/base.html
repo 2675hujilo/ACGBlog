@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="zh-hans" dir="ltr">
+<html lang="zh-hans" dir="ltr" data-waifu="{% if waifu_enabled %}on{% else %}off{% endif %}">
 <head>
 
     <meta charset="utf-8">
@@ -117,6 +117,8 @@
 <link rel="stylesheet" href="{% static 'assets/css/base_inline_a11y.min.css' %}?v={{ BUILD_TOKEN }}">
 </head>
 <body data-theme-color="{{ user_preferences.theme_color|default:'purple_pink' }}" data-font-size="{{ user_preferences.font_size|default:'medium' }}" data-eye-protection="{{ user_preferences.eye_protection|default:'false' }}" data-amoled="{{ user_preferences.amoled_dark|default:'false' }}" data-holiday="">
+{# Bug9 任务2：全站文案包（后端变量 → 前端）。json_script 过滤器把 SITE_MSG_JS 安全序列化到 application/json 脚本块，由 moe-messages.js 读取后挂到 window.SITE_MSG，供所有前端脚本统一取用。注意：模板注释必须写在同一行，跨行会原样输出到页面。 #}
+{{ SITE_MSG_JS|json_script:"site-messages-data" }}
 <a class="skip-link" href="#main-content" accesskey="0"></a>
 <div class="sr-only" aria-live="polite" aria-atomic="true" id="a11y-live"></div>
 <script src="{% static 'assets/js/base_user_prefs_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
@@ -433,6 +435,9 @@
 ===== 全局脚本：defer 异步加载，DOM 解析完成后执行 =====
 {% endcomment %}
 <script defer src="{% static 'assets/js/common.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% comment %}Bug9 任务2：文案访问层必须在其它脚本之前同步加载（普通 script，非 defer），
+   保证 common.js 里的 moeToast 等函数取词时 window.SITE_MSG 已就绪{% endcomment %}
+<script src="{% static 'assets/js/moe-messages.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <script defer src="{% static 'assets/js/header-menus.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 
 <script defer src="{% static 'assets/js/theme.min.js' %}?v={{ BUILD_TOKEN }}"></script>

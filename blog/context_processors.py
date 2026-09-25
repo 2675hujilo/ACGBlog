@@ -1,4 +1,4 @@
-﻿"""全局模板上下文：顶栏分类导航 + 友情链接注入 + 页脚统计 + 侧边栏统计 + 公告。
+"""全局模板上下文：顶栏分类导航 + 友情链接注入 + 页脚统计 + 侧边栏统计 + 公告。
 
 第4轮重构要点：
 - 公共缓存预热从 ``apps.py ready()`` 移至此处的**首个请求懒加载**（线程安全），
@@ -58,12 +58,23 @@ def _ensure_public_cache_warmed():
 
 
 def lazy_public_cache(request):
-    """上下文处理器：触发一次性懒加载预热，本身不注入任何变量。
+    """上下文处理器：触发一次性懒加载预热 + 定时投稿兜底扫描，本身不注入变量。
 
-    注册到 TEMPLATES['OPTIONS']['context_processors'] 后，
-    每个请求都会调用本函数；内部双重检查锁保证预热只跑一次。
+    注册到 TEMPLATES['OPTIONS']['context_processors'] 后，每个请求都会调用本函数：
+
+    1. ``_ensure_public_cache_warmed()``：双重检查锁保证公共缓存预热只跑一次；
+    2. ``maybe_sweep_due_articles()``：**定时投稿兜底扫描**（Bug9-2）。
+       生产推荐用 Celery beat 每分钟执行 ``check_scheduled_articles``；但若部署
+       环境没起 beat（本地开发很常见），到点文章会一直停在草稿状态。这里用
+       「缓存锁 + 30 秒最小间隔」在请求侧做兜底，保证到点文章最迟 30 秒内
+       被流转为待审核 / 已发布，且不会给每次请求增加数据库压力。
     """
     _ensure_public_cache_warmed()
+    try:
+        from .scheduled_publishing import maybe_sweep_due_articles
+        maybe_sweep_due_articles()
+    except Exception:  # noqa: BLE001 兜底扫描异常绝不影响页面渲染
+        pass
     return {}
 
 
@@ -248,6 +259,33 @@ def user_preferences(request):
         }
     except Exception:
         return {'user_preferences': {}, 'user_preferences_json': '{}'}
+
+
+def site_messages_ctx(request):
+    """Bug9 任务「2」：注入全站文案命名空间 ``MSG``。
+
+    模板用法（无需 load 任何标签库，所有模板自动可用）::
+
+        <h1>{{ MSG.err.404_heading }}</h1>
+        <button>{{ MSG.btn.back_home }}</button>
+        <p>{{ MSG.promo.limit_hint }}</p>      {# 带占位符的文案在模板侧用 |format #}
+
+    数据来源是 ``blog/site_messages.py`` 的模块级常量，零数据库查询、零 IO，
+    因此对每个请求的开销约为「一次浅拷贝」，可忽略。
+
+    另外注入 ``SITE_MSG_JS``：前端脚本使用的文案 JSON（供 ``window.SITE_MSG``），
+    以及 ``BADGE_PANEL_TEXTS``（个人中心徽章面板专用文案，避免模板里散落中文）。
+    """
+    try:
+        from .site_messages import as_context, js_payload
+        ctx = as_context()
+        return {
+            'MSG': ctx,
+            # 前端文案包：json_script 过滤器会在模板里安全序列化，避免 XSS 与转义问题
+            'SITE_MSG_JS': js_payload(),
+        }
+    except Exception:  # noqa: BLE001 文案注入失败时降级为空命名空间，绝不阻断页面
+        return {'MSG': {}, 'SITE_MSG_JS': {}}
 
 
 def unread_notification_count(request):

@@ -87,27 +87,10 @@
         <span class="stat-label">收藏</span>
     </div>
 </div>
-{# ===== Round5 F10: 成就徽章墙 ===== #}
-<div class="badge-wall" aria-label="成就徽章墙" style="margin:20px 0;">
-    <h2 class="profile-section-title">🏅 成就徽章</h2>
-    <div class="badge-grid">
-        <div class="badge-item">
-            <div style="font-size:1.8rem;">🌸</div><div class="muted" style="font-size:.75rem;">初来乍到</div>
-        </div>
-        <div class="badge-item">
-            <div style="font-size:1.8rem;">✍️</div><div class="muted" style="font-size:.75rem;">笔耕不辍</div>
-        </div>
-        <div class="badge-item">
-            <div style="font-size:1.8rem;">🔥</div><div class="muted" style="font-size:.75rem;">人气之星</div>
-        </div>
-        <div class="badge-item">
-            <div style="font-size:1.8rem;">💬</div><div class="muted" style="font-size:.75rem;">社交达人</div>
-        </div>
-        <div class="badge-item">
-            <div style="font-size:1.8rem;">🌟</div><div class="muted" style="font-size:.75rem;">长期相伴</div>
-        </div>
-    </div>
-</div>
+{% comment %}===== Bug9 任务1：成就徽章可视化面板（已获得 + 折叠的未获得 + 获取方式与进度） =====
+   原静态「badge-grid」占位已由 partials/_badge_panel.html 替换：
+   数据来自视图 _build_badge_panel()，文案来自后端文案表 MSG.badge.*{% endcomment %}
+{% include 'partials/_badge_panel.html' %}
 {# ---------- 文章列表标题 ---------- #}
 <h2 class="profile-section-title">📖 发布的文章</h2>
 {# ---------- 文章列表（复用 _article_card.html 样式） ---------- #}

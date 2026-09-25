@@ -2,15 +2,26 @@
 
 本文件统一维护两类路由：
 - ``urlpatterns``：前台页面路由（函数视图，返回 HTML 模板）；
-- ``api_urlpatterns``：DRF 接口路由（类视图，返回 JSON），
-  由项目根 urls.py 挂载到 ``/api/`` 前缀下。
+- ``api_urlpatterns``：API 路由（返回 JSON），由项目根 urls.py 挂载到 ``/api/`` 前缀下。
+
+Bug9 任务「3」整改说明
+----------------------
+需求要求「feature / round 开头的文件合并到 urls 和 views 中，最终不保留
+feature / round 开头的文件」。本轮据此完成：
+
+1. ``blog/features_live2d.py`` → **重命名为 ``blog/live2d.py``**（真实业务模块，
+   按功能域命名），本文件改为 ``from . import live2d`` 引用；
+2. ``blog/features_round5/``（功能开关注册表 + 2 个端点）→ **整体并入本文件与
+   ``views.py``**：``Round5FeatureRegistry`` 迁入 ``blog/views.py``，
+   路由在本文件显式声明，原目录归档至 ``docs/archived_feature_stubs/round5_features/``；
+3. 历史遗留的 ``/test-404/`` 调试路由与 ``test_404_page`` 视图已归档至
+   ``docs/archived_feature_stubs/debug_routes/``（404 页由
+   ``CuteErrorPagesMiddleware`` 统一渲染，无需专用调试路由）。
 """
 from django.conf import settings
-from django.urls import path, include
+from django.urls import path
 
-from . import views
-from .features_round5 import urls as round5_urls
-from . import features_live2d
+from . import live2d, views
 
 # ---------------- 页面路由 ----------------
 # 对应 views.py 中的函数视图，name 供模板 {% url %} 与 reverse() 反解
@@ -126,6 +137,8 @@ api_urlpatterns = [
     path('article/<int:pk>/toggle-promotion/', views.api_article_toggle_promotion, name='api_toggle_promotion'),
     # Bug8：查询文章推广标记 + 当前用户申请状态（详情页按钮状态自检）
     path('article/<int:pk>/promotion-status/', views.api_article_promotion_status, name='api_promotion_status'),
+    # Bug9 任务2：全站文案包（前端 window.SITE_MSG 的远端补充源 / 离线场景使用）
+    path('site-messages/', views.api_site_messages, name='api_site_messages'),
     # 分类列表（GET）+ 新建分类（POST）
     path('categories/', views.CategoryListCreateView.as_view(), name='api_category_list'),
     # 单个分类的详情 / 修改 / 删除
@@ -175,31 +188,41 @@ api_urlpatterns = [
 # 第2轮迭代#237: URL SEO 说明——sitemap.xml / feed/ / robots.txt 独立路由
 # 第2轮迭代#238: URL 版本控制说明——/api/ 前缀即版本边界，后续可加 /api/v2/
 # 第2轮迭代#239: URL 别名——/home/ 等价于首页
-# Live2D 看板娘 API（参考 fghrsh/live2d_api 接口规范）
+# Live2D 看板娘 API（参考 fghrsh/live2d_api 接口规范；实现见 blog/live2d.py）
 urlpatterns += [
-    path('api/live2d/models/', features_live2d.model_list, name='live2d_model_list'),
-    path('api/live2d/get/', features_live2d.get_model, name='live2d_get_model'),
-    path('api/live2d/model/<str:model>/<int:skin>.json', features_live2d.get_model, name='live2d_model_json'),
-    path('api/live2d/switch_model/', features_live2d.switch_model, name='live2d_switch_model'),
-    path('api/live2d/rand_model/', features_live2d.rand_model, name='live2d_rand_model'),
-    path('api/live2d/switch_skin/', features_live2d.switch_skin, name='live2d_switch_skin'),
-    path('api/live2d/rand_skin/', features_live2d.rand_skin, name='live2d_rand_skin'),
-    path('api/live2d/game/', features_live2d.game_play, name='live2d_game'),
+    path('api/live2d/models/', live2d.model_list, name='live2d_model_list'),
+    path('api/live2d/get/', live2d.get_model, name='live2d_get_model'),
+    path('api/live2d/model/<str:model>/<int:skin>.json', live2d.get_model, name='live2d_model_json'),
+    path('api/live2d/switch_model/', live2d.switch_model, name='live2d_switch_model'),
+    path('api/live2d/rand_model/', live2d.rand_model, name='live2d_rand_model'),
+    path('api/live2d/switch_skin/', live2d.switch_skin, name='live2d_switch_skin'),
+    path('api/live2d/rand_skin/', live2d.rand_skin, name='live2d_rand_skin'),
+    path('api/live2d/game/', live2d.game_play, name='live2d_game'),
 ]
 
 urlpatterns += [
+    # URL 别名：/home/ 等价于首页（供历史链接与 SEO 兼容）
     path('home/', views.index, name='home_alias'),
-    # 第6轮: 404 页面手动测试路由（验证接樱花小游戏/文案/暗黑模式）
-    path('test-404/', views.test_404_page, name='test_404'),
     # 工单17：原 /api/features/ 下挂载的 1000 个路由均为自动生成的 csrf_exempt
     # echo 占位桩（仅回显请求体、无真实业务，且前端零调用），已整体移除并归档至
     # docs/archived_feature_stubs/，收敛攻击面、消除重复路由。
-    # 第5轮功能框架：仅保留真实的功能开关管理端点（/api/round5/features/）；
-    # 原 11,606 个无实现的占位路由已归档清理，详见 features_round5/urls.py。
-    path('api/round5/', include(round5_urls)),
+    # ------------------------------------------------------------------
+    # Bug9 任务「3」：原 blog/features_round5/ 子应用并入本文件
+    # ------------------------------------------------------------------
+    # 该子应用只提供「功能开关（feature flag）管理」这一真实能力，其余 11,606 个
+    # 自动生成占位路由早已归档清理。为满足「不保留 feature/round 开头的文件」，
+    # 原 urls.py 的两条路由在此显式声明，实现迁至 views.Round5FeatureRegistry。
+    # 端点语义保持不变（含 name 前缀 round5_features:*，避免破坏既有引用）。
+    path('api/round5/features/', views.round5_feature_list, name='feature_list'),
+    path('api/round5/features/<str:feature_id>/toggle/',
+         views.round5_feature_toggle, name='feature_toggle'),
     path('api/refresh-assets/', views.api_refresh_assets, name='api_refresh_assets'),
 ]
 # 第2轮迭代#240: URL 反向解析优化说明——统一用 name 反解，避免硬编码路径
+
+# Bug9 任务「3」：原 /test-404/ 调试路由已移除
+# （404 页由 CuteErrorPagesMiddleware 统一渲染，可用任意不存在路径验证；
+#   原实现归档于 docs/archived_feature_stubs/debug_routes/）
 
 # Bug27: 自定义萌系错误页（DEBUG=False 时由 Django 调用；DEBUG=True 时由 CuteErrorPagesMiddleware 接管）
 handler400 = 'django.views.defaults.bad_request'      # 渲染根模板 400.html
@@ -207,8 +230,12 @@ handler403 = 'django.views.defaults.permission_denied'  # 渲染根模板 403.ht
 handler404 = 'django.views.defaults.page_not_found'    # 渲染根模板 404.html
 handler500 = 'django.views.defaults.server_error'      # 渲染根模板 500.html
 
-# 调试：缓存查看端点（仅 DEBUG 模式挂载，用于开发时在浏览器查看进程内缓存）
+# 调试端点（仅 DEBUG 模式挂载）
 if settings.DEBUG:
     urlpatterns += [
+        # 查看本进程缓存快照（key / TTL / 片段命中统计）
         path('__debug_cache/', views.debug_cache_dump, name='debug_cache_dump'),
+        # Bug9：把外部脚本改过的数据库设置同步到本进程（清缓存），供自动化验收消除
+        # 「LocMemCache 进程内缓存」导致的脚本与服务端状态不一致
+        path('__dev_sync_state/', views.dev_sync_state, name='dev_sync_state'),
     ]

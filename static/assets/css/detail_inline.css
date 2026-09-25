@@ -35,6 +35,33 @@
 .pending-banner-ico { font-size:1.2rem; }
 .badge-pending { background:linear-gradient(135deg,#ffce6b,#ff9f6b); color:#fff; }
 
+/* ------------------------------------------------------------------
+ * Bug9-1/Bug9-2 定时投稿状态条（仅作者 / 管理员可见）
+ *  · --scheduled：未到点，粉紫渐变，表达「已排期、等待中」；
+ *  · --due      ：已到点但尚未被流转（兜底扫描 30 秒内完成），粉蓝渐变提示稍等。
+ * ------------------------------------------------------------------ */
+.scheduled-banner { display:flex; align-items:flex-start; gap:10px; margin:14px 0 4px;
+    padding:12px 16px; border-radius:14px; font-size:.9rem; line-height:1.65;
+    background:linear-gradient(135deg,#f3ecff,#ffe8f4); border:1px solid rgba(160,108,213,.34);
+    color:#5c4a86; }
+.scheduled-banner strong { color:#7a4fc0; }
+.scheduled-banner-ico { font-size:1.2rem; line-height:1.4; flex:0 0 auto; }
+.scheduled-banner-txt { min-width:0; word-break:break-word; }
+.scheduled-banner--due { background:linear-gradient(135deg,#e8f2ff,#f3ecff);
+    border-color:rgba(110,168,254,.38); color:#41598a; }
+.scheduled-banner--due strong { color:#2f6bd6; }
+/* 暗色主题：降低亮度、提高文字对比，避免浅底刺眼 */
+:root[data-theme="dark"] .scheduled-banner {
+    background:linear-gradient(135deg,rgba(160,108,213,.20),rgba(255,143,177,.16));
+    border-color:rgba(177,140,255,.46); color:#dcd2f7; }
+:root[data-theme="dark"] .scheduled-banner strong { color:#c9aeff; }
+:root[data-theme="dark"] .scheduled-banner--due {
+    background:linear-gradient(135deg,rgba(110,168,254,.20),rgba(160,108,213,.18));
+    border-color:rgba(150,190,255,.44); color:#d3e2ff; }
+:root[data-theme="dark"] .scheduled-banner--due strong { color:#a8c8ff; }
+/* 定时徽章（标题区）沿用同一套配色，保证语义一致 */
+.badge-scheduled { background:linear-gradient(135deg,#c8a6ff,#8fb8ff); color:#fff; }
+
 /* ===== 第三轮迁移：detail.html 行内 style 属性外移 ===== */
 .cover-placeholder { width: 100%; height: 100%; object-fit: cover; }
 .rs-color-swatch[data-theme-color=""] { background: linear-gradient(135deg,#a06cd5,#ff8fb1); }

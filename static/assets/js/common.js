@@ -520,17 +520,20 @@ document.documentElement.classList.toggle('high-contrast', contrastOn);
 
     function moeConfirm(opts) {
         opts = opts || {};
+        // Bug9 任务2：默认弹窗文案改从后端下发的文案包取（window.moeMsg），
+        // 取不到时回退到脚本内默认值，保证独立可用
+        var T = (typeof window.moeMsg === 'function') ? window.moeMsg : function (k, d) { return d || k; };
         return new Promise(function (resolve) {
             var modal = document.getElementById('globalConfirmModal');
             // 极端兜底：页面缺少预置弹窗时不阻塞流程（正常 base.html 一定包含）
             if (!modal) { resolve(true); return; }
             ensureModalCss();
-            modal.querySelector('#gcmTitle').textContent = opts.title || '请确认喵~';
+            modal.querySelector('#gcmTitle').textContent = opts.title || T('confirm_default');
             modal.querySelector('#gcmMsg').textContent = opts.message || '';
             var cancel = modal.querySelector('#gcmCancel');
             var ok = modal.querySelector('#gcmOk');
-            cancel.textContent = opts.cancelText || '再想想';
-            ok.textContent = opts.confirmText || '确定喵';
+            cancel.textContent = opts.cancelText || T('confirm_cancel');
+            ok.textContent = opts.confirmText || T('confirm_ok');
             ok.style.background = opts.danger
                 ? 'linear-gradient(135deg,#ff7a8a,#ff5d73)'
                 : 'linear-gradient(135deg,#ff8fb1,#a06cd5)';

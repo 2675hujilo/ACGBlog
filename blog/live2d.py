@@ -1,15 +1,31 @@
 # -*- coding: utf-8 -*-
-"""
-Live2D 看板娘 API
-参考 fghrsh/live2d_api 接口规范
-提供模型切换、皮肤切换、随机切换等功能
+"""Live2D 看板娘 API（原 ``blog/features_live2d.py``，Bug9 任务「3」规范化重命名）。
+
+接口规范参考 fghrsh/live2d_api，提供模型列表 / 取模型 / 切换模型 / 切换皮肤 /
+随机切换 / 猜拳小游戏等真实可用端点，供前端 ``waifu-init-new.js`` 调用。
+
+命名说明
+--------
+原文件名以 ``features_`` 开头，是历史批量生成功能的遗留前缀；本模块是**真实业务
+模块**，按「功能域命名」规范改名为 ``blog/live2d.py``。需求要求「最终结果不保留
+feature/round 开头的文件」，本模块即整改结果之一。
+
+与 ``blog/site_messages.py`` 的区别
+-----------------------------------
+本模块内的 ``TALKS`` 是**看板娘角色的台词库**（同一动作多种随机说法，属角色内容），
+与全站通用提示词注册表 ``site_messages.MESSAGES`` 用途不同，故保留在本模块内，
+仅改名以避免与全局 MESSAGES 混淆。
 """
 import json
 import os
 import random
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_http_methods
+
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+# Bug9 任务2：用户可见提示统一取自 blog/site_messages.py
+from .site_messages import msg
 
 # 模型配置：分组 -> 模型列表
 # 每个模型包含：id, name, model_json路径, 皮肤目录, 皮肤数量
@@ -43,8 +59,8 @@ MODELS = [
     }
 ]
 
-# 对话文案
-MESSAGES = {
+# 看板娘台词库：每个动作随机挑选一句，保持角色活泼口语化的二次元语气
+TALKS = {
     'switch_model': ['换好新衣服啦~好看吗？', '嘿嘿~新造型怎么样？', '人家换了个样子，还认得出来吗？'],
     'switch_skin': ['新衣服好看吗喵~', '人家换了套衣服呢~', '这个颜色也很可爱吧？'],
     'rand_model': ['随机到了新角色喵~', '猜猜这次是谁？', '惊喜！换了个新朋友~'],
@@ -116,7 +132,7 @@ def get_model(request, model=None, skin=None):
         with open(json_path, 'r', encoding='utf-8') as f:
             model_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        return JsonResponse({'error': '模型文件不存在'}, status=404)
+        return JsonResponse({'error': msg('live2d.model_missing')}, status=404)
     
     # 将所有相对路径转换为绝对路径
     def to_abs(rel_path):
@@ -172,7 +188,7 @@ def switch_model(request):
         'skin': 0,
         'skin_count': next_model['skin_count'],
         'model_url': model_url,
-        'message': random.choice(MESSAGES['switch_model'])
+        'message': random.choice(TALKS['switch_model'])
     })
 
 
@@ -199,7 +215,7 @@ def rand_model(request):
         'skin': 0,
         'skin_count': next_model['skin_count'],
         'model_url': model_url,
-        'message': random.choice(MESSAGES['rand_model'])
+        'message': random.choice(TALKS['rand_model'])
     })
 
 
@@ -229,7 +245,7 @@ def switch_skin(request):
         'skin': next_skin,
         'skin_count': model['skin_count'],
         'model_url': model_url,
-        'message': random.choice(MESSAGES['switch_skin'])
+        'message': random.choice(TALKS['switch_skin'])
     })
 
 
@@ -264,7 +280,7 @@ def rand_skin(request):
         'skin': next_skin,
         'skin_count': model['skin_count'],
         'model_url': model_url,
-        'message': random.choice(MESSAGES['rand_skin'])
+        'message': random.choice(TALKS['rand_skin'])
     })
 
 
@@ -284,7 +300,7 @@ def game_play(request):
     
     choices = ['石头', '剪刀', '布']
     if user_choice not in choices:
-        return JsonResponse({'error': '无效的选择，只能是石头/剪刀/布'}, status=400)
+        return JsonResponse({'error': msg('live2d.bad_choice')}, status=400)
     
     waifu_choice = random.choice(choices)
     

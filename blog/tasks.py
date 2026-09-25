@@ -131,69 +131,32 @@ def flush_access_log_queue(batch=500, max_batches=20):
 # 迭代#82: check_scheduled_articles任务docstring
 @shared_task
 def check_scheduled_articles():
-    """56 + Bug8. 定时发布检查任务（每分钟执行一次）。
+    """56 + Bug8/Bug9. 定时发布检查任务（每分钟执行一次）。
 
-    Bug8 修复要点（Bug 单原话：定时发布文章异常，若开启了审核定时发布后出现
-    draft；如果关闭审核，会直接发布）：
+    Bug8/Bug9 修复要点（Bug 单原话：定时发布文章异常，若开启了审核定时发布后出现
+    draft；如果关闭审核，会直接发布；到时间后文章应该是待审核或者已发布，
+    而不是草稿状态）：
 
     - 开启「普通作者新文章需审核」时：到点的定时文章 **不得直接发布**，而是
-      流转为 ``PENDING``（待审核）并入队内容审核页；管理员通过后才真正发布。
-      流转后 ``published_at`` 保持不变（保留作者预约的时间点，仅作为审核参考）。
-    - 关闭审核时：按原设计自动置为 ``PUBLISHED``（直接发布）。
+      流转为 ``PENDING``（待审核）并入队内容审核页；管理员通过后才真正发布；
+    - 关闭审核时：自动置为 ``PUBLISHED``（直接发布）；
+    - 管理员（staff）发文始终直接发布（与 article_new 的角色规则一致）；
     - 每条文章改用 ``save()`` 逐个流转，确保 ``post_save`` 信号（缓存失效、
-      搜索索引刷新等）照常触发，不再用 bulk ``update()`` 绕过信号。
-    - 同时写入 ``ModerationLog`` 审核历史，管理员能看到「定时转入待审核」的动作。
+      搜索索引刷新等）照常触发，不再用 bulk ``update()`` 绕过信号；
+    - 同时写入 ``ModerationLog`` 审核历史。
+
+    实际流转逻辑已收敛到 ``blog.scheduled_publishing.process_due_articles()``，
+    与请求侧兜底扫描器 ``maybe_sweep_due_articles()`` 共用同一实现，避免逻辑漂移。
 
     Returns:
         str: 简要执行结果描述。
     """
-    from django.core.cache import cache
-    from .cache_keys import invalidate_article, purge_prevnext
-    from .models import Article, ModerationLog, ModerationSettings
-    now = timezone.now()
-    due = list(Article.objects.filter(
-        status=Article.Status.DRAFT,
-        is_deleted=False,
-        published_at__isnull=False,
-        published_at__lte=now,
-    ).select_related('author')[:200])  # 单轮上限，避免异常堆积时一次处理过多
-    if not due:
-        return '已自动发布 0 篇定时文章'
-    # 是否开启文章审核：决定「定时到点」后进入 PENDING 还是直接 PUBLISHED
-    require_review = ModerationSettings.load().require_article_review
-    target_status = (Article.Status.PENDING if require_review
-                     else Article.Status.PUBLISHED)
+    from .scheduled_publishing import process_due_articles
     try:
-        changed_pks, published_cnt, pending_cnt = [], 0, 0
-        for article in due:
-            # 管理员发文始终可直接发布（与 article_new 的角色规则保持一致）
-            status = (Article.Status.PUBLISHED
-                      if article.author.is_staff else target_status)
-            article.status = status
-            article.save(update_fields=['status', 'updated_at'])   # 触发 post_save 信号
-            changed_pks.append(article.pk)
-            if status == Article.Status.PENDING:
-                pending_cnt += 1
-                ModerationLog.objects.create(
-                    moderator=None, moderator_name='系统·定时任务',
-                    action=ModerationLog.Action.SUBMIT, target_type='article',
-                    article=article, target_title=article.title,
-                    reason='定时发布时间已到（%s），因开启文章审核转入待审核'
-                           % article.published_at.strftime('%Y-%m-%d %H:%M'))
-            else:
-                published_cnt += 1
-        # 逐条 save() 虽已触发 post_save 缓存失效，这里再按 pk 精确失效一次，
-        # 覆盖详情页片段缓存中的 prev/next 与相关文章；新建发布不影响全站顺序
-        for pk in changed_pks:
-            invalidate_article(pk)
-        purge_prevnext()
-        cache.delete('sidebar_data')
-        cache.delete('footer_stats')
-        logger.info('定时发布: 直接发布 %s 篇，转入待审核 %s 篇（审核开关=%s）',
-                    published_cnt, pending_cnt, require_review)
+        result = process_due_articles()
         return ('已处理定时文章 %d 篇：直接发布 %d 篇，转入待审核 %d 篇'
-                % (len(changed_pks), published_cnt, pending_cnt))
-    except Exception as exc:
+                % (len(result['pks']), result['published'], result['pending']))
+    except Exception as exc:  # noqa: BLE001
         logger.error('定时发布检查失败: %s', exc)
         return f'定时发布检查失败: {exc}'
 

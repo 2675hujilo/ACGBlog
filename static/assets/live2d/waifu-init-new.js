@@ -430,7 +430,29 @@
     style.textContent = '@keyframes waifuFadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }';
     document.head.appendChild(style);
 
+    /* Bug9 任务7 配套：看板娘显示开关。
+       优先级：<html data-waifu="off">（由 MascotToggleMiddleware 依据
+       ?waifu=off 查询参数或 cookie waifu_pref=off 写入）> 系统「减少动态效果」偏好。
+       判定为关闭时本脚本直接不初始化——不创建 #waifu 容器、不请求模型文件，
+       既满足用户主动关闭看板娘的诉求，也让自动化视觉验收在稳定布局下测量溢出。 */
+    function mascotDisabled() {
+        try {
+            var html = document.documentElement;
+            if (html && html.getAttribute('data-waifu') === 'off') return true;
+        } catch (e) { /* 取属性失败按「不关闭」处理 */ }
+        try {
+            if (window.matchMedia
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return true;
+            }
+        } catch (e) { /* matchMedia 不可用时忽略 */ }
+        return false;
+    }
+
     // 启动
+    if (mascotDisabled()) {
+        return;
+    }
     if (document.body) {
         init();
     } else {

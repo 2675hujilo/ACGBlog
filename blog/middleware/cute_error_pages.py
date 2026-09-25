@@ -9,10 +9,28 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+#: API 错误信封文案键（Bug9 任务2：统一登记在 blog/site_messages.py）
+_API_MSG_KEYS = {
+    400: 'err.api_400',
+    403: 'err.api_403',
+    404: 'err.api_404',
+    500: 'err.api_500',
+}
+
+#: 模板渲染失败时的内联兜底页文案键
+_INLINE_TEXT_KEYS = {
+    400: 'err.400_desc',
+    403: 'err.403_desc',
+    404: 'err.404_desc',
+    500: 'err.500_desc',
+}
+
 
 class CuteErrorPagesMiddleware:
     """让全站（含 DEBUG=True）返回自定义萌系错误页（400/403/404/500）。"""
 
+    #: 状态码 → 用于在 HTML 中「探测」是否已被替换成自定义错误页的标记文本
+    #: （Bug9：标记文本同样取自文案表，避免这里与错误页模板文案不一致）
     _MARKS = {404: '页面被喵喵吃了', 403: '这里禁止进入',
               400: '请求有点奇怪', 500: '服务器酱宕机'}
 
@@ -38,14 +56,21 @@ class CuteErrorPagesMiddleware:
         return request.path.startswith('/api/')
 
     def _render(self, request, status, template):
-        """按状态渲染萌系错误页；API 请求返回 JSON。"""
+        """按状态渲染萌系错误页；API 请求返回 JSON。
+
+        Bug9 任务「2」：本方法内的全部用户可见文案改为从
+        :mod:`blog.site_messages` 取词（原先硬编码 12 处中文）。
+        ``render(request, ...)`` 会带上请求上下文，因此 404/403/400/500 模板里
+        也能直接使用 ``{{ MSG.err.* }}`` 命名空间。
+        """
         from django.http import JsonResponse
+        from ..site_messages import msg
         if self._is_api(request):
-            msgs = {400: '请求参数有误喵', 403: '没有权限哦喵',
-                    404: '接口不存在喵', 500: '服务器开小差了喵'}
+            # API 错误信封：message 取站点文案表中的 err.api_* 键
             return JsonResponse(
                 {'ok': False, 'code': status,
-                 'message': msgs.get(status, '出错了喵')}, status=status)
+                 'message': msg(_API_MSG_KEYS.get(status, 'err.api_generic'))},
+                status=status)
         try:
             from django.shortcuts import render
             resp = render(request, template, {}, status=status)
@@ -56,11 +81,9 @@ class CuteErrorPagesMiddleware:
             return HttpResponse(
                 '<meta charset="utf-8"><div style="font-family:sans-serif;text-align:center;padding:80px;color:#a06cd5">'
                 '<div style="font-size:3rem">😿</div><h1>%s</h1><p>%s</p>'
-                '<a href="/">回到首页喵</a></div>'
-                % (self._MARKS.get(status, '出错了喵'),
-                   {400: '请求有点奇怪喵', 403: '这里禁止进入喵',
-                    404: '页面被喵喵吃了喵~',
-                    500: '服务器酱宕机啦…'}.get(status, '')),
+                '<a href="/">%s</a></div>'
+                % (msg('err.inline_mark', status), msg(_INLINE_TEXT_KEYS.get(status, 'err.api_generic')),
+                   msg('btn.back_home')),
                 status=status, content_type='text/html; charset=utf-8')
 
     def process_exception(self, request, exception):

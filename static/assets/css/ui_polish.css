@@ -1279,6 +1279,239 @@ body[data-animation="rich"] [class*="drift"] { animation-duration: 3s !important
     border: none;
 }
 .btn-danger:hover { background: #e53e3e; }
+
+/* ==================================================================
+ * Bug9 任务「7」：全站按钮交互骨架（悬浮 / 点击 / 选中 / 禁用 / 键盘聚焦）
+ * ------------------------------------------------------------------
+ * 需求原文：检查前端所有的按钮鼠标悬浮后、点击、选中时的状态，
+ *          字体风格和背景符合二次元风格、功能正常。
+ *
+ * 设计要点（二次元轻量萌系：柔和圆润、清新通透）：
+ *   · 形态    —— 胶囊/大圆角，描边用主题边框色，背景走玻璃拟态变量；
+ *   · 悬浮    —— 上浮 1px + 粉紫渐变描边 + 柔和投影（不用刺眼的高饱和色块）；
+ *   · 点击    —— 下沉 1px 并轻微缩放（.98），给出「按下去」的物理反馈；
+ *   · 选中    —— 粉紫蓝渐变实心 + 白字 + 内发光，明暗主题都保持高对比；
+ *   · 禁用    —— 降饱和 + not-allowed 光标 + 去掉位移/投影，明确不可点击；
+ *   · 键盘    —— :focus-visible 用 2px 主题色描边环，键盘用户可辨；
+ *   · 降低动效—— prefers-reduced-motion 下取消所有 transform/transition。
+ *
+ * 覆盖范围：全站通用按钮类，以及「看起来像按钮」的胶囊控件
+ * （.chip 可点标签、分页、排序 tab、推广按钮、审核按钮等），
+ * 统一到同一套交互语言，避免各页面各写一套 hover。
+ * ================================================================== */
+
+/* ---- 1. 通用过渡：所有按钮共享同一时长与缓动，保证手感一致 ---- */
+.btn-primary,
+.btn-sm,
+.btn-ghost,
+.btn-danger,
+.promo-toggle,
+.promo-apply-btn,
+.mod-btn,
+.sort-btn,
+.chip-sort,
+.moderation-tab,
+.page-link,
+.rs-pill,
+.avatar-fit-btn {
+    transition: transform .18s ease,
+                box-shadow .18s ease,
+                background .18s ease,
+                color .18s ease,
+                border-color .18s ease,
+                filter .18s ease;
+    will-change: transform;
+}
+
+/* ---- 2. 悬浮：上浮 + 渐变描边 + 柔和投影（保持原文字颜色，不刺眼） ---- */
+.btn-sm:hover,
+.btn-ghost:hover,
+.promo-toggle:hover,
+.promo-apply-btn:hover,
+.mod-btn:hover,
+.sort-btn:hover,
+.chip-sort:hover,
+.page-link:hover,
+.rs-pill:hover,
+.avatar-fit-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--c-primary);
+    box-shadow: 0 6px 18px rgba(160, 108, 213, .26);
+}
+:root[data-theme="dark"] .btn-sm:hover,
+:root[data-theme="dark"] .btn-ghost:hover,
+:root[data-theme="dark"] .promo-toggle:hover,
+:root[data-theme="dark"] .promo-apply-btn:hover,
+:root[data-theme="dark"] .mod-btn:hover,
+:root[data-theme="dark"] .page-link:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+}
+/* 主按钮悬浮：亮度微增 + 同款投影（渐变本身已是粉紫，不换色只加光） */
+.btn-primary:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(160, 108, 213, .38);
+}
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(229, 62, 62, .34);
+}
+
+/* ---- 3. 点击：下沉 + 轻微缩放，给出物理反馈 ---- */
+.btn-primary:active,
+.btn-sm:active,
+.btn-ghost:active,
+.btn-danger:active,
+.promo-toggle:active,
+.promo-apply-btn:active,
+.mod-btn:active,
+.sort-btn:active,
+.chip-sort:active,
+.page-link:active,
+.rs-pill:active,
+.avatar-fit-btn:active {
+    transform: translateY(1px) scale(.98);
+    box-shadow: 0 2px 6px rgba(160, 108, 213, .22);
+}
+
+/* ---- 4. 选中态：粉紫蓝渐变实心 + 白字 + 内发光（明暗一致的高对比） ---- */
+.btn-sm.is-active,
+.btn-ghost.is-active,
+.chip-sort.is-active,
+.sort-btn.is-active,
+.moderation-tab.is-active,
+.page-link.is-active,
+.page-link[aria-current="page"],
+.rs-pill.is-active,
+.category-chip.is-active,
+.chip.chip--active,
+.chip[aria-pressed="true"],
+.tab.is-active,
+[role="tab"][aria-selected="true"] {
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple), var(--c-blue)) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 14px rgba(160, 108, 213, .40),
+                inset 0 0 0 1px rgba(255, 255, 255, .28) !important;
+    font-weight: 700;
+}
+/* 选中态下悬浮不改变色相，只加深投影，避免"选中后变回浅色"的错乱感 */
+.btn-sm.is-active:hover,
+.chip-sort.is-active:hover,
+.sort-btn.is-active:hover,
+.moderation-tab.is-active:hover,
+.page-link.is-active:hover,
+.chip.chip--active:hover {
+    color: #fff !important;
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+/* ---- 5. 禁用态：不可点击的明确视觉 ---- */
+.btn-primary:disabled,
+.btn-sm:disabled,
+.btn-ghost:disabled,
+.btn-danger:disabled,
+.promo-toggle:disabled,
+.mod-btn:disabled,
+.promo-apply-btn:disabled,
+button[aria-disabled="true"] {
+    cursor: not-allowed !important;
+    opacity: .6;
+    filter: grayscale(.35);
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* ---- 6. 键盘聚焦环：键盘用户可辨，鼠标点击不显示（:focus-visible） ---- */
+.btn-primary:focus-visible,
+.btn-sm:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible,
+.promo-toggle:focus-visible,
+.promo-apply-btn:focus-visible,
+.mod-btn:focus-visible,
+.sort-btn:focus-visible,
+.chip-sort:focus-visible,
+.moderation-tab:focus-visible,
+.page-link:focus-visible,
+.rs-pill:focus-visible,
+.avatar-fit-btn:focus-visible,
+.chip:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+    border-radius: 999px;
+}
+
+/* ---- 7. 图标型按钮：悬浮时图标轻微放大，增强"被指到"的反馈 ---- */
+.btn-sm .icon,
+.btn-ghost .icon,
+.mod-btn .icon,
+.promo-toggle .icon {
+    transition: transform .18s ease;
+}
+.btn-sm:hover .icon,
+.btn-ghost:hover .icon,
+.mod-btn:hover .icon,
+.promo-toggle:hover .icon {
+    transform: scale(1.12) rotate(-3deg);
+}
+
+/* ---- 8. 无障碍：系统开启"减少动态效果"时取消所有位移动画 ---- */
+@media (prefers-reduced-motion: reduce) {
+    .btn-primary,
+    .btn-sm,
+    .btn-ghost,
+    .btn-danger,
+    .promo-toggle,
+    .promo-apply-btn,
+    .mod-btn,
+    .sort-btn,
+    .chip-sort,
+    .moderation-tab,
+    .page-link,
+    .rs-pill,
+    .avatar-fit-btn,
+    .btn-sm .icon,
+    .btn-ghost .icon,
+    .mod-btn .icon,
+    .promo-toggle .icon {
+        transition: none !important;
+        transform: none !important;
+    }
+    .btn-primary:hover,
+    .btn-sm:hover,
+    .btn-ghost:hover,
+    .btn-danger:hover,
+    .mod-btn:hover,
+    .chip-sort:hover,
+    .page-link:hover {
+        transform: none !important;
+    }
+}
+
+/* ---- 9. 移动端触屏：用 :active 反馈替代 hover（触屏没有 hover 概念） ---- */
+@media (hover: none) {
+    .btn-primary:hover,
+    .btn-sm:hover,
+    .btn-ghost:hover,
+    .btn-danger:hover,
+    .mod-btn:hover,
+    .page-link:hover,
+    .chip-sort:hover {
+        transform: none !important;
+    }
+    .btn-primary:active,
+    .btn-sm:active,
+    .btn-ghost:active,
+    .btn-danger:active,
+    .mod-btn:active,
+    .page-link:active {
+        transform: scale(.97) !important;
+        filter: brightness(.96);
+    }
+}
+
 .form-hint {
     font-size: 12px;
     color: #8a8299;
@@ -1332,6 +1565,9 @@ body[data-animation="rich"] [class*="drift"] { animation-duration: 3s !important
 }
 [hidden].form-error-text,
 [hidden].field-error { display: none !important; }
+/* 可见态双通道：脚本显式加 .is-visible 时强制显示（优先级高于 [hidden] 兜底） */
+.form-error-text.is-visible,
+.field-error.is-visible { display: block !important; }
 /* 空提示（模板预置占位、本次无错误）不占位 */
 .form-error-text:empty,
 .field-error:empty { display: none !important; }

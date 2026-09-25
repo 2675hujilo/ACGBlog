@@ -55,6 +55,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware', # 防止点击劫持
     'blog.middleware.OnlineStatusMiddleware',                    # 第5轮: 在线状态更新
     'blog.middleware.SiteInfoMiddleware',                        # 工单15: 站点信息单例注入
+    'blog.middleware.SiteMessagesMiddleware',                    # Bug9: 全站文案注入 request.msg
+    'blog.middleware.MascotToggleMiddleware',                    # Bug9: 看板娘开关（?waifu=on|off）
     'blog.middleware.CuteErrorPagesMiddleware',                 # Bug27: DEBUG下也显示萌系错误页
 ]
 
@@ -85,6 +87,8 @@ TEMPLATES = [
                 'blog.context_processors.unread_notification_count', # 第5轮: 未读通知数
                 'blog.context_processors.build_token',              # bug20/21: 注入构建版本号
                 'blog.context_processors.site_info_ctx',           # 工单15: 注入站点信息(网站名/Logo/介绍/页脚文案)
+                'blog.context_processors.site_messages_ctx',       # Bug9: 注入全站文案命名空间 MSG / SITE_MSG_JS
+                'blog.middleware.mascot.waifu_enabled',             # Bug9: 注入看板娘开关 waifu_enabled
             ],
         },
     },

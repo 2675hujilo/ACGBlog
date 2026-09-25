@@ -5,7 +5,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,follow">
-<title>403 - 这里禁止进入喵</title>
+{# Bug9 任务2：错误页文案取自后端文案表（{{ MSG.err.* }}），保持全站口径一致 #}
+<title>{{ MSG.err.403_title }}</title>
 {# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
 <script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <link rel="stylesheet" href="{% static 'assets/css/error403.min.css' %}?v={{ BUILD_TOKEN }}">
@@ -18,9 +19,10 @@
     <span class="float">🚫</span>
     <div class="card" role="group" aria-label="权限提示">
         <div class="illust" role="img" aria-label="禁止进入">🚫😾🔒</div>
-        <h1>这里禁止进入喵</h1>
-        <p class="sub" id="err-desc">你还没有对应的权限哦</p>
-        <a class="btn-home" href="/" aria-label="返回首页">回到首页喵</a>
+        <h1>{{ MSG.err.403_heading }}</h1>
+        <p class="sub" id="err-desc">{{ MSG.err.403_desc }}</p>
+        <p class="sub">{{ MSG.err.403_hint }}</p>
+        <a class="btn-home" href="/" aria-label="返回首页">{{ MSG.btn.back_home }}</a>
     </div>
 </body>
 </html>
