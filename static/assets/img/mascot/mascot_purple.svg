@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" width="200" height="260">
+  <defs>
+    <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b794f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#805ad5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dressGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d6bcfa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9f7aea;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="cheekGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#feb2b2;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#feb2b2;stop-opacity:0" />
+    </radialGradient>
+    <linearGradient id="wandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbd38d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d69e2e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- ===== 腿部组（可踏步动画） ===== -->
+  <g class="mascot-legs" style="transform-origin: 100px 180px;">
+    <!-- 左腿 -->
+    <ellipse cx="85" cy="210" rx="10" ry="25" fill="#fef5e7" />
+    <ellipse cx="85" cy="235" rx="12" ry="8" fill="#805ad5" />
+    <!-- 右腿 -->
+    <ellipse cx="115" cy="210" rx="10" ry="25" fill="#fef5e7" />
+    <ellipse cx="115" cy="235" rx="12" ry="8" fill="#805ad5" />
+    <!-- 白色长袜边 -->
+    <rect x="76" y="190" width="18" height="6" rx="3" fill="#fff" opacity="0.9" />
+    <rect x="106" y="190" width="18" height="6" rx="3" fill="#fff" opacity="0.9" />
+  </g>
+
+  <!-- ===== 身体组（呼吸动画） ===== -->
+  <g class="mascot-body" style="transform-origin: 100px 160px;">
+    <!-- 连衣裙 -->
+    <path d="M 70 155 Q 60 200 55 220 L 145 220 Q 140 200 130 155 Z" fill="url(#dressGrad)" />
+    <!-- 连衣裙领口 -->
+    <path d="M 80 155 Q 100 165 120 155 L 118 148 Q 100 155 82 148 Z" fill="#fff" opacity="0.8" />
+    <!-- 腰带 -->
+    <rect x="68" y="175" width="64" height="8" rx="4" fill="#f687b3" />
+    <!-- 腰带蝴蝶结 -->
+    <circle cx="100" cy="179" r="6" fill="#f687b3" />
+    <path d="M 88 179 L 94 174 L 94 184 Z" fill="#f687b3" />
+    <path d="M 112 179 L 106 174 L 106 184 Z" fill="#f687b3" />
+    <!-- 裙子花边 -->
+    <path d="M 55 220 Q 65 228 75 220 Q 85 228 95 220 Q 105 228 115 220 Q 125 228 135 220 Q 145 228 145 220" fill="none" stroke="#fff" stroke-width="3" opacity="0.7" />
+  </g>
+
+  <!-- ===== 左手臂组（可挥手） ===== -->
+  <g class="mascot-arm-left" style="transform-origin: 72px 160px;">
+    <ellipse cx="62" cy="175" rx="8" ry="20" fill="#fef5e7" transform="rotate(-20 62 175)" />
+    <!-- 手 -->
+    <circle cx="55" cy="192" r="7" fill="#fef5e7" />
+  </g>
+
+  <!-- ===== 右手臂组（持魔法棒，可挥动） ===== -->
+  <g class="mascot-arm-right" style="transform-origin: 128px 160px;">
+    <ellipse cx="138" cy="170" rx="8" ry="20" fill="#fef5e7" transform="rotate(25 138 170)" />
+    <!-- 手 -->
+    <circle cx="145" cy="155" r="7" fill="#fef5e7" />
+    <!-- 魔法棒 -->
+    <g class="mascot-wand" style="transform-origin: 145px 155px;">
+      <rect x="143" y="100" width="4" height="55" rx="2" fill="url(#wandGrad)" />
+      <!-- 星星 -->
+      <path d="M 145 85 L 148 95 L 158 95 L 150 101 L 153 111 L 145 105 L 137 111 L 140 101 L 132 95 L 142 95 Z" fill="#fbd38d" stroke="#d69e2e" stroke-width="1" />
+      <!-- 星星光晕 -->
+      <circle cx="145" cy="98" r="12" fill="#fef3c7" opacity="0.4" />
+      <!-- 月牙装饰 -->
+      <path d="M 150 88 Q 155 92 150 96 Q 147 92 150 88" fill="#fff" opacity="0.8" />
+    </g>
+  </g>
+
+  <!-- ===== 头部组（可点头、眨眼） ===== -->
+  <g class="mascot-head" style="transform-origin: 100px 100px;">
+    <!-- 后发 -->
+    <ellipse cx="100" cy="105" rx="52" ry="55" fill="url(#hairGrad)" />
+    <!-- 猫左耳 -->
+    <g class="mascot-ear-left" style="transform-origin: 68px 60px;">
+      <path d="M 55 65 L 62 35 L 78 58 Z" fill="url(#hairGrad)" />
+      <path d="M 60 60 L 64 42 L 73 56 Z" fill="#fbb6ce" opacity="0.6" />
+    </g>
+    <!-- 猫右耳 -->
+    <g class="mascot-ear-right" style="transform-origin: 132px 60px;">
+      <path d="M 145 65 L 138 35 L 122 58 Z" fill="url(#hairGrad)" />
+      <path d="M 140 60 L 136 42 L 127 56 Z" fill="#fbb6ce" opacity="0.6" />
+    </g>
+    <!-- 脸 -->
+    <ellipse cx="100" cy="105" rx="38" ry="40" fill="#fef5e7" />
+    <!-- 刘海 -->
+    <path d="M 62 90 Q 70 55 100 52 Q 130 55 138 90 Q 130 75 115 78 Q 108 65 100 68 Q 92 65 85 78 Q 70 75 62 90" fill="url(#hairGrad)" />
+    <!-- 侧发 -->
+    <ellipse cx="65" cy="110" rx="10" ry="30" fill="url(#hairGrad)" />
+    <ellipse cx="135" cy="110" rx="10" ry="30" fill="url(#hairGrad)" />
+    <!-- 左眼 -->
+    <g class="mascot-eye-left" style="transform-origin: 85px 105px;">
+      <ellipse cx="85" cy="105" rx="7" ry="10" fill="#2d3748" />
+      <ellipse cx="87" cy="102" rx="3" ry="4" fill="#fff" />
+      <ellipse cx="83" cy="108" rx="2" ry="2" fill="#b794f6" opacity="0.5" />
+    </g>
+    <!-- 右眼 -->
+    <g class="mascot-eye-right" style="transform-origin: 115px 105px;">
+      <ellipse cx="115" cy="105" rx="7" ry="10" fill="#2d3748" />
+      <ellipse cx="117" cy="102" rx="3" ry="4" fill="#fff" />
+      <ellipse cx="113" cy="108" rx="2" ry="2" fill="#b794f6" opacity="0.5" />
+    </g>
+    <!-- 腮红 -->
+    <ellipse cx="75" cy="118" rx="8" ry="5" fill="url(#cheekGrad)" />
+    <ellipse cx="125" cy="118" rx="8" ry="5" fill="url(#cheekGrad)" />
+    <!-- 嘴巴 -->
+    <path class="mascot-mouth" d="M 95 122 Q 100 127 105 122" fill="none" stroke="#e53e3e" stroke-width="2" stroke-linecap="round" />
+    <!-- 星星发饰 -->
+    <path d="M 125 70 L 127 76 L 133 76 L 128 80 L 130 86 L 125 82 L 120 86 L 122 80 L 117 76 L 123 76 Z" fill="#fbd38d" />
+  </g>
+
+  <!-- 漂浮装饰粒子 -->
+  <g class="mascot-sparkles" opacity="0.8">
+    <circle cx="40" cy="80" r="2" fill="#fbd38d" />
+    <circle cx="165" cy="100" r="2" fill="#fbb6ce" />
+    <circle cx="35" cy="150" r="1.5" fill="#b794f6" />
+    <circle cx="170" cy="170" r="1.5" fill="#fbd38d" />
+    <path d="M 30 120 L 32 125 L 37 125 L 33 128 L 35 133 L 30 130 L 25 133 L 27 128 L 23 125 L 28 125 Z" fill="#fef3c7" opacity="0.6" />
+  </g>
+</svg>

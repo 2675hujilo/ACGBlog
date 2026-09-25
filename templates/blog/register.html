@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}注册 · {{ site_name }}{% endblock %}
+{% block content %}
+<noscript><div class="noscript-banner noscript-banner--auth" role="alert" >🌸 注册表单可正常提交，但密码强度实时校验需要 JavaScript。</div></noscript>
+{# bug8：与登录页统一的共享二次元背景层 #}
+{% include 'partials/_auth_bg.html' %}
+<div class="auth-wrap">
+    <div class="auth-card">
+                <h1 class="auth-title">加入我们 🌸</h1>
+<form method="post" autocomplete="on">
+            {% csrf_token %}
+            <label for="id_reg_username">用户名</label>
+<input type="text" id="id_reg_username" name="username" required autofocus maxlength="50" autocomplete="username" aria-label="用户名" pattern="^[a-zA-Z0-9_]{3,50}$" aria-required="true" aria-invalid="false" aria-describedby="reg-user-error reg-user-help" aria-errormessage="reg-user-error">
+<span id="reg-user-error" class="field-error" role="alert" hidden>用户名需为 3-50 位字母、数字或下划线</span>
+            <span id="reg-user-help" class="form-hint">3-50 位字母、数字或下划线</span>
+            <label>昵称（可选）</label>
+            <input type="text" name="nickname" maxlength="50" aria-label="昵称">
+            <label>密码（至少 8 位）</label>
+            <input type="password" name="password" required minlength="8" maxlength="64" autocomplete="new-password" aria-label="密码">
+            <input type="hidden" name="password_step" value="1" step="1">
+            <label>确认密码</label>
+                        <input type="password" name="password2" required minlength="8" autocomplete="new-password" aria-label="确认密码">
+            <p class="form-success" id="reg-success" role="status" hidden>🎉 验证通过，可以注册啦</p>
+            <button type="reset" class="btn-ghost" style="..." formnovalidate>清空喵</button>
+            <button type="submit" class="btn-primary" style="width:100%;margin-top:10px;" aria-label="注册" formenctype="application/x-www-form-urlencoded" formaction="{% url 'register' %}">注册喵</button>
+        </form>
+        <p class="auth-alt muted">已有账号？<a href="{% url 'login' %}">直接登录喵</a></p>
+        {# 工单6 第7项：原第三方登录（GitHub/微信/微博）为无功能占位，已移除 #}
+    </div>
+</div>
+{% endblock %}

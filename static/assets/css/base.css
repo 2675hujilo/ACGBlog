@@ -1,0 +1,258 @@
+/* ============================================================
+ * base.css —— 全站基础样式（萌百风格：粉紫蓝玻璃拟态，明暗双主题）
+ * 设计令牌 / 重置 / 顶部导航 / 页脚 / 按钮 / 表单 / 消息 / 登录卡片
+ * ============================================================ */
+
+/* ---------- 设计令牌：亮色主题 CSS 变量 ---------- */
+:root {
+    /* 品牌三色：粉 / 紫 / 蓝，用于渐变、图标、强调元素 */
+    --c-pink: #ff8fb1;        /* 樱花粉：暖色调强调、渐变起点 */
+    --c-purple: #a06cd5;      /* 薰衣草紫：主品牌色 */
+    --c-blue: #6ea8fe;        /* 晴空蓝：冷色调强调、渐变终点 */
+    --c-primary: var(--c-purple);       /* 主色别名，统一引用入口 */
+    --c-primary-soft: #f3ecff;         /* 主色浅色底：胶囊选中态、标签背景 */
+    --c-accent: var(--c-pink);         /* 悬停/强调色别名 */
+
+    /* 文本与背景色 */
+    --c-text: #2b2340;        /* 正文主色：深紫灰 */
+    --c-text-dim: #6b6480;    /* 次要文字：辅助说明、标签 */
+    --c-bg: #f4f2fb;          /* 页面底色：极浅紫白 */
+    --c-card: rgba(255, 255, 255, 0.72); /* 卡片半透明白底，配合 backdrop-filter 实现玻璃拟态 */
+    --c-border: rgba(160, 108, 213, 0.18); /* 边框色：低透明度紫色描边 */
+    --c-danger: #e0557a;      /* 危险/错误操作色 */
+
+    /* 间距刻度（4px 基准）：1=4 2=8 3=16 4=24 5=40 */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 40px;
+
+    /* 圆角与阴影 */
+    --radius: 14px;           /* 常规卡片圆角 */
+    --radius-sm: 8px;         /* 小元素圆角：按钮、输入框 */
+    --shadow-card: 0 8px 28px rgba(120, 90, 200, 0.12);   /* 卡片默认投影 */
+    --shadow-hover: 0 12px 34px rgba(120, 90, 200, 0.22); /* 悬停加深投影 */
+
+    /* 字体栈：正文优先使用系统中文字体 */
+    --font-body: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    --font-mono: Consolas, "JetBrains Mono", monospace;
+
+    /* 表面色：实色卡片/输入框背景（不透明，与 --c-card 区别在于无透明度） */
+    --c-surface: #ffffff;
+    --c-input-bg: #ffffff;
+}
+
+/* ---------- 设计令牌：暗色主题覆盖（通过 data-theme="dark" 切换） ---------- */
+:root[data-theme="dark"] {
+    --c-text: #e9e4f6;
+    --c-text-dim: #a99fc8;
+    --c-bg: #16131f;
+    --c-card: rgba(46, 40, 66, .72);
+    --c-border: rgba(160, 108, 213, .30);
+    --c-primary-soft: rgba(160, 108, 213, .16);
+    --c-surface: #2b2540;
+    --c-input-bg: #2b2540;
+    --shadow-card: 0 8px 28px rgba(0, 0, 0, .45);
+    --shadow-hover: 0 12px 34px rgba(0, 0, 0, .55);
+}
+
+/* ---------- 全局重置与基础排版 ---------- */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }  /* 锚点跳转平滑滚动 */
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--c-text);
+    line-height: 1.7;
+    /* 双层径向渐变营造粉/紫氛围光，叠加纯色底 */
+    background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(255, 143, 177, .18), transparent 60%),
+        radial-gradient(1000px 500px at 110% 0%, rgba(110, 168, 254, .18), transparent 60%),
+        var(--c-bg);
+    background-attachment: fixed;  /* 背景固定不随内容滚动，避免渐变断层 */
+}
+:root[data-theme="dark"] body {
+    background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(255, 143, 177, .10), transparent 60%),
+        radial-gradient(1000px 500px at 110% 0%, rgba(110, 168, 254, .10), transparent 60%),
+        var(--c-bg);
+}
+a { color: var(--c-primary); text-decoration: none; }
+a:hover { color: var(--c-accent); }
+img { max-width: 100%; }
+
+/* ---------- 通用工具类 ---------- */
+.container { max-width: 1850px; margin: 0 auto; padding: 0 var(--space-4); }  /* 居中容器，拉宽布局 */
+.muted { color: var(--c-text-dim); font-size: .9rem; }  /* 弱化文字样式 */
+.inline-form { display: inline; }  /* 行内表单（如退出登录按钮组） */
+
+/* ---------- 阅读进度条：固定在顶部，JS 控制 width 百分比 ---------- */
+.reading-progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple), var(--c-blue));
+    z-index: 1000; transition: width .1s linear;
+}
+
+/* ---------- 顶部导航栏：sticky 吸附 + 毛玻璃效果 ---------- */
+.site-header {
+    position: sticky; top: 0; z-index: 900;
+    backdrop-filter: blur(14px);  /* 毛玻璃模糊，配合半透明背景实现玻璃拟态 */
+    background: rgba(255, 255, 255, .72);
+    border-bottom: 1px solid var(--c-border);
+}
+:root[data-theme="dark"] .site-header { background: rgba(22, 19, 31, .72); }  /* 暗色主题导航背景 */
+.nav-bar { display: flex; align-items: center; gap: var(--space-3); padding: 10px 0; flex-wrap: wrap; }
+.nav-brand { font-weight: 800; font-size: 1.15rem; color: var(--c-text); white-space: nowrap; }  /* 站点名称 */
+.nav-links { display: flex; gap: 4px; flex-wrap: wrap; }  /* 导航链接组 */
+.nav-link { padding: 6px 12px; border-radius: 999px; color: var(--c-text); font-size: .92rem; }  /* 胶囊形导航项 */
+.nav-link.active, .nav-link:hover { background: var(--c-primary-soft); color: var(--c-primary); }
+.nav-cta { background: linear-gradient(90deg, var(--c-pink), var(--c-purple)); color: #fff !important; }  /* 高亮 CTA 按钮（写文章） */
+.nav-search { display: flex; flex: 1; min-width: 200px; max-width: 420px; }  /* 导航栏搜索框，弹性填充剩余空间 */
+.nav-search input {
+    flex: 1; padding: 7px 14px; border: 1px solid var(--c-border); margin: 0;
+    border-radius: 999px 0 0 999px; outline: none; background: var(--c-input-bg); color: var(--c-text);
+}
+.nav-search button {
+    border: none; padding: 7px 16px; margin: 0; border-radius: 0 999px 999px 0; width: auto;
+    background: var(--c-primary); color: #fff; cursor: pointer;
+}
+.nav-user { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }  /* 右侧用户区，自动靠右 */
+.nav-username { font-weight: 600; font-size: .9rem; }
+.nav-link-btn {
+    background: none; border: none; cursor: pointer; color: var(--c-text);
+    padding: 6px 12px; border-radius: 999px; font-size: .92rem; width: auto;
+}
+.nav-link-btn:hover { background: var(--c-primary-soft); }
+.theme-toggle {  /* 明暗主题切换圆形按钮 */
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer; margin: 0; padding: 0; width: 36px;
+    border: 1px solid var(--c-border); background: var(--c-card);
+    font-size: 1rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.theme-toggle:hover { transform: rotate(18deg); }  /* 悬停微旋转，二次元趣味交互 */
+
+/* ---------- 主内容区与页脚 ---------- */
+.site-main { min-height: 70vh; padding: var(--space-4) 0; }  /* 保证页脚自然贴底 */
+.site-footer {
+    margin-top: var(--space-5); padding: var(--space-4) 0;
+    border-top: 1px solid var(--c-border); text-align: center;
+    background: rgba(255, 255, 255, .5); color: var(--c-text-dim);
+}
+:root[data-theme="dark"] .site-footer { background: rgba(22, 19, 31, .5); }
+.footer-copy { font-size: .85rem; margin: 0; }
+
+/* ---------- 按钮体系：主按钮 / 小按钮 / 危险按钮 ---------- */
+.btn-primary {
+    display: inline-block; padding: 9px 22px; border: none; border-radius: 999px;
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple));  /* 粉紫渐变主按钮 */
+    color: #fff !important; cursor: pointer; font-size: .95rem; margin: 4px 0;
+    box-shadow: var(--shadow-card);
+}
+.btn-primary:hover { box-shadow: var(--shadow-hover); }
+.btn-sm {  /* 小号胶囊按钮：标签、操作链接 */
+    display: inline-block; padding: 4px 12px; margin: 2px; border-radius: 999px;
+    border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text);
+    cursor: pointer; font-size: .84rem;
+}
+.btn-sm:hover { background: var(--c-primary-soft); color: var(--c-primary); }
+.btn-danger { border-color: rgba(224, 85, 122, .4); color: var(--c-danger); }  /* 危险操作变体 */
+
+/* ---------- 表单控件 ---------- */
+input, textarea, select {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--c-border); margin: 4px 0 12px;
+    border-radius: var(--radius-sm); font-family: inherit; font-size: .95rem;
+    background: var(--c-input-bg); color: var(--c-text);
+}
+/* 复选框/单选框不占满整行，宽度自适应 */
+input[type="checkbox"], input[type="radio"] { width: auto; margin: 0 6px 0 0; }
+label { font-size: .9rem; color: var(--c-text-dim); }
+.edit-actions { margin-top: var(--space-3); display: flex; gap: var(--space-2); align-items: center; }  /* 编辑页操作按钮组 */
+.form-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }  /* 表单横排行 */
+.form-row > div { flex: 1; min-width: 180px; }  /* 等宽列，小屏自动换行 */
+
+/* ---------- Flash 消息（服务端闪现提示）：success / error / info 三态 ---------- */
+.flash-stack { margin-bottom: var(--space-3); }
+.flash { padding: 10px 16px; border-radius: var(--radius-sm); margin-bottom: 8px; }
+.flash-success { background: #e8f0ff; color: #2a5cd7; }  /* 成功：蓝色系 */
+.flash-error, .flash-danger { background: #ffe9ef; color: #c03560; }  /* 错误/危险：粉色系 */
+.flash-info { background: var(--c-primary-soft); color: var(--c-primary); }  /* 信息：紫色系 */
+
+/* ---------- 空态提示：列表无数据时居中显示 ---------- */
+.empty-tip { text-align: center; color: var(--c-text-dim); padding: var(--space-5) 0; }
+
+/* ---------- 回到顶部按钮：默认隐藏，滚动后由 JS 添加 .show 类 ---------- */
+.back-to-top {
+    position: fixed; right: 24px; bottom: 24px; width: 44px; height: 44px; z-index: 800;
+    border-radius: 50%; border: none; cursor: pointer; font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--c-purple), var(--c-blue)); color: #fff;
+    box-shadow: var(--shadow-card); opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.back-to-top.show { opacity: 1; pointer-events: auto; }
+
+/* ---------- 登录/注册卡片：居中玻璃拟态卡片，顶部渐变装饰条 ---------- */
+.auth-wrap { min-height: calc(100vh - 220px); display: flex; align-items: center; justify-content: center; padding: var(--space-4) var(--space-3); }
+.auth-card {
+    width: 100%; max-width: 420px; background: var(--c-card); backdrop-filter: blur(14px);
+    border: 1px solid var(--c-border); border-radius: 22px; padding: 36px 34px 26px;
+    box-shadow: var(--shadow-card);
+}
+.auth-card::before {  /* 卡片顶部粉紫蓝渐变装饰条 */
+    content: ""; display: block; height: 3px; margin: -36px -34px 22px; border-radius: 22px 22px 0 0;
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple), var(--c-blue));
+}
+.auth-title { margin: 0 0 18px; text-align: center; font-size: 1.6rem; font-weight: 800;
+    background: linear-gradient(90deg, var(--c-purple), var(--c-pink));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }  /* 渐变文字效果 */
+.auth-alt { margin-top: 16px; text-align: center; font-size: .9rem; }  /* 底部"没有账号？去注册"等切换链接 */
+
+/* ---------- 响应式断点：≤860px 移动端导航换行重排 ---------- */
+@media (max-width: 860px) {
+    .nav-bar { gap: var(--space-2); }
+    .nav-links { order: 3; width: 100%; justify-content: center; }  /* 链接换到第三行居中 */
+    .nav-search { order: 2; max-width: none; }  /* 搜索框换到第二行撑满 */
+    .nav-user { margin-left: 0; }  /* 用户区取消自动靠右 */
+}
+
+/* ========== 二次元风格：按钮/链接 hover 弹跳动画 ========== */
+@keyframes bounce-hover {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-3px) scale(1.05); }
+}
+.btn-primary:hover {
+    animation: bounce-hover .4s ease;
+}
+.nav-link:hover, .nav-link-btn:hover {
+    transform: scale(1.08);
+    transition: transform .15s ease;
+}
+.chip:hover {  /* 标签胶囊悬停放大并微倾斜 */
+    transform: scale(1.1) rotate(-2deg);
+    transition: transform .15s ease;
+}
+.article-card-title a:hover {
+    text-shadow: 0 0 8px rgba(160, 108, 213, .4);  /* 标题悬停发光 */
+}
+/* 链接下划线动画：仅作用于「纯文本链接」，hover 时从左到右展开渐变下划线。
+   工单1根因修复：旧选择器 a:not(...) 特异性高达 (0,4,1)，会命中所有用 <a> 做的
+   标签页/按钮/菜单项/缩略图，并以 background-size:0% 2px 把这些控件的【渐变填充背景】
+   压扁成底部 0% 宽细条 → 选中项白字失去背景（我的文章/审核/标签/通知页白字、闪烁、先白后紫）。
+   这里通过类名关键字（btn/tab/item/pill/menu/thumb/chip/author-link）+ 显式类把所有控件排除，
+   并排除卡片标题链接（其 hover 样式在 components.css 单独定义，避免过渡被覆盖）。
+   本轮补充：[class*="chip"] 一次性排除 .chip / .chip-sort / .chip-filter 等所有胶囊控件
+   （审核页排序 chip-sort 此前漏在排除列表外，激活态渐变被压成 0% 2px，出现白底白字）。 */
+a:not(.nav-link):not([class*="chip"]):not(.page-link)
+ :not([class*="btn"]):not([class*="tab"]):not([class*="item"]):not([class*="pill"])
+ :not([class*="menu"]):not([class*="thumb"]):not([class*="author-link"])
+ :not(.article-card-title > a) {
+    background-image: linear-gradient(var(--c-pink), var(--c-purple));
+    background-size: 0% 2px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size .3s ease;
+}
+a:not(.nav-link):not([class*="chip"]):not(.page-link)
+ :not([class*="btn"]):not([class*="tab"]):not([class*="item"]):not([class*="pill"])
+ :not([class*="menu"]):not([class*="thumb"]):not([class*="author-link"])
+ :not(.article-card-title > a):hover {
+    background-size: 100% 2px;
+}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static blog_extras %}
+{% block title %}文章归档 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">归档</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"CollectionPage","name":"文章归档 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}"},{"@type":"ListItem","position":2,"name":"归档","url":"{{ request.build_absolute_uri }}"}]}
+</script>
+{% endblock %}
+{% block content %}
+<noscript><div class="noscript-banner" role="alert" >🌸 JavaScript 已禁用，归档时间轴的入场动画将不播放，文章列表仍可正常浏览。</div></noscript>
+{# ---------- 三栏网格：左sidebar + 中归档时间轴 + 右热门文章 ---------- #}
+<div class="three-col-grid">
+    {# ---------- 左栏：分类导航 / 站点统计 / 标签云（与列表页一致） ---------- #}
+    <aside class="col-left" role="complementary" aria-label="侧边栏">
+        <div class="widget">
+            <div class="widget-title">分类导航</div>
+            <ul class="cat-nav-list">
+                {% for c in nav_categories %}
+                <li>
+                    <a href="{% url 'category_detail' c.pk %}">{{ c.name }}</a>
+                    <span class="n">{{ c.n }}</span>
+                </li>
+                {% empty %}
+                <li class="muted">还没有分类喵</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="widget">
+            <div class="widget-title">站点统计</div>
+            <div class="stat-grid">
+                <div class="stat-item"><span class="num" data-count="{{ stats.article_count }}">0</span><span class="label">文章</span></div>
+                <div class="stat-item"><span class="num" data-count="{{ stats.views_total }}">0</span><span class="label">总阅读</span></div>
+                <div class="stat-item"><span class="num" data-count="{{ stats.category_count }}">0</span><span class="label">分类</span></div>
+                <div class="stat-item"><span class="num" data-count="{{ stats.tag_count }}">0</span><span class="label">标签</span></div>
+            </div>
+        </div>
+        <div class="widget tag-cloud">
+            <div class="widget-title">标签云</div>
+            {% for t in cloud_tags %}
+            <a class="chip" href="{% url 'tag_detail' t.pk %}">{{ t.name }}<span class="count">{{ t.n }}</span></a>
+            {% empty %}
+            <span class="muted">还没有标签喵</span>
+            {% endfor %}
+        </div>
+    </aside>
+    {# ---------- 中栏：按年月分组的时间轴 ---------- #}
+    <div class="col-center">
+        <div class="list-toolbar">
+            <h1>🗂 文章归档
+                <span class="muted" style="font-size:.9rem;">（共 {{ stats.article_count }} 篇）</span>
+            </h1>
+        </div>
+        {% if archives %}
+        <div class="archive-timeline enhanced-timeline">
+            {% for g in archives %}
+            <div class="archive-month">
+                {# 年月大标题（粉紫渐变）+ 文章计数徽章 #}
+                    <h2 class="archive-month-title" id="archive-month-{{ forloop.counter }}">
+                    {{ g.year_month }}
+                    <span class="archive-month-badge">{{ g.count }} 篇</span>
+                </h2>
+                <ul class="archive-list" role="list">
+                    {% for a in g.articles %}
+                    <li class="archive-item">
+                        {# 时间轴圆点由 CSS 伪元素绘制，这里放日期 #}
+                        <time class="archive-date" datetime="{{ a.created_at|date:'c' }}">{{ a.created_at|date:"m-d" }}</time>
+                        <a class="archive-link" href="{{ a.get_absolute_url }}" aria-label="{{ a.title }}">{{ a.title }}</a>
+                        {# Bug20: 标题后内联角标：置顶/精华/NEW #}
+                        <span class="arch-badges">
+                            {# Bug4：角标读取真实标记字段，并补齐热门角标（旧缺热门、精华误按点赞推断） #}
+                            {% if a.is_pinned %}<span class="arch-badge ab-pinned" title="置顶文章">📌置顶</span>{% endif %}
+                            {% if a.is_featured %}<span class="arch-badge ab-featured" title="精华文章">⭐精华</span>{% endif %}
+                            {% if a.is_hot %}<span class="arch-badge ab-hot" title="热门文章">🔥热门</span>{% endif %}
+                            {% if a.created_at|is_new %}<span class="arch-badge ab-new" title="最新发布">NEW喵</span>{% endif %}
+                        </span>
+                        <span class="archive-views">👁 {{ a.views }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {# 空状态：萌系插画 + 文案 #}
+        <div class="empty-state">
+                        <div class="empty-emoji">🌸</div>
+            <h3 class="empty-title">还没有文章呢~</h3>
+            <p class="empty-sub">第一篇文章正在路上喵~</p>
+        </div>
+        {% endif %}
+    </div>
+    {# ---------- 右栏：热门文章 ---------- #}
+    <aside class="col-right" role="complementary" aria-label="热门文章侧边栏">
+        <div class="widget">
+            <div class="widget-title">🔥 热门文章</div>
+            <ol class="hot-list" aria-label="热门文章">
+                {% for hot in hot_articles %}
+                <li>
+                    <a href="{{ hot.get_absolute_url }}" title="{{ hot.title }}">{{ hot.title }}</a>
+                    <div class="hot-meta">👁 {{ hot.views }} · 🕒 {{ hot.created_at|date:"m-d" }}</div>
+                </li>
+                {% empty %}
+                <li class="muted">这里还什么都没有喵</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </aside>
+</div>
+{% endblock %}

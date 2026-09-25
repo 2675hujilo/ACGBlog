@@ -1,0 +1,179 @@
+﻿{% extends 'base.html' %}
+{% block title %}标签云 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">标签</span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"CollectionPage","name":"标签云 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
+</script>
+{% endblock %}
+{% block content %}
+<noscript><div class="noscript-banner" role="alert" >🌸 JavaScript 已禁用，标签云效果将降级为普通布局，点击标签仍可正常访问。</div></noscript>
+
+{# ========== 全站统计卡片 ========== #}
+<div class="tag-stats-grid">
+    <div class="tag-stat-card stat-pink">
+        <div class="tag-stat-icon">🏷️</div>
+        <div class="tag-stat-num">{{ stat_total_tags }}</div>
+        <div class="tag-stat-label">标签总数</div>
+    </div>
+    <div class="tag-stat-card stat-purple">
+        <div class="tag-stat-icon">📝</div>
+        <div class="tag-stat-num">{{ stat_total_articles }}</div>
+        <div class="tag-stat-label">文章总数</div>
+    </div>
+    <div class="tag-stat-card stat-blue">
+        <div class="tag-stat-icon">👁️</div>
+        <div class="tag-stat-num">{{ stat_total_views }}</div>
+        <div class="tag-stat-label">总浏览量</div>
+    </div>
+    <div class="tag-stat-card stat-pink">
+        <div class="tag-stat-icon">❤️</div>
+        <div class="tag-stat-num">{{ stat_total_likes }}</div>
+        <div class="tag-stat-label">总点赞数</div>
+    </div>
+    <div class="tag-stat-card stat-purple">
+        <div class="tag-stat-icon">💬</div>
+        <div class="tag-stat-num">{{ stat_total_comments }}</div>
+        <div class="tag-stat-label">总评论数</div>
+    </div>
+</div>
+
+{# ========== Bug19: 模式切换按钮（排行榜/标签索引）上移到筛选栏最上方 ========== #}
+<div class="tag-mode-switcher">
+    <a href="?mode=rank{% if current_sort != 'count' %}&sort={{ current_sort }}{% endif %}{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}"
+       class="tag-mode-btn {% if current_mode == 'rank' %}active{% endif %}">
+        <span class="mode-icon">🏆</span>
+        <span class="mode-text">排行榜</span>
+    </a>
+    <a href="?mode=index{% if current_sort != 'count' %}&sort={{ current_sort }}{% endif %}{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}"
+       class="tag-mode-btn {% if current_mode == 'index' %}active{% endif %}">
+        <span class="mode-icon">📑</span>
+        <span class="mode-text">标签索引</span>
+    </a>
+</div>
+
+{# ========== 排序控制栏（标签云上方） ========== #}
+<div class="tag-sort-bar">
+    <div class="tag-sort-tabs">
+        <a href="?mode={{ current_mode }}&sort=count{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}" class="tag-sort-tab {% if current_sort == 'count' %}active{% endif %}">📚 文章数</a>
+        <a href="?mode={{ current_mode }}&sort=views{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}" class="tag-sort-tab {% if current_sort == 'views' %}active{% endif %}">👁️ 浏览量</a>
+        <a href="?mode={{ current_mode }}&sort=likes{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}" class="tag-sort-tab {% if current_sort == 'likes' %}active{% endif %}">❤️ 点赞数</a>
+        <a href="?mode={{ current_mode }}&sort=comments{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}" class="tag-sort-tab {% if current_sort == 'comments' %}active{% endif %}">💬 评论数</a>
+        <a href="?mode={{ current_mode }}&sort=latest{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}" class="tag-sort-tab {% if current_sort == 'latest' %}active{% endif %}">🕐 最新</a>
+        <a href="?mode={{ current_mode }}&sort=name{% if current_order != 'desc' %}&order={{ current_order }}{% endif %}" class="tag-sort-tab {% if current_sort == 'name' %}active{% endif %}">🔤 名称</a>
+    </div>
+    <div class="tag-order-toggle">
+        <a href="?mode={{ current_mode }}&sort={{ current_sort }}&order={% if current_order == 'desc' %}asc{% else %}desc{% endif %}" class="tag-order-btn">
+            {% if current_order == 'desc' %}⬇️ 降序{% else %}⬆️ 升序{% endif %}
+        </a>
+    </div>
+</div>
+
+{# ========== Bug19: 标签云仅在排行榜模式显示，索引模式隐藏（只显示全部标签分页） ========== #}
+{% if current_mode != 'index' %}
+<div class="tag-cloud-section tag-cloud-main">
+    <h2 class="tag-section-title">☁️ 标签云 <span class="muted" style="font-size:.85rem;">（大标签居中，小标签围绕，字体大小随排名变化）</span></h2>
+    <div class="tags-cloud tags-cloud-wordcloud" role="list" aria-label="标签云">
+        {% for t in cloud_tags %}
+        <a class="chip tag-color-{% cycle '1' '2' '3' '4' '5' %}"
+           style="font-size: {{ t.font_size }}rem; z-index: {{ t.rank }};"
+           href="{% url 'tag_detail' t.pk %}" data-tag-id="{{ t.pk }}"
+           aria-label="标签 {{ t.name }}，排名第 {{ t.rank }}，{{ t.n }}篇文章">
+            #{{ t.name }}
+            <span class="tag-n">{{ t.n }}</span>
+            <span class="tag-stats-tooltip">
+                <span>🏆 第{{ t.rank }}名</span>
+                <span>📝 {{ t.n }} 篇</span>
+                <span>👁️ {{ t.total_views|default:0 }}</span>
+                <span>❤️ {{ t.total_likes|default:0 }}</span>
+                <span>💬 {{ t.total_comments|default:0 }}</span>
+            </span>
+        </a>
+        {% empty %}
+            <p class="empty-tip">还没有标签喵</p>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# ========== 内容区域（排行榜或索引，从下往前浮动动画） ========== #}
+<div class="tag-content-area float-up-animate">
+    {# ----- 排行榜模式 ----- #}
+    {% if current_mode == 'rank' %}
+    <div class="tag-ranking-section">
+        <h2 class="tag-section-title">🏆 标签排行榜 <span class="muted" style="font-size:.85rem;">（按{% if current_sort == 'count' %}文章数{% elif current_sort == 'views' %}浏览量{% elif current_sort == 'likes' %}点赞数{% elif current_sort == 'comments' %}评论数{% elif current_sort == 'latest' %}最新文章{% else %}名称{% endif %}{% if current_order == 'desc' %}降序{% else %}升序{% endif %}）</span></h2>
+        <div class="tag-ranking-list">
+            {% for t in cloud_tags %}
+            <div class="tag-ranking-item float-up-item" style="animation-delay: {{ forloop.counter0|add:1 }}ms;">
+                <span class="tag-rank-num {% if t.rank <= 3 %}top3{% endif %}">{{ t.rank }}</span>
+                <a class="tag-rank-name" href="{% url 'tag_detail' t.pk %}">#{{ t.name }}</a>
+                <div class="tag-rank-stats">
+                    <span title="文章数">📝 {{ t.n }}</span>
+                    <span title="浏览量">👁️ {{ t.total_views|default:0 }}</span>
+                    <span title="点赞数">❤️ {{ t.total_likes|default:0 }}</span>
+                    <span title="评论数">💬 {{ t.total_comments|default:0 }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ----- 标签索引模式 ----- #}
+    {% if current_mode == 'index' %}
+    <div class="tag-index-page">
+        <h2 class="tag-section-title">📑 全部标签 <span class="muted" style="font-size:.85rem;">（共 {{ stat_total_tags }} 个标签，每页30个）</span></h2>
+        <div class="tag-index-grid">
+            {% for t in page_obj %}
+            <a class="tag-index-item float-up-item" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" href="{% url 'tag_detail' t.pk %}">
+                <span class="tag-index-name">#{{ t.name }}</span>
+                <span class="tag-index-meta">
+                    <span>📝 {{ t.n }}</span>
+                    <span>👁️ {{ t.total_views|default:0 }}</span>
+                </span>
+            </a>
+            {% empty %}
+                <p class="empty-tip">还没有标签喵</p>
+            {% endfor %}
+        </div>
+
+        {# 分页导航 #}
+        {% if page_obj.has_other_pages %}
+        <div class="tag-pagination">
+            {% if page_obj.has_previous %}
+            <a href="?mode=index&sort={{ current_sort }}&order={{ current_order }}&page={{ page_obj.previous_page_number }}" class="tag-page-link">‹ 上一页</a>
+            {% else %}
+            <span class="tag-page-link disabled">‹ 上一页</span>
+            {% endif %}
+
+            {% for num in page_range %}
+                {% if num == page_obj.number %}
+                <span class="tag-page-link current">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?mode=index&sort={{ current_sort }}&order={{ current_order }}&page={{ num }}" class="tag-page-link">{{ num }}</a>
+                {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                <a href="?mode=index&sort={{ current_sort }}&order={{ current_order }}&page={{ num }}" class="tag-page-link">{{ num }}</a>
+                {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                <span class="tag-page-ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?mode=index&sort={{ current_sort }}&order={{ current_order }}&page={{ page_obj.next_page_number }}" class="tag-page-link">下一页 ›</a>
+            {% else %}
+            <span class="tag-page-link disabled">下一页 ›</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% load static %}
+<script src="{% static 'assets/js/tag-cloud-layout.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

@@ -1,0 +1,108 @@
+/* Bug11 文件头注释
+ * 打印样式：@media print 下隐藏导航/侧栏/按钮，正文转为黑字白底、适合纸张输出。
+ * 用于浏览器「打印 / 另存为 PDF」时得到干净的文章版式。
+ */
+/* print.css —— 60. 打印专用样式（仅 media="print" 生效）
+ * 目标：只输出文章正文，隐藏导航 / 侧栏 / 评论 / 装饰，保证打印可读。
+ */
+
+/* 隐藏所有不需要打印的元素 */
+.site-header,
+.sidebar,
+.col-left,
+.col-right,
+.site-footer,
+.back-to-top,
+.reading-progress,
+#page-loader,
+.sakura-deco,
+.flash-stack,
+.breadcrumb,
+.article-extra-bar,
+.share-group,
+.share-btn,
+#print-btn,
+.rating-widget,
+.article-actions,
+.comments-section,
+.edit-log,
+.post-nav,
+.related,
+.series-nav-card,
+.notice-bar,
+.snapshot-modal-mask,
+.list-toolbar,
+.side-chips,
+.footer-grid {
+    display: none !important;
+}
+
+/* 主内容全宽 */
+body {
+    background: #fff !important;
+    color: #000 !important;
+}
+.site-main.container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.three-col-grid {
+    display: block !important;
+}
+.col-center {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.article-paper {
+    box-shadow: none !important;
+    border: none !important;
+    background: #fff !important;
+    padding: 0 !important;
+}
+
+/* 文章标题大号加粗 */
+.article-title {
+    font-size: 28pt !important;
+    font-weight: 700 !important;
+    color: #000 !important;
+}
+.article-meta {
+    font-size: 10pt !important;
+    color: #555 !important;
+}
+
+/* 代码块：白底黑字，确保打印可读 */
+.article-body pre,
+.article-body code {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+}
+
+/* 图片不超宽 */
+.article-body img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* 链接打印时显示 URL */
+.article-body a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 90%;
+    color: #555;
+}
+
+/* 避免标题后分页 */
+h1, h2, h3, h4, h5 {
+    page-break-after: avoid;
+}
+.article-body p,
+.article-body blockquote,
+.article-body pre,
+.article-body table {
+    page-break-inside: avoid;
+}

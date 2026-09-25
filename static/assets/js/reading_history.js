@@ -1,0 +1,60 @@
+/* Bug11 文件头注释
+ * 阅读历史脚本：记录最近浏览文章（localStorage）并在历史页渲染列表。
+ * 处理去重、上限裁剪与空状态展示。
+ */
+/* reading_history.js —— 64. 最近阅读
+ * 从 localStorage 'reading_history' 读取最近阅读文章，渲染到 #rh-list；
+ * 支持一键清除（#rh-clear）。空状态提示"还没有阅读记录"。
+ */
+(function () {
+    'use strict';
+    var listEl = document.getElementById('rh-list');
+    var clearBtn = document.getElementById('rh-clear');
+    if (!listEl) return;
+
+    function render() {
+        var list = [];
+        try { list = JSON.parse(localStorage.getItem('reading_history') || '[]'); }
+        catch (e) { list = []; }
+        // 只显示最近 5 篇
+        var show = list.slice(0, 5);
+        listEl.innerHTML = '';
+        if (!show.length) {
+            var empty = document.createElement('li');
+            empty.className = 'muted rh-empty';
+            empty.textContent = '还没有阅读记录，去逛逛吧~';
+            listEl.appendChild(empty);
+            return;
+        }
+        show.forEach(function (it) {
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.href = '/article/' + it.id + '/';
+            a.textContent = it.title;
+            li.appendChild(a);
+            var meta = document.createElement('div');
+            meta.className = 'rh-meta muted';
+            var d = new Date(it.time);
+            meta.textContent = formatTime(d);
+            li.appendChild(meta);
+            listEl.appendChild(li);
+        });
+    }
+
+    function formatTime(d) {
+        var now = new Date();
+        var diff = (now - d) / 1000;
+        if (diff < 60) return '刚刚';
+        if (diff < 3600) return Math.floor(diff / 60) + ' 分钟前';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' 小时前';
+        return (d.getMonth() + 1) + '-' + d.getDate();
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            localStorage.removeItem('reading_history');
+            render();
+        });
+    }
+    render();
+})();

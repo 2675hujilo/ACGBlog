@@ -1,0 +1,98 @@
+{% load static %}
+{% comment %}单条评论卡片（含楼中楼回复插槽）。
+上下文需提供：comment、depth(0起)、floor(仅顶级评论有，否则为空)、liked_comment_ids(列表)。
+工单7：楼主评论带 is-op 类，配合「只看楼主」过滤；
+工单8：depth-N 类控制逐级缩进；有父评论时头部显示「回复 @谁」（谁回复谁）。
+content 已在后端用 bleach 净化为安全行内 HTML，故此处用 |safe 渲染。{% endcomment %}
+<div class="comment-item{% if is_reply %} comment-item--reply{% endif %}{% if depth %} comment-nested depth-{{ depth }}{% endif %}{% if comment.user_id == article.author_id or comment.user_id == article_author_id %} is-op{% endif %}" data-pk="{{ comment.pk }}" data-comment-id="{{ comment.pk }}" itemscope itemtype="https://schema.org/Comment" role="comment"
+     data-user-id="{{ comment.user.pk }}" data-parent-id="{{ comment.parent_id|default_if_none:'' }}"
+     data-likes="{{ comment.likes }}">
+    {# 圆形头像：有头像图用图片，否则用默认头像占位图 #}
+<div class="comment-avatar">
+        {# Bug4：楼层号移到头像左上角（原在昵称后方），紧凑数字角标 #}
+        {% if floor %}<span class="comment-floor comment-floor-link" data-floor="{{ floor }}" title="第 {{ floor }} 楼 · 点击跳转">#{{ floor }}</span>{% endif %}
+        {% if comment.user.avatar %}
+        <img src="{{ comment.user.avatar.url }}" alt="{{ comment.user.nickname|default:comment.user.username }}" loading="lazy" decoding="async" fetchpriority="low" width="48" height="48">
+        {% else %}
+        <img src="{% static 'assets/images/default-avatar.svg' %}" alt="{{ comment.user.nickname|default:comment.user.username }} 的头像" loading="lazy" decoding="async" fetchpriority="low" width="48" height="48">
+        {% endif %}
+    </div>
+    <div class="comment-main">
+        {# 头部：昵称 + 楼主徽标 + 回复对象（谁回复谁） + 楼层 + 相对时间 #}
+        <div class="comment-head">
+	<span class="comment-author" itemprop="author">{{ comment.user.nickname|default:comment.user.username }}</span>
+	{% if comment.user_id == article.author_id or comment.user_id == article_author_id %}<span class="badge-op" title="文章作者">楼主</span>{% endif %}
+	{% if comment.reply_to_name %}
+	{# Bug3：楼中楼回复统一用后端预算好的即时父评论昵称，避免再查 parent_comment #}
+	<span class="comment-reply-to" title="回复对象">↪ 回复 <b>@{{ comment.reply_to_name }}</b></span>
+	{% elif comment.parent_comment %}
+	{# 工单8：兼容未带 reply_to_name 的场景，子评论显示「回复 @被回复人」 #}
+	<span class="comment-reply-to" title="回复对象">↪ 回复 <b>@{% with pu=comment.parent_comment.user %}{{ pu.nickname|default:pu.username }}{% endwith %}</b></span>
+	{% endif %}
+	<time class="comment-time" data-ts="{{ comment.created_at|date:'U' }}" datetime="{{ comment.created_at|date:'c' }}" itemprop="dateCreated">{{ comment.created_at|date:"Y-m-d H:i" }}</time>
+        </div>
+        {# 评论正文：已净化的安全 HTML #}
+<div class="comment-content comment-collapsible" itemprop="text" dir="auto" data-comment-len="{{ comment.content|striptags|length }}">{{ comment.content|safe }}</div>
+        {# 操作条：点赞按钮 + 回复按钮 #}
+        <div class="comment-actions">
+            <button type="button"
+                    class="comment-like-btn {% if comment.pk in liked_comment_ids %}liked{% endif %}"
+                    aria-label="点赞这条评论"
+                    data-pk="{{ comment.pk }}"
+                    data-url="{% url 'api:api_comment_like' comment.pk %}"
+                    {% if comment.pk in liked_comment_ids %}title="再点一下取消赞喵~"{% else %}title="赞喵"{% endif %}>
+                <span class="icon">❤️</span>
+                <span class="txt">{% if comment.pk in liked_comment_ids %}已赞喵{% else %}赞喵{% endif %}</span>
+<span class="n" itemprop="upvoteCount">{{ comment.likes }}</span>
+            </button>
+            <button type="button" class="comment-reply-btn" aria-label="回复这条评论"
+                    data-pk="{{ comment.pk }}"
+                    data-name="{{ comment.user.nickname|default:comment.user.username }}">
+                <img src="{% static 'assets/icons/reply.svg' %}" alt="" class="icon"> 回复喵
+            </button>
+            {# ===== bug11：举报按钮，data-report-url 指向真实路由（interaction.js 据此接线） ===== #}
+            <button type="button" class="comment-report-btn" aria-label="举报这条评论"
+                    data-pk="{{ comment.pk }}"
+                    data-report-url="{% url 'api:api_comment_report' comment.pk %}">
+                🚩 举报喵
+            </button>
+            {# ===== Round5 C13 / 工单8：撤回按钮（仅自己的评论，5分钟内由 JS 判断显示），萌系样式 ===== #}
+            {% if user.is_authenticated and user.pk == comment.user.pk %}
+            <button type="button" class="comment-recall-btn" aria-label="撤回这条评论"
+                    data-pk="{{ comment.pk }}" data-recall-url="/api/comment/{{ comment.pk }}/">
+                ↩ 撤回喵
+            </button>
+            {% endif %}
+        </div>
+        {# 内联回复表单（默认隐藏，点击"回复喵"按钮由 JS 展开） #}
+        <div class="comment-reply-form" hidden>
+            <textarea rows="2" aria-label="回复内容" placeholder="回复 @{{ comment.user.nickname|default:comment.user.username }} ..."></textarea>
+            <div class="comment-reply-bar">
+                <button type="button" class="btn-sm comment-reply-submit" data-pk="{{ comment.pk }}">发送喵</button>
+                <button type="button" class="btn-sm comment-reply-cancel">再想想</button>
+            </div>
+        </div>
+    </div>
+    {# 子回复挂载点：新回复由 JS 追加到这里 #}
+    <meta itemprop="parentItem" content="{{ request.build_absolute_uri }}">
+    {% if comment.parent_id %}<meta itemprop="inReplyTo" content="#comment-{{ comment.parent_id }}">{% endif %}
+    <meta itemprop="publisher" content="{{ site_name|default:'萌语博客' }}">
+    <meta itemprop="aboutUrl" content="{{ request.build_absolute_uri }}">
+    {# 第4轮迭代#113: 自定义过滤器——{{ text|strip_html }} 等价于内置 |striptags 去标签 #}
+    {# 第4轮迭代#119: 自定义过滤器——{{ num|format_percent }} 百分比格式化（评分/完成率场景，本模板未直接渲染） #}
+    <meta itemprop="commentText" content="{{ comment.content|striptags|truncatechars:80|escapejs }}">
+<div class="comment-reply-slot"></div>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Comment",
+    "text":"{{ comment.content|striptags|truncatechars:200|escapejs }}",
+    "author":{"@type":"Person","name":"{{ comment.user.nickname|default:comment.user.username }}"},
+    "dateCreated":"{{ comment.created_at|date:'c' }}",
+    "upvoteCount":{{ comment.likes }},
+    "parentItem":"{{ request.build_absolute_uri }}#comments",
+    {% if comment.parent_id %}"inReplyTo":{"@type":"Comment","@id":"#comment-{{ comment.parent_id }}"},{% endif %}
+    "publisher":{"@type":"Organization","name":"{{ site_name|default:'萌语博客' }}"},
+    "about":"{{ request.build_absolute_uri }}",
+    "commentText":"{{ comment.content|striptags|truncatechars:80|escapejs }}"
+    }
+    </script>
+</div>

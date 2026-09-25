@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}创建系列 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><a href="{% url 'series_list' %}">文章系列</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">创建系列</span>
+</nav>
+{% endblock %}
+{% block content %}
+{# Bug24: 新建文章系列表单（登录用户），萌系风格，与写文章页控件统一 #}
+<div class="edit-wrap series-form-wrap">
+    <h1>✨ 创建文章系列</h1>
+    <p class="muted" style="margin:4px 0 18px;">把同主题的文章整理成一个系列，读者就能按顺序一口气看完啦喵~</p>
+
+    {% if error %}
+    <div class="form-error form-error--boxed" role="alert">
+        ⚠️ {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" aria-label="创建系列表单">
+        {% csrf_token %}
+        <label for="id_series_title">📚 系列名称</label>
+        <input type="text" id="id_series_title" name="title" maxlength="80" required
+               aria-label="系列名称" value="{{ form_title|default:'' }}"
+               placeholder="给系列起个名字吧，例如：Django 入坑日记~">
+
+        <label for="id_series_desc" style="margin-top:16px;">📝 系列简介（可选）</label>
+        <textarea id="id_series_desc" name="description" rows="4" maxlength="500"
+                  aria-label="系列简介" placeholder="简单介绍一下这个系列会写些什么吧~">{{ form_desc|default:'' }}</textarea>
+
+        {# Bug2：系列封面复用全局萌系封面选择器——原生 file 框隐藏，由虚线标签触发 #}
+        <label for="id_series_cover" style="margin-top:16px;">🖼️ 系列封面（可选）</label>
+        <div class="cover-picker">
+            <input type="file" id="id_series_cover" name="cover_image" accept="image/*" hidden aria-label="上传系列封面">
+            <label for="id_series_cover" class="cover-picker-label">
+                <span class="cp-icon">🖼️</span>
+                <span class="cp-text">点击选择系列封面喵（可选，建议方形或竖图）</span>
+            </label>
+        </div>
+
+        <div class="form-actions" style="display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;">
+            <button type="submit" class="btn-primary" style="border:0;cursor:pointer;">✨ 创建系列喵</button>
+            <a href="{% url 'series_list' %}" class="btn-ghost">← 返回系列列表</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

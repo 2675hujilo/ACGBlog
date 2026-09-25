@@ -1,0 +1,28 @@
+/* ============================================================
+ * editor-content.css —— CKEditor 编辑区内容样式
+ * 作用域：仅作用于 CKEditor iframe 内的编辑内容（不影响页面其他区域）
+ * 说明：富文本编辑器使用独立的 iframe 沙箱，此文件通过 contentsCss 配置注入，
+ *       让编辑时的所见即所得样式与前台文章展示（blog.css .article-body）保持一致
+ * 依赖：无（硬编码颜色值，不引用 CSS 变量，因为 iframe 内无法访问父页面变量）
+ * ============================================================ */
+
+/* ---------- 编辑区基础排版 ---------- */
+body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.8; color: #2b2340; padding: 10px 14px;
+}
+h1, h2, h3, h4 { line-height: 1.4; }
+h2 { border-bottom: 1px solid #e3dcf5; padding-bottom: 4px; }  /* h2 底部分隔线，与前台展示一致 */
+
+/* ---------- 引用块样式 ---------- */
+blockquote { border-left: 4px solid #a06cd5; background: #f3ecff; margin: 1em 0; padding: 8px 16px; color: #6b6480; }
+
+/* ---------- 表格：边框可见，配合 tableresize 插件支持拖拽列宽 ---------- */
+table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+table td, table th { border: 1px solid #b9b0d6; padding: 6px 10px; }
+table th { background: #f3ecff; }
+
+/* ---------- 图片与代码块 ---------- */
+img { max-width: 100%; height: auto; }  /* 图片不超出编辑区宽度 */
+pre { background: #1e1b2e; color: #e6e2f5; border-radius: 8px; padding: 12px; overflow-x: auto; }  /* 代码块深色底 */
+p code { background: #f3ecff; color: #8a4fc9; padding: 1px 5px; border-radius: 4px; }  /* 行内代码高亮 */

@@ -1,0 +1,311 @@
+/* Bug11 文件头注释
+ * 阅读相关样式：字号调节控件、阅读进度条、正文排版与笔记弹窗。
+ * 主要元素：.font-size-controls 三档字号按钮；.read-progress 顶部进度条；
+ * .note-popup 笔记/批注弹层，均提供 hover/focus 反馈。
+ */
+/* ============================================================
+ * reading.css —— 文章阅读体验增强（B类）
+ * 覆盖：字体大小/行高/字体切换/主题色/护眼/AMOLED/纸张纹理/
+ *       段落高亮/笔记/书签/TTS/字号同步评论区/高对比度
+ * 设计令牌沿用 base.css（--c-pink/purple/blue/text/surface 等）
+ * 暗黑模式通过 :root[data-theme="dark"] 与 body[data-*] 适配
+ * ============================================================ */
+
+/* ---------- B4 主题色切换：通过 body[data-theme-color] 覆盖品牌变量 ---------- */
+body[data-theme-color="blue_green"] {
+    --c-pink: #6ec6ff;
+    --c-purple: #3aa6a0;
+    --c-blue: #4fa8ff;
+    --c-primary: #3aa6a0;
+}
+body[data-theme-color="orange_yellow"] {
+    --c-pink: #ffb347;
+    --c-purple: #ff8a5c;
+    --c-blue: #ffd166;
+    --c-primary: #ff8a5c;
+}
+body[data-theme-color="rose"] {
+    --c-pink: #ff7a9e;
+    --c-purple: #c86b98;
+    --c-blue: #ff9e7a;
+    --c-primary: #c86b98;
+}
+
+/* ---------- 阅读工具条：悬浮在正文右侧的竖向控制组 ---------- */
+.reading-toolbar {
+    position: fixed;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 8px;
+    border-radius: 16px;
+    background: var(--c-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--c-border);
+    box-shadow: var(--shadow-card);
+}
+.reading-toolbar .rt-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--c-text);
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.reading-toolbar .rt-btn:hover {
+    background: var(--c-primary-soft);
+    color: var(--c-primary);
+    transform: scale(1.08);
+}
+.reading-toolbar .rt-btn.active {
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+}
+.reading-toolbar .rt-btn svg { width: 20px; height: 20px; }
+
+/* ---------- B1/B2 字体大小 / 行高 / B3 字体切换 面板 ---------- */
+.reading-panel {
+    position: fixed;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+    z-index: 601;
+    min-width: 220px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    box-shadow: var(--shadow-hover);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+}
+.reading-panel.show { opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0); }
+.reading-panel h5 { margin: 0 0 10px; font-size: .9rem; color: var(--c-text); }
+.reading-panel .rp-row { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; }
+.reading-panel .rp-row label { font-size: .82rem; color: var(--c-text-dim); }
+.font-size-controls { display: flex; gap: 6px; align-items: center; }
+.font-size-controls button {
+    width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--c-border);
+    background: var(--c-input-bg); color: var(--c-text); cursor: pointer; font-weight: 700;
+}
+.font-size-controls button:hover { background: var(--c-primary-soft); color: var(--c-primary); }
+.font-size-controls .fs-value { font-size: .8rem; min-width: 36px; text-align: center; color: var(--c-text-dim); }
+.font-switch-group { display: flex; gap: 6px; }
+.font-switch-group button {
+    padding: 4px 10px; border-radius: 999px; border: 1px solid var(--c-border);
+    background: var(--c-input-bg); color: var(--c-text); cursor: pointer; font-size: .78rem;
+}
+.font-switch-group button.active {
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff; border-color: transparent;
+}
+.line-height-slider { width: 120px; accent-color: var(--c-purple); }
+
+/* ---------- B4 主题色选择器色板 ---------- */
+.theme-color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+.theme-color-picker .swatch {
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: transform .2s, border .2s;
+}
+.theme-color-picker .swatch:hover { transform: scale(1.15); }
+.theme-color-picker .swatch.active { border-color: var(--c-text); }
+.swatch--default { background: linear-gradient(135deg, #ff8fb1, #a06cd5, #6ea8fe); }
+.swatch--blue_green { background: linear-gradient(135deg, #6ec6ff, #3aa6a0); }
+.swatch--orange_yellow { background: linear-gradient(135deg, #ffb347, #ff8a5c); }
+.swatch--rose { background: linear-gradient(135deg, #ff7a9e, #c86b98); }
+
+/* ---------- 正文应用字号 / 行高 / 字体（由 reading.js 写入 CSS 变量） ---------- */
+.article-body {
+    font-size: calc(1rem * var(--read-font-scale, 1));
+    line-height: var(--read-line-height, 1.8);
+}
+body[data-font-family="song"] .article-body { font-family: "Songti SC", "SimSun", serif; }
+body[data-font-family="mono"] .article-body { font-family: var(--font-mono); }
+body[data-font-family="sans"] .article-body { font-family: var(--font-body); }
+/* B15 字号同步评论区 */
+body[data-font-scale-sync] .comment-content {
+    font-size: calc(.92rem * var(--read-font-scale, 1));
+    line-height: var(--read-line-height, 1.7);
+}
+
+/* ---------- B5 护眼模式（米黄背景） ---------- */
+body.eye-protection { --eye-bg: #f5efd8; }
+body.eye-protection .article-body,
+body.eye-protection .comment-area,
+body.eye-protection .reading-container {
+    background-color: var(--eye-bg) !important;
+    color: #3a3226 !important;
+}
+body.eye-protection .article-body a { color: #8a5a2b; }
+
+/* ---------- B6 AMOLED 纯黑模式 ---------- */
+body.amoled-dark { background: #000 !important; }
+body.amoled-dark .article-body,
+body.amoled-dark .comment-area,
+body.amoled-dark .reading-container {
+    background-color: #000 !important;
+    color: #e8e8e8 !important;
+}
+body.amoled-dark .site-header,
+body.amoled-dark .reading-toolbar,
+body.amoled-dark .reading-panel { background: #0a0a0a; border-color: #222; }
+
+/* ---------- B7 纸张纹理背景 ---------- */
+body.paper-texture .article-body,
+body.paper-texture .reading-container {
+    background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 27px,
+        rgba(160, 108, 213, .06) 28px);
+}
+
+/* ---------- B8 段落悬停高亮 ---------- */
+.article-body p:hover,
+.article-body li:hover {
+    background: var(--c-primary-soft);
+    border-radius: 6px;
+    box-shadow: 0 0 0 6px var(--c-primary-soft);
+}
+
+/* ---------- B9 划线笔记 / B10 段落书签 ---------- */
+.text-note {
+    background: linear-gradient(transparent 60%, rgba(255, 209, 102, .5) 40%);
+    border-bottom: 2px solid #ffd166;
+    cursor: pointer;
+}
+.text-note:hover { background: rgba(255, 209, 102, .35); }
+.paragraph-bookmark {
+    position: absolute;
+    left: -34px;
+    top: 6px;
+    width: 22px; height: 26px;
+    cursor: pointer;
+    color: var(--c-text-dim);
+    transition: color .2s, transform .2s;
+}
+.paragraph-bookmark:hover { color: var(--c-pink); transform: scale(1.1); }
+.paragraph-bookmark.marked { color: var(--c-pink); }
+.note-popup {
+    position: absolute;
+    z-index: 700;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    box-shadow: var(--shadow-hover);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.note-popup button {
+    border: none; background: var(--c-primary-soft); color: var(--c-primary);
+    padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: .8rem;
+}
+.note-popup button:hover { background: var(--c-primary); color: #fff; }
+
+/* ---------- B12 TTS 朗读控制条 ---------- */
+.tts-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: var(--c-primary-soft);
+    margin: 12px 0;
+}
+.tts-bar.show { display: flex; }
+.tts-bar button {
+    border: none; background: var(--c-surface); border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer; color: var(--c-primary);
+}
+.tts-bar .tts-speed { width: 90px; accent-color: var(--c-purple); }
+.tts-bar .tts-status { font-size: .8rem; color: var(--c-text-dim); }
+
+/* ---------- I1 高对比度模式 ---------- */
+body.high-contrast { --c-text: #000; --c-text-dim: #222; }
+body.high-contrast .article-body { color: #000 !important; line-height: 2; }
+html.high-contrast[data-theme="dark"] body.high-contrast .article-body { color: #fff !important; }
+html.high-contrast[data-theme="dark"] body.high-contrast a { color: #c79bff !important; }
+body.high-contrast a { color: #5a1bb0; text-decoration: underline; }
+body.high-contrast .reading-toolbar,
+body.high-contrast .reading-panel { border-width: 2px; }
+
+/* ---------- 移动端适配 ---------- */
+@media (max-width: 768px) {
+    .reading-toolbar { right: 8px; top: auto; bottom: 80px; transform: none; flex-direction: row; }
+    .reading-panel { right: 12px; top: auto; bottom: 140px; transform: translateX(0) translateY(10px); }
+    .reading-panel.show { transform: translateX(0) translateY(0); }
+    .paragraph-bookmark { left: -26px; }
+}
+
+/* ---------- 打印：隐藏阅读工具 ---------- */
+@media print {
+    .reading-toolbar, .reading-panel, .tts-bar,
+    .paragraph-bookmark, .note-popup { display: none !important; }
+    .article-body p:hover, .article-body li:hover { background: none; box-shadow: none; }
+    .text-note { background: none; }
+}
+
+
+/* ============================================================
+   Bug23 修复：阅读设置面板控件萌系化 + 面板内 TTS 常显
+   ============================================================ */
+.reading-settings-mask { display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1100; }
+.reading-settings-mask[hidden] { display: none; }
+.reading-settings-panel {
+    width: min(440px, 92vw); max-height: 86vh; overflow: auto;
+    background: var(--c-surface, #fff); border: 1px solid var(--c-border);
+    border-radius: 18px; padding: 20px 22px;
+    box-shadow: 0 20px 60px rgba(120, 80, 180, .25);
+    animation: rs-pop .22s ease;
+}
+@keyframes rs-pop { from { transform: translateY(12px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.reading-settings-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.reading-settings-head strong { font-size: 1rem; color: var(--c-text); }
+.reading-settings-close {
+    background: none; border: none; font-size: 1.1rem; cursor: pointer;
+    color: var(--c-text-dim); border-radius: 50%; width: 30px; height: 30px;
+}
+.reading-settings-close:hover { background: var(--c-primary-soft); color: var(--c-primary); }
+.rs-group { margin-bottom: 14px; }
+.rs-group-label { display: block; font-size: .82rem; font-weight: 600; color: var(--c-text-dim); margin-bottom: 7px; }
+.rs-btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rs-pill {
+    border-radius: 999px !important; padding: 6px 15px !important; font-size: .82rem;
+    background: var(--c-surface, #fff); border: 1px solid var(--c-border); color: var(--c-text);
+    cursor: pointer; transition: all .2s ease; font-family: inherit;
+}
+.rs-pill:hover { border-color: var(--c-primary); color: var(--c-primary); transform: translateY(-1px); }
+.rs-pill.active {
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(160, 108, 213, .3);
+}
+.rs-fs-value { min-width: 48px; text-align: center; font-size: .82rem; color: var(--c-primary); font-weight: 600; }
+.rs-color-swatch {
+    width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--c-border);
+    cursor: pointer; padding: 0; transition: transform .2s ease, box-shadow .2s ease;
+}
+.rs-color-swatch:hover { transform: scale(1.12); }
+.rs-color-swatch.active { border-color: var(--c-text); box-shadow: 0 0 0 2px var(--c-primary-soft); }
+.reading-settings-panel .line-height-slider { width: 100%; max-width: 280px; accent-color: var(--c-purple); }
+/* 面板内 TTS 区常显（覆盖 .tts-bar{display:none}），按钮改胶囊 */
+.reading-settings-panel .tts-bar {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 12px; margin: 4px 0 0; border-radius: 12px; background: var(--c-primary-soft);
+}
+.reading-settings-panel .tts-bar button {
+    width: auto; height: auto; border-radius: 999px; padding: 6px 14px;
+    background: var(--c-surface, #fff); font-size: .8rem;
+}
+.reading-settings-panel .tts-bar .tts-speed { width: 130px; }
+.rs-tts-status { font-size: .8rem; color: var(--c-text-dim); }
+:root[data-theme="dark"] .reading-settings-panel { background: var(--c-card, #1c1726); }

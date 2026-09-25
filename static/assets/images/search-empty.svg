@@ -1,0 +1,25 @@
+<!-- 搜索无结果插图：大放大镜 + 问号 + 歪头小猫，300x200 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="seBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6dcff"/>
+      <stop offset="1" stop-color="#d4e6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#seBg)"/>
+  <!-- 放大镜 -->
+  <g stroke="#a06cd5" stroke-width="5" stroke-linecap="round" fill="none">
+    <circle cx="120" cy="90" r="42"/>
+    <line x1="150" y1="120" x2="185" y2="155" stroke-width="8"/>
+  </g>
+  <!-- 放大镜内问号 -->
+  <text x="120" y="105" font-family="sans-serif" font-size="40" fill="#a06cd5" text-anchor="middle" font-weight="bold">?</text>
+  <!-- 困惑小猫 -->
+  <g stroke="#7a5a9e" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" transform="translate(205,100)">
+    <path d="M-15 -20 l4 -20 13 7a18 18 0 0 1 6 0l13-7 4 20a22 22 0 0 1 2 12c0 12-9 19-18 19s-18-7-18-19a22 22 0 0 1 2-12z" fill="#fff7fb"/>
+  </g>
+  <circle cx="222" cy="112" r="3" fill="#5a3d7a"/>
+  <circle cx="238" cy="112" r="3" fill="#5a3d7a"/>
+  <path d="M226 124 q4 3 8 0" stroke="#5a3d7a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <text x="240" y="80" font-family="sans-serif" font-size="18" fill="#a06cd5" opacity=".7">~?</text>
+</svg>

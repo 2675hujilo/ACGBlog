@@ -1,0 +1,48 @@
+/* Bug11 文件头注释
+ * 404 接樱花小游戏脚本：控制飘落物生成、点击计分与倒计时，化解错误页的挫败感。
+ */
+(function(){
+        var btn=document.getElementById('game-start-btn');
+        var canvas=document.getElementById('game-canvas');
+        var scoreEl=document.getElementById('game-score');
+        var ctx=canvas.getContext('2d');
+        var playing=false,score=0,playerX=140,petals=[],fallSpeed=2;
+        btn.addEventListener('click',function(){
+            canvas.style.display='block';scoreEl.style.display='block';
+            btn.style.display='none';
+            playing=true;score=0;petals=[];
+            gameLoop();
+        });
+        document.addEventListener('keydown',function(e){
+            if(!playing)return;
+            if(e.key==='ArrowLeft')playerX=Math.max(0,playerX-30);
+            if(e.key==='ArrowRight')playerX=Math.min(canvas.width-40,playerX+30);
+        });
+        canvas.addEventListener('mousemove',function(e){
+            if(!playing)return;
+            var rect=canvas.getBoundingClientRect();
+            playerX=(e.clientX-rect.left)*(canvas.width/rect.width)-20;
+        });
+        function spawnPetal(){
+            petals.push({x:Math.random()*(canvas.width-20),y:-10,r:6,speed:fallSpeed+Math.random()*1.5});
+        }
+        function gameLoop(){
+            if(!playing)return;
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            if(Math.random()<0.03)spawnPetal();
+            // draw player basket
+            ctx.fillStyle='#a06cd5';
+            ctx.beginPath();ctx.roundRect(playerX,180,40,12,6);ctx.fill();
+            // update petals
+            for(var i=petals.length-1;i>=0;i--){
+                var p=petals[i];p.y+=p.speed;
+                ctx.fillStyle='#ff8fb1';
+                ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+                if(p.y>175&&p.y<195&&p.x>playerX-5&&p.x<playerX+45){
+                    score++;scoreEl.textContent='得分：'+score;petals.splice(i,1);
+                    if(score%10===0)fallSpeed+=0.5;
+                }else if(p.y>canvas.height){petals.splice(i,1);}
+            }
+            requestAnimationFrame(gameLoop);
+        }
+    })();

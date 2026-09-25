@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 表情按钮图标：笑脸圆 + 两眼 + 微笑 -->
+  <circle cx="12" cy="12" r="9"/>
+  <circle cx="9" cy="10" r=".8" fill="currentColor" stroke="none"/>
+  <circle cx="15" cy="10" r=".8" fill="currentColor" stroke="none"/>
+  <path d="M8.5 14.5c1 1.2 2.2 1.8 3.5 1.8s2.5-.6 3.5-1.8"/>
+</svg>

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}通知中心 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">通知中心</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="notif-center-head">
+    <h1 class="my-page-title">🔔 通知中心</h1>
+    <button type="button" class="btn-sm" id="notif-mark-all">✅ 全部已读</button>
+</div>
+<div class="notif-filter-tabs" role="tablist" aria-label="通知筛选">
+    <a class="notif-tab {% if not show_unread %}is-active{% endif %}" href="{% url 'notifications_page' %}">全部 {{ total_count }}</a>
+    <a class="notif-tab {% if show_unread %}is-active{% endif %}" href="{% url 'notifications_page' %}?filter=unread">未读 {{ unread_count }}</a>
+</div>
+{% if page_obj.object_list %}
+<ul class="notif-center-list" id="notif-center-list">
+    {% for n in page_obj.object_list %}
+    <li class="notif-center-item{% if not n.is_read %} is-unread{% endif %}"
+        data-id="{{ n.id }}" data-read="{{ n.is_read|yesno:'true,false' }}"
+        data-url="{{ n.related_url|default:'' }}" role="button" tabindex="0">
+        <span class="notif-item-icon" aria-hidden="true">
+            {% if n.type == 'reply' %}💬{% elif n.type == 'mention' %}🏷{% elif n.type == 'like' %}👍{% elif n.type == 'article' %}📄{% else %}🔔{% endif %}
+        </span>
+        <div class="notif-item-content">
+            <p class="notif-item-title">{{ n.title }}</p>
+            {% if n.content %}<p class="notif-item-text">{{ n.content|truncatechars:120 }}</p>{% endif %}
+            <time class="notif-item-time" datetime="{{ n.created_at|date:'c' }}">{{ n.created_at|date:'Y-m-d H:i' }}</time>
+        </div>
+        {% if not n.is_read %}<span class="notif-unread-dot" aria-label="未读"></span>{% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% include 'partials/_pagination.html' %}
+{% else %}
+<div class="empty-state my-empty">
+    <div class="my-empty-emoji" aria-hidden="true">🔔</div>
+    <p>{% if show_unread %}没有未读通知啦，都处理完了喵~{% else %}还没有通知，去和大家互动起来吧~{% endif %}</p>
+    <a class="btn-primary" href="{% url 'index' %}">🏠 去首页逛逛</a>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'assets/js/notifications_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

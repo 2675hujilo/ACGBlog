@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}运行状态 · {{ site_name }}{% endblock %}
+{% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">运行状态</span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","name":"运行状态 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
+</script>
+{% endblock %}
+{% block content %}
+<noscript><div class="noscript-banner" role="alert" >🌸 JavaScript 已禁用，状态页的数据统计动画将不播放，服务健康信息仍以服务端渲染展示。</div></noscript>
+{# 69. 网站运行状态页：服务健康卡片 + 统计 + 版本信息 #}
+<div class="status-wrap">
+    <h1>💚 网站运行状态</h1>
+    <p class="muted">实时检查本站各项服务的健康状况喵~</p>
+    <div class="status-grid" aria-live="polite" aria-label="服务健康状态">
+        {% for item in status_dict.values %}
+        <div class="status-card status-{{ item.state }}">
+                        <div class="status-icon">
+                {% if item.state == 'ok' %}✅
+                {% elif item.state == 'warn' %}⚠️
+                {% else %}❌{% endif %}
+            </div>
+            <div class="status-label">{{ item.label }}</div>
+            <div class="status-detail muted">{{ item.detail }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <h2 id="stats-heading">📊 数据统计</h2>
+    <div class="status-stats">
+        <div class="status-stat" aria-label="文章总数 {{ stats.article_total }}"><span class="num">{{ stats.article_total }}</span><span class="label">文章总数</span></div>
+        <div class="status-stat"><span class="num">{{ stats.published_total }}</span><span class="label">已发布</span></div>
+        <div class="status-stat"><span class="num">{{ stats.comment_total }}</span><span class="label">评论总数</span></div>
+        <div class="status-stat"><span class="num">{{ stats.user_total }}</span><span class="label">用户总数</span></div>
+        <div class="status-stat"><span class="num">{{ stats.views_total }}</span><span class="label">总阅读量</span></div>
+        <div class="status-stat"><span class="num">{{ stats.today_visits }}</span><span class="label">今日访问</span></div>
+    </div>
+    <h2 id="version-heading">🧩 版本信息</h2>
+    <table class="status-table" role="table" aria-label="版本信息">
+        <tr><td>Python</td><td>{{ versions.python }}</td></tr>
+        <tr><td>Django</td><td>{{ versions.django }}</td></tr>
+        <tr><td>数据库</td><td>{{ versions.mysql }}</td></tr>
+        <tr><td>Broker</td><td>{{ versions.redis }}</td></tr>
+    </table>
+</div>
+{% endblock %}

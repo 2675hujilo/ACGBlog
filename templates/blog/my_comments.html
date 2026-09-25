@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}我的评论 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">我的评论</span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/profile.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/my_comments_inline.min.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+{% block content %}
+<h1 class="settings-page-title">💬 我的评论</h1>
+<div class="my-comment-list" aria-label="我的评论列表">
+    {% for c in page_obj %}
+    <div class="my-comment-item">
+        <div class="mc-title"><a href="{% url 'article_detail' c.article.pk %}">{{ c.article.title }}</a></div>
+        <div class="mc-content">{{ c.content|safe }}</div>
+        <div class="mc-meta">{{ c.created_at|date:"Y-m-d H:i" }} · ❤️ {{ c.likes }} 赞</div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <img src="{% static 'assets/images/empty-state.svg' %}" alt="暂无评论" class="empty-illust">
+        <p>还没有发表过评论喵~ 去文章下面聊聊吧 🌸</p>
+    </div>
+    {% endfor %}
+</div>
+{% include 'partials/_pagination.html' %}
+{% endblock %}

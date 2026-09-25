@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ meta_title }}{% endblock %}
+{% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span>
+    <a href="{% url 'staff_console' %}">运营看板</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">站点设置</span>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/site_settings.min.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+
+{% block content %}
+<div class="settings-wrap">
+
+  <div class="settings-head">
+    <h1>⚙️ 站点设置<span class="badge-admin-only">管理员限定</span></h1>
+    <div class="sub">网站名、Logo、介绍与页脚文案都在这里修改，保存后全站立即生效喵~ ✨</div>
+  </div>
+
+  <form method="post" id="site-settings-form" novalidate>
+    {% csrf_token %}
+
+    {# ========== 品牌展示 ========== #}
+    <div class="settings-card">
+      <h2>🌸 品牌展示</h2>
+
+      <div class="setting-row inline-two">
+        <div>
+          <label for="id_logo_emoji">Logo 表情</label>
+          <input type="text" id="id_logo_emoji" name="logo_emoji"
+                 value="{{ info.logo_emoji }}" maxlength="8"
+                 placeholder="🌸">
+          <span class="hint">名称前的 Emoji</span>
+        </div>
+        <div>
+          <label for="id_site_name">网站名称</label>
+          <input type="text" id="id_site_name" name="site_name"
+                 value="{{ info.site_name }}" maxlength="60"
+                 placeholder="萌语博客" required>
+          <span class="hint">显示在左上角、版权与浏览器标题</span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label for="id_tagline">网站副标题 / 一句话介绍</label>
+        <input type="text" id="id_tagline" name="tagline"
+               value="{{ info.tagline }}" maxlength="120"
+               placeholder="一个粉紫蓝萌系的二次元小站…">
+        <span class="hint">首页与导航处展示的一句话介绍</span>
+      </div>
+
+      {# 实时预览左上角品牌 #}
+      <div class="site-preview" aria-label="品牌实时预览">
+        <span class="pv-logo" id="pv-logo">{{ info.logo_emoji }}</span>
+        <span>
+          <span class="pv-name" id="pv-name">{{ info.site_name }}</span><br>
+          <span class="pv-tagline" id="pv-tagline">{{ info.tagline }}</span>
+        </span>
+      </div>
+    </div>
+
+    {# ========== SEO 搜索引擎 ========== #}
+    <div class="settings-card">
+      <h2>🔍 搜索引擎（SEO）</h2>
+      <div class="setting-row">
+        <label for="id_description">网站描述</label>
+        <textarea id="id_description" name="description"
+                  placeholder="网站的整体介绍，会写入 meta description…">{{ info.description }}</textarea>
+        <span class="hint">meta description，建议 80~160 字</span>
+      </div>
+      <div class="setting-row">
+        <label for="id_keywords">网站关键词</label>
+        <input type="text" id="id_keywords" name="keywords"
+               value="{{ info.keywords }}" maxlength="200"
+               placeholder="博客,技术,二次元">
+        <span class="hint">英文逗号分隔，例如 博客,技术,二次元</span>
+      </div>
+    </div>
+
+    {# ========== 页脚 ========== #}
+    <div class="settings-card">
+      <h2>🐾 页脚内容</h2>
+      <div class="setting-row">
+        <label for="id_footer_about">关于小站文案</label>
+        <textarea id="id_footer_about" name="footer_about"
+                  placeholder="页脚「关于小站」的介绍文案…">{{ info.footer_about }}</textarea>
+        <span class="hint">显示在网站底部「关于小站」区块</span>
+      </div>
+      <div class="setting-row inline-two">
+        <div>
+          <label for="id_footer_icp">备案号（选填）</label>
+          <input type="text" id="id_footer_icp" name="footer_icp"
+                 value="{{ info.footer_icp }}" maxlength="80"
+                 placeholder="浙ICP备xxxx号">
+        </div>
+        <div>
+          <label for="id_copyright_holder">版权归属（选填）</label>
+          <input type="text" id="id_copyright_holder" name="copyright_holder"
+                 value="{{ info.copyright_holder }}" maxlength="60"
+                 placeholder="留空则用网站名称">
+        </div>
+      </div>
+    </div>
+
+    {# ========== 操作条 ========== #}
+    <div class="settings-actions">
+      <button type="submit" class="btn-save-settings">💾 保存设置</button>
+      <a href="{% url 'staff_console' %}" class="back-link">← 回看板</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/site_settings.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

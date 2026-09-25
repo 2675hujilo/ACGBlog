@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Live2D引擎测试</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #f0f0f0; font-family: sans-serif; }
+        #canvas-container { width: 300px; height: 400px; background: #fff; border: 1px solid #ccc; position: relative; }
+        #log { margin-top: 20px; padding: 10px; background: #fff; border: 1px solid #ccc; max-height: 300px; overflow-y: auto; font-size: 12px; }
+        button { margin: 5px; padding: 8px 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Live2D全格式引擎测试</h1>
+    <div id="canvas-container">
+        <canvas id="live2d-canvas"></canvas>
+    </div>
+    <div>
+        <button onclick="loadCubism2()">加载Cubism2模型(雫)</button>
+        <button onclick="loadCubism3()">加载Cubism5模型(ずんだもん)</button>
+    </div>
+    <div id="log"></div>
+
+    <script src="pixi.min.js"></script>
+    <script src="live2d.core.min.js"></script>
+    <script src="live2dcubismcore.min.js"></script>
+    <script src="pixi-live2d-display.min.js"></script>
+    <script src="renderer.js"></script>
+
+    <script>
+        function log(msg) {
+            var el = document.getElementById('log');
+            el.innerHTML += msg + '<br>';
+            el.scrollTop = el.scrollHeight;
+            console.log(msg);
+        }
+
+        function loadCubism2() {
+            log('开始加载Cubism2模型...');
+            Live2DRenderer.loadModel('live2d-canvas', '/static/assets/live2d/models/shizuku/shizuku.model.json', function(err, model) {
+                if (err) {
+                    log('Cubism2加载失败: ' + err.message);
+                } else {
+                    log('Cubism2加载成功!');
+                }
+            });
+        }
+
+        function loadCubism3() {
+            log('开始加载Cubism5模型(ずんだもん)...');
+            Live2DRenderer.loadModel('live2d-canvas', '/static/assets/live2d/models/zundamon/zundamon.model3.json', function(err, model) {
+                if (err) {
+                    log('Cubism5加载失败: ' + err.message);
+                    console.error(err);
+                } else {
+                    log('Cubism5加载成功!');
+                }
+            });
+        }
+
+        // 初始化
+        window.addEventListener('load', function() {
+            log('页面加载完成');
+            log('PIXI版本: ' + (window.PIXI ? PIXI.VERSION : '未加载'));
+            log('pixi-live2d-display: ' + (window.PIXI && window.PIXI.live2d ? '已加载' : '未加载'));
+        });
+    </script>
+</body>
+</html>

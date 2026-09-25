@@ -1,0 +1,120 @@
+/* Bug11 文件头注释
+ * 404 错误页样式：萌系插画、文案与「接樱花」小游戏容器、返回首页按钮。
+ */
+
+    /* ===== 自包含样式：粉紫蓝萌系错误页 ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+        min-height: 100vh;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #ffd6e7 0%, #e6d4ff 50%, #cfe2ff 100%);
+        overflow: hidden;
+        position: relative;
+        color: #4a3a6b;
+    }
+    /* 飘落的樱花花瓣（纯 CSS keyframes） */
+    .petal {
+        position: fixed; top: -40px;
+        width: 18px; height: 18px;
+        background: radial-gradient(circle at 30% 30%, #ffb3cd, #ff8fb1);
+        border-radius: 150% 0 150% 0;
+        opacity: .8;
+        animation: fall linear infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+    .petal:nth-child(1) { left: 8%;  animation-duration: 9s;  animation-delay: 0s;   transform: scale(.9); }
+    .petal:nth-child(2) { left: 22%; animation-duration: 11s; animation-delay: 2s;   transform: scale(1.1); }
+    .petal:nth-child(3) { left: 40%; animation-duration: 8s;  animation-delay: 1s;   transform: scale(.7); }
+    .petal:nth-child(4) { left: 60%; animation-duration: 12s; animation-delay: 3s;   transform: scale(1.2); }
+    .petal:nth-child(5) { left: 78%; animation-duration: 10s; animation-delay: .5s;  transform: scale(.8); }
+    .petal:nth-child(6) { left: 90%; animation-duration: 9s;  animation-delay: 4s;   transform: scale(1); }
+    @keyframes fall {
+        0%   { transform: translateY(-40px) translateX(0) rotate(0deg); opacity: 0; }
+        10%  { opacity: .85; }
+        100% { transform: translateY(110vh) translateX(60px) rotate(540deg); opacity: .3; }
+    }
+    /* 主卡片 */
+    .card {
+        position: relative; z-index: 2;
+        text-align: center;
+        padding: 48px 36px;
+        max-width: 520px;
+        background: rgba(255, 255, 255, .75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(160, 108, 213, .2);
+        border-radius: 28px;
+        box-shadow: 0 12px 40px rgba(160, 108, 213, .2);
+    }
+    .illust { font-size: 4.5rem; line-height: 1; margin-bottom: 12px;
+              animation: bounce 2s ease-in-out infinite; }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-10px); }
+    }
+    h1 {
+        font-size: 1.9rem; font-weight: 800; margin-bottom: 10px;
+        background: linear-gradient(90deg, #a06cd5, #ff8fb1);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .sub { color: #6b6480; font-size: 1rem; margin-bottom: 28px; }
+    /* 返回首页按钮：粉紫渐变 + hover 弹跳 */
+    .btn-home {
+        display: inline-block;
+        padding: 11px 30px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #ff8fb1, #a06cd5);
+        color: #fff; text-decoration: none; font-weight: 600;
+        box-shadow: 0 6px 18px rgba(160, 108, 213, .35);
+        transition: transform .15s ease;
+    }
+    .btn-home:hover {
+        animation: btn-bounce .45s ease;
+        color: #fff;
+    }
+    @keyframes btn-bounce {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%      { transform: translateY(-4px) scale(1.06); }
+    }
+    /* ===== 6. 搜索框：与导航栏一致的圆角胶囊样式 ===== */
+    .err-search {
+        display: flex; max-width: 360px; margin: 0 auto 18px;
+        background: rgba(255,255,255,.85); border-radius: 999px;
+        border: 1px solid rgba(160,108,213,.3); overflow: hidden;
+    }
+    .err-search input {
+        flex: 1; border: none; outline: none; padding: 10px 16px;
+        background: transparent; font-size: .95rem; color: #4a3a6b;
+    }
+    .err-search button {
+        border: none; padding: 10px 20px; cursor: pointer; color: #fff;
+        background: linear-gradient(90deg, #ff8fb1, #a06cd5); font-size: .9rem;
+    }
+    /* 热门文章快捷链接 */
+    .hot-links { margin: 14px auto 0; max-width: 360px; text-align: left; }
+    .hot-links .hot-t { font-size: .82rem; color: #6b6480; margin-bottom: 6px; text-align: center; }
+    .hot-links a {
+        display: block; padding: 6px 14px; border-radius: 999px;
+        font-size: .86rem; color: #7a5db0; text-decoration: none; margin: 3px 0;
+        background: rgba(160,108,213,.1); transition: background .15s, transform .15s;
+    }
+    .hot-links a:hover { background: rgba(160,108,213,.22); transform: translateX(3px); }
+    /* ===== 暗黑模式适配：由 <html data-theme="dark"> 触发 ===== */
+    :root[data-theme="dark"] body {
+        background: linear-gradient(135deg, #1a1528 0%, #2d1f3d 50%, #1a2540 100%);
+        color: #e9e4f6;
+    }
+    :root[data-theme="dark"] .card {
+        background: rgba(46, 40, 66, .85);
+        border-color: rgba(160, 108, 213, .3);
+    }
+    :root[data-theme="dark"] .sub { color: #a99fc8; }
+
+/* 404 樱花小游戏（第三轮迁移：原 404.html 行内 style 外移） */
+.error-game-wrap { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 3; text-align: center; }
+.error-game-start-btn { padding: 8px 20px; border: none; border-radius: 999px; background: linear-gradient(90deg,#ff8fb1,#a06cd5); color: #fff; cursor: pointer; font-size: .88rem; box-shadow: 0 4px 14px rgba(160,108,213,.3); }
+.error-game-canvas { display: none; margin: 8px auto 0; border-radius: 12px; background: rgba(255,255,255,.6); }
+.error-game-score { display: none; font-size: .85rem; color: #6b6480; margin: 4px 0 0; }

@@ -1,0 +1,28 @@
+<!-- 默认头像：粉紫蓝渐变圆底，奶白小猫脸，200x200 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="avaBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffb3cc"/>
+      <stop offset=".5" stop-color="#c9a8f0"/>
+      <stop offset="1" stop-color="#9cc2ff"/>
+    </linearGradient>
+    <radialGradient id="avaGlow" cx=".35" cy=".3" r=".8">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="100" fill="url(#avaBg)"/>
+  <circle cx="100" cy="100" r="100" fill="url(#avaGlow)"/>
+  <!-- 猫脸 -->
+  <g stroke="#7a5a9e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M62 78 68 52 88 62a40 40 0 0 1 24 0l20-10 6 26a42 42 0 0 1 6 24c0 24-20 40-38 40s-38-16-38-40a42 42 0 0 1 6-24z" fill="#fff7fb"/>
+  </g>
+  <!-- 眼睛 -->
+  <circle cx="84" cy="102" r="4.5" fill="#5a3d7a"/>
+  <circle cx="116" cy="102" r="4.5" fill="#5a3d7a"/>
+  <!-- 腮红 -->
+  <ellipse cx="76" cy="114" rx="6" ry="3.5" fill="#ff9ec2" opacity=".7"/>
+  <ellipse cx="124" cy="114" rx="6" ry="3.5" fill="#ff9ec2" opacity=".7"/>
+  <!-- 嘴鼻 -->
+  <path d="M96 112h8M100 112v4M96.5 117c1 2.5 6 2.5 7 0" stroke="#5a3d7a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

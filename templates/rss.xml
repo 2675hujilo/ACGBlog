@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{# RSS 2.0 订阅源：title/link/description 均经 Django 默认转义；pubDate 为视图中格式化好的 RFC2822 字符串 #}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ site_name }}</title>
+    <link>{{ host }}/</link>
+    <atom:link href="{{ request.build_absolute_uri }}" rel="self" type="application/rss+xml" />
+    <description>{{ site_description }}</description>
+    <language>zh-cn</language>
+    <lastBuildDate>{{ build_date }}</lastBuildDate>
+    {% for item in items %}
+    <item>
+      <title>{{ item.title }}</title>
+      <link>{{ item.link }}</link>
+      <description>{{ item.description }}</description>
+      {% if item.category %}<category>{{ item.category }}</category>{% endif %}
+      <pubDate>{{ item.pub_date }}</pubDate>
+      <guid isPermaLink="false">{{ item.guid }}</guid>
+    </item>
+    {% endfor %}
+  </channel>
+</rss>

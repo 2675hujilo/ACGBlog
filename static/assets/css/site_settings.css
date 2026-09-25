@@ -1,0 +1,177 @@
+/* Bug11 文件头注释
+ * 站点设置页样式：品牌/SEO/页脚等分区表单的卡片化布局与保存按钮。
+ * 让管理员可在统一的萌系面板中修改网站名、Logo、描述、备案等信息。
+ */
+/* ============================================================
+ * site_settings.css —— 站点设置页样式（工单 15）
+ * 保持二次元轻量萌系：柔和卡片、圆润输入框、粉紫渐变主按钮。
+ * ============================================================ */
+
+.settings-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+/* 页头 */
+.settings-head {
+    margin-bottom: 22px;
+}
+.settings-head h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    color: var(--c-text);
+}
+.settings-head .sub {
+    color: var(--c-text-dim);
+    font-size: 14px;
+}
+.settings-head .badge-admin-only {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--grad-purple);
+    border-radius: 999px;
+    padding: 2px 10px;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+/* 分组卡片 */
+.settings-card {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+.settings-card h2 {
+    margin: 0 0 16px;
+    font-size: 17px;
+    color: var(--c-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 单个表单项 */
+.setting-row {
+    margin-bottom: 16px;
+}
+.setting-row:last-child {
+    margin-bottom: 0;
+}
+.setting-row label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-bottom: 6px;
+}
+.setting-row .hint {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--c-text-dim);
+    margin-top: 5px;
+}
+.setting-row input[type="text"],
+.setting-row textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--c-border);
+    background: var(--c-input-bg, var(--c-surface));
+    color: var(--c-text);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color .2s, box-shadow .2s;
+}
+.setting-row textarea {
+    min-height: 84px;
+    resize: vertical;
+    line-height: 1.6;
+}
+.setting-row input[type="text"]:focus,
+.setting-row textarea:focus {
+    outline: none;
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px var(--c-primary-soft);
+}
+
+/* Logo 表情 + 网站名并排 */
+.setting-row.inline-two {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 14px;
+}
+
+/* 底部操作条 */
+.settings-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.btn-save-settings {
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    background: var(--grad-purple);
+    border-radius: 999px;
+    padding: 11px 30px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(160, 108, 213, .35);
+    transition: transform .15s, box-shadow .15s;
+}
+.btn-save-settings:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(160, 108, 213, .45);
+}
+.btn-save-settings:active {
+    transform: translateY(0);
+}
+.settings-actions .back-link {
+    color: var(--c-text-dim);
+    font-size: 14px;
+    text-decoration: none;
+}
+.settings-actions .back-link:hover {
+    color: var(--c-primary);
+}
+
+/* 实时预览小卡 */
+.site-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--c-primary-soft);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-top: 8px;
+}
+.site-preview .pv-logo {
+    font-size: 24px;
+}
+.site-preview .pv-name {
+    font-weight: 700;
+    color: var(--c-text);
+}
+.site-preview .pv-tagline {
+    font-size: 12px;
+    color: var(--c-text-dim);
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    .settings-card {
+        padding: 18px 16px;
+    }
+    .setting-row.inline-two {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,18 @@
+{# 工单6-5：右栏热门文章榜单片段（首页初始渲染 + /api/hot-articles/ AJAX 共用） #}
+{# 变量：hot_items=list[dict(a=文章, heat=热度, label=本周/本月/空)]，range_key=week|month|total #}
+{% for it in hot_items %}
+<li>
+    <a href="{{ it.a.get_absolute_url }}" title="{{ it.a.title }}">{{ it.a.title }}</a>
+    {# 前三名火焰递增，4 名起平稳箭头 #}
+    <div class="hot-meta">
+        {% if forloop.counter == 1 %}<span class="hot-trend up">🔥🔥🔥</span>
+        {% elif forloop.counter == 2 %}<span class="hot-trend up">🔥🔥</span>
+        {% elif forloop.counter == 3 %}<span class="hot-trend up">🔥</span>
+        {% else %}<span class="hot-trend flat">→</span>{% endif %}
+        {% if range_key == 'total' %}👁 {{ it.heat }}{% else %}🔥 {{ it.heat }} {{ it.label }}{% endif %}
+        · 🕒 {{ it.a.created_at|date:"m-d" }}
+    </div>
+</li>
+{% empty %}
+<li class="muted">这个榜单暂时还没有数据喵~</li>
+{% endfor %}

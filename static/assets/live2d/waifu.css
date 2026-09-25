@@ -1,0 +1,192 @@
+/* Bug11 文件头注释
+ * 看板娘外层样式：舞台定位、提示气泡与工具栏（与 mascot.css 协同）。
+ * 控制吉祥物在右下角的尺寸、层级与悬浮显隐，并适配移动端。
+ */
+﻿/* 看板娘样式 - 萌系二次元风格 */
+/* 注意：#waifu的位置由JS内联样式控制，CSS不设置位置 */
+
+#waifu-toggle {
+	background-color: #fa0;
+	border-radius: 5px;
+	bottom: 66px;
+	color: #fff;
+	cursor: pointer;
+	font-size: 12px;
+	left: 0;
+	margin-left: -100px;
+	padding: 5px 2px 5px 5px;
+	position: fixed;
+	transition: margin-left 1s;
+	width: 60px;
+	writing-mode: vertical-rl;
+}
+
+#waifu-toggle.waifu-toggle-active {
+	margin-right: -50px;
+}
+
+#waifu-toggle.waifu-toggle-active:hover {
+	margin-left: -30px;
+}
+
+/* 看板娘容器 - 位置由JS控制，这里只设置基础样式 */
+#waifu {
+	line-height: 0;
+	margin-bottom: -10px;
+	position: fixed !important;
+	z-index: 2147483647 !important;
+	pointer-events: auto;
+}
+
+#waifu-tips {
+	animation: shake 50s ease-in-out 5s infinite;
+	background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(253,244,255,0.95));
+	border: 2px solid #e9d5ff;
+	border-radius: 18px;
+	box-shadow: 0 4px 15px rgba(168,85,247,0.2);
+	color: #6b21a8;
+	font-size: 14px;
+	line-height: 24px;
+	margin: -20px 20px 20px 20px;
+	min-height: 70px;
+	opacity: 0;
+	overflow: hidden;
+	padding: 5px 10px;
+	position: absolute;
+	text-overflow: ellipsis;
+	transition: opacity 1s;
+	width: 250px;
+	word-break: break-all;
+}
+
+#waifu-tips.waifu-tips-active {
+	opacity: 1;
+	transition: opacity .2s;
+}
+
+#waifu-tips span {
+	color: #0099cc;
+}
+
+#live2d {
+	cursor: grab;
+	position: relative;
+}
+
+#live2d:active {
+	cursor: grabbing;
+}
+
+/* 菜单容器 - 位置由JS内联样式控制 */
+#waifu-tool {
+	color: #aaa;
+	opacity: 0;
+	position: absolute;
+	transition: opacity 0.3s;
+	z-index: 100000;
+}
+
+#waifu:hover #waifu-tool { opacity: 1; }
+
+#waifu-tool span {
+	display: block;
+	height: 30px;
+	text-align: center;
+}
+
+#waifu-tool svg {
+	fill: #7b8c9d;
+	cursor: pointer;
+	height: 25px;
+	transition: fill .3s;
+}
+
+#waifu-tool svg:hover {
+	fill: #0684bd;
+}
+
+@keyframes shake {
+	2% { transform: translate(.5px, -1.5px) rotate(-.5deg); }
+	4% { transform: translate(.5px, 1.5px) rotate(1.5deg); }
+	6% { transform: translate(1.5px, 1.5px) rotate(1.5deg); }
+	8% { transform: translate(2.5px, 1.5px) rotate(.5deg); }
+	10% { transform: translate(.5px, 2.5px) rotate(.5deg); }
+	12% { transform: translate(1.5px, 1.5px) rotate(.5deg); }
+	14% { transform: translate(.5px, .5px) rotate(.5deg); }
+	16% { transform: translate(-1.5px, -.5px) rotate(1.5deg); }
+	18% { transform: translate(.5px, .5px) rotate(1.5deg); }
+	20% { transform: translate(2.5px, 2.5px) rotate(1.5deg); }
+	22% { transform: translate(.5px, -1.5px) rotate(1.5deg); }
+	24% { transform: translate(-1.5px, 1.5px) rotate(-.5deg); }
+	26% { transform: translate(1.5px, .5px) rotate(1.5deg); }
+	28% { transform: translate(-.5px, -.5px) rotate(-.5deg); }
+	30% { transform: translate(1.5px, -.5px) rotate(-.5deg); }
+	32% { transform: translate(2.5px, -1.5px) rotate(1.5deg); }
+	34% { transform: translate(2.5px, 2.5px) rotate(-.5deg); }
+	36% { transform: translate(.5px, -1.5px) rotate(.5deg); }
+	38% { transform: translate(2.5px, -.5px) rotate(-.5deg); }
+	40% { transform: translate(-.5px, 2.5px) rotate(.5deg); }
+	42% { transform: translate(-1.5px, 2.5px) rotate(.5deg); }
+	44% { transform: translate(-1.5px, 1.5px) rotate(.5deg); }
+	46% { transform: translate(1.5px, -.5px) rotate(-.5deg); }
+	48% { transform: translate(2.5px, -.5px) rotate(.5deg); }
+	50% { transform: translate(-1.5px, 1.5px) rotate(.5deg); }
+	52% { transform: translate(-.5px, 1.5px) rotate(.5deg); }
+	54% { transform: translate(-1.5px, 1.5px) rotate(.5deg); }
+	56% { transform: translate(.5px, 2.5px) rotate(1.5deg); }
+	58% { transform: translate(2.5px, 2.5px) rotate(.5deg); }
+	60% { transform: translate(2.5px, -1.5px) rotate(1.5deg); }
+	62% { transform: translate(-1.5px, .5px) rotate(1.5deg); }
+	64% { transform: translate(-1.5px, 1.5px) rotate(1.5deg); }
+	66% { transform: translate(.5px, 2.5px) rotate(1.5deg); }
+	68% { transform: translate(2.5px, -1.5px) rotate(1.5deg); }
+	70% { transform: translate(2.5px, 2.5px) rotate(.5deg); }
+	72% { transform: translate(-.5px, -1.5px) rotate(1.5deg); }
+	74% { transform: translate(-1.5px, 2.5px) rotate(1.5deg); }
+	76% { transform: translate(-1.5px, 2.5px) rotate(1.5deg); }
+	78% { transform: translate(-1.5px, 2.5px) rotate(.5deg); }
+	80% { transform: translate(-1.5px, .5px) rotate(-.5deg); }
+	82% { transform: translate(-1.5px, .5px) rotate(-.5deg); }
+	84% { transform: translate(-.5px, .5px) rotate(1.5deg); }
+	86% { transform: translate(2.5px, 1.5px) rotate(.5deg); }
+	88% { transform: translate(-1.5px, .5px) rotate(1.5deg); }
+	90% { transform: translate(-1.5px, -.5px) rotate(-.5deg); }
+	92% { transform: translate(-1.5px, -1.5px) rotate(1.5deg); }
+	94% { transform: translate(.5px, .5px) rotate(-.5deg); }
+	96% { transform: translate(2.5px, -.5px) rotate(-.5deg); }
+	98% { transform: translate(-1.5px, -1.5px) rotate(-.5deg); }
+	0%, 100% { transform: translate(0, 0) rotate(0); }
+}
+
+/* 菜单按钮 - 白色背景+毛玻璃，hover时边框淡入 */
+#waifu-tool .waifu-btn {
+	display: block;
+	width: 34px;
+	height: 34px;
+	line-height: 34px;
+	text-align: center;
+	cursor: pointer;
+	font-size: 18px;
+	background: rgba(255,255,255,0.95);
+	backdrop-filter: blur(8px);
+	border: 2px solid transparent;
+	border-radius: 50%;
+	margin: 6px 0;
+	box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+	transition: all 0.3s ease;
+	color: #6b21a8;
+}
+
+/* 移除CSS原生tooltip，使用JS自定义tooltip */
+.waifu-btn::after {
+	display: none !important;
+}
+
+/* 移动端看板娘适配（transform 会同步缩小点击区）：
+   ≤600px 直接隐藏，避免遮挡评论按钮等可点区域；601~760px 缩小到 65% */
+@media (max-width: 600px) {
+    #waifu { display: none; }
+}
+@media (min-width: 601px) and (max-width: 760px) {
+    #waifu { transform: scale(.65); transform-origin: right bottom; }
+}

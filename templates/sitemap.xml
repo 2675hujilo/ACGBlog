@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{# 站点地图：所有 URL 自动转义（Django 默认转义 < > &），priority 首页1.0/文章0.8/归档0.7/分类0.6/标签0.5 #}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {# 首页：最高优先级，每日更新 #}
+  <url>
+    <loc>{{ host }}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  {# 归档页 #}
+  <url>
+    <loc>{{ host }}{% url 'archive' %}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {# 分类页 #}
+  {% for c in categories %}
+  <url>
+    <loc>{{ host }}{% url 'category_detail' c.pk %}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  {% endfor %}
+  {# 标签页 #}
+  {% for t in tags %}
+  <url>
+    <loc>{{ host }}{% url 'tag_detail' t.pk %}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  {% endfor %}
+  {# 文章详情页：lastmod 用文章更新时间 #}
+  {% for a in articles %}
+  <url>
+    <loc>{{ host }}{% url 'article_detail' a.pk %}</loc>
+    <lastmod>{{ a.updated_at|date:"Y-m-d" }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  {% endfor %}
+</urlset>

@@ -1,0 +1,24 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+{% comment %}
+访问日志列表页：在标准结果列表顶部叠加统计摘要条。
+log_stats 由 AccessLogAdmin.changelist_view 注入（当前筛选口径）。
+{% endcomment %}
+
+{% block extrastyle %}
+{{ block.super }}
+{# 404 数条件色 class（stat-bad / stat-good）——admin 页不继承站点 base.css，经 extrastyle 挂载 #}
+<link rel="stylesheet" href="{% static 'assets/css/inline_cleanup.min.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+
+{% block content %}
+{% if log_stats %}
+<div class="stats-bar">
+  <span>📊 总访问量：<b>{{ log_stats.total }}</b></span>
+  <span>🌐 独立 IP：<b>{{ log_stats.unique_ips }}</b></span>
+  <span>⏱ 平均耗时：<b>{{ log_stats.avg_duration }}ms</b></span>
+  <span>🚫 404 数：<b class="{% if log_stats.not_found > 0 %}stat-bad{% else %}stat-good{% endif %}">{{ log_stats.not_found }}</b></span>
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if is_new %}写文章{% else %}编辑：{{ article.title }}{% endif %} · {{ site_name }}{% endblock %}
+{% block content %}
+<div class="edit-wrap">
+    <h1>{% if is_new %}✍ 写新内容{% else %}📝 编辑文章{% endif %}</h1>
+    {# enctype=multipart/form-data：必须，否则无法上传封面图等二进制文件 #}
+    <form method="post" id="article-form" enctype="multipart/form-data" aria-label="文章编辑表单">
+        {% csrf_token %}
+        <label for="id_title">标题</label>
+        <input type="text" id="id_title" name="title" maxlength="200" required
+               aria-label="文章标题"
+               value="{% if article %}{{ article.title }}{% endif %}" placeholder="给文章起个好听的名字吧~">
+        {# 4. 标题实时字数统计：X/200字，超 200 变红 #}
+        <div class="wc-hint" id="title-wc"><span id="title-wc-num">0</span>/200 字</div>
+        <div class="form-row">
+            <div>
+                <label for="id_kind">内容类型</label>
+                <select id="id_kind" name="kind" aria-label="内容类型">
+                    <option value="article" {% if preset_kind == 'article' %}selected{% endif %}>文章</option>
+                    <option value="note" {% if preset_kind == 'note' %}selected{% endif %}>笔记</option>
+                    <option value="page" {% if preset_kind == 'page' %}selected{% endif %}>独立页面</option>
+                </select>
+            </div>
+            <div>
+                <label for="id_category">分类</label>
+<select id="id_category" name="category" aria-label="分类" role="listbox" aria-multiselectable="false">
+                    {% for c in categories %}
+                    <option value="{{ c.pk }}" {% if article.category_id == c.pk %}selected{% elif not article and forloop.first %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="id_status">状态</label>
+                {% if user.is_staff %}
+                <select id="id_status" name="status" aria-label="发布状态">
+                    <option value="published" {% if article.status == 'published' or not article %}selected{% endif %}>✅ 已发布</option>
+                    <option value="pending" {% if article.status == 'pending' %}selected{% endif %}>⏳ 待审核</option>
+                    <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>📝 草稿</option>
+                </select>
+                {% else %}
+                <input type="hidden" name="status" value="pending">
+                <p class="form-hint form-hint--accent">⏳ 提交后进入待审核，管理员通过后才会公开喵~</p>
+                {% endif %}
+            </div>
+        </div>
+        {# 56. 定时发布时间：datetime-local 选择器；仅草稿时生效，到点自动发布 #}
+        <div class="form-row">
+            <div>
+                <label for="id_published_at">⏰ 定时发布时间（可选，草稿到点自动发布）</label>
+                <input type="datetime-local" id="id_published_at" name="published_at" aria-label="定时发布时间"
+                       value="{{ published_at_value|default:'' }}">
+            </div>
+            {# Bug1：写文章页不提供置顶；仅管理员编辑时可手动设置置顶/精华/热门 #}
+            {% if is_new %}
+            <div class="pinned-check">
+                <p class="form-hint form-hint--note">📌 置顶 / ⭐ 精华 / 🔥 热门需发布后在文章页申请，或由管理员设置喵~</p>
+            </div>
+            {% elif user.is_staff %}
+            <div class="pinned-check promo-checks">
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="is_pinned" aria-label="置顶文章" {% if article.is_pinned %}checked{% endif %}>
+                    📌 置顶
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="is_featured" aria-label="精华文章" {% if article.is_featured %}checked{% endif %}>
+                    ⭐ 精华
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="is_hot" aria-label="热门文章" {% if article.is_hot %}checked{% endif %}>
+                    🔥 热门
+                </label>
+            </div>
+            {% else %}
+            <div class="pinned-check">
+                <p class="form-hint form-hint--note">📌 置顶 / ⭐ 精华 / 🔥 热门可在文章页点对应按钮申请喵~</p>
+            </div>
+            {% endif %}
+            {# 58. 访问密码：留空为公开；设置后访问详情页需输入密码 #}
+            <div>
+                <label for="id_article_password">🔒 访问密码（可选，留空公开）</label>
+                <input type="text" id="id_article_password" name="article_password" aria-label="访问密码"
+                       placeholder="{% if article.is_protected %}已设置密码（留空则不修改）{% else %}设置后访问需输入密码{% endif %}">
+            </div>
+        </div>
+        {# 67. 所属系列选择 + 系列内序号 #}
+        <div class="form-row">
+            <div>
+                <label for="id_series">📚 所属系列（可选）
+                    <a href="{% url 'series_create' %}" target="_blank" rel="noopener"
+                       class="series-new-link" title="在新标签页创建系列"
+                       class="series-new-link">＋新建系列</a>
+                </label>
+                <select id="id_series" name="series" aria-label="所属系列">
+                    <option value="">不归属系列</option>
+                    {% for s in series_list %}
+                    <option value="{{ s.pk }}" {% if article.series_id == s.pk %}selected{% endif %}>{{ s.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>🔢 系列内序号</label>
+                <input type="hidden" name="series_order" value="{% if article %}{{ article.series_order }}{% else %}0{% endif %}">
+                <p class="form-hint form-hint--note">选择系列后，序号会在保存时自动编排到系列末尾喵~</p>
+            </div>
+        </div>
+        <label for="id_tag_names">标签（多个标签用英文逗号分隔）</label>
+        <input type="text" id="id_tag_names" name="tag_names" list="tag-options" aria-label="标签，多个用逗号分隔"
+               value="{% if article %}{% for t in article.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}"
+               placeholder="例如：Django, 教程, 踩坑记录">
+        <datalist id="tag-options">
+            {% for t in tags %}<option value="{{ t.name }}">{% endfor %}
+        </datalist>
+        {# 工单4：萌系自定义封面选择器——原生 file 输入隐藏，用虚线拖拽风 label 触发 #}
+        <div class="cover-picker">
+            <input type="file" id="id_cover_image" name="cover_image" accept="image/*" hidden aria-label="上传封面图片">
+            <label for="id_cover_image" class="cover-picker-label" id="cover-picker-label">
+                <span class="cp-icon">🖼️</span>
+                <span class="cp-text" id="cover-picker-text">点击选择封面图喵（可选，建议宽幅横图）</span>
+            </label>
+        </div>
+        {# 编辑模式下显示当前已上传的封面预览 #}
+        {% if article and article.cover_image %}
+        <div class="cover-preview">
+            <img src="{{ article.cover_image.url }}" alt="当前封面" loading="lazy" decoding="async" width="240" height="160" style="max-width:240px;border-radius:8px;">
+            <p class="muted" style="font-size:.8rem;">当前封面：重新选择将覆盖旧图</p>
+        </div>
+        {% endif %}
+        {# 手动摘要文本框：留空时自动从正文截取 #}
+        <label for="id_excerpt_field">手动摘要（可选，留空自动截取正文前 180 字）</label>
+        <textarea id="id_excerpt_field" name="excerpt_field" rows="3" aria-label="手动摘要"
+                  placeholder="简单描述一下改动吧~">{% if article %}{{ article.excerpt_field }}{% endif %}</textarea>
+        <label>正文（富文本：支持图片上传、图文混排、表格插入与拖拽调整列宽）</label>
+        <textarea class="rich-editor" id="id_content" name="content" rows="20" required aria-label="正文内容">{% if article %}{{ article.content|safe }}{% endif %}</textarea>
+        {# 4. 正文实时字数统计：X字 · 约Y分钟读完 #}
+        <div class="wc-hint" id="content-wc">正文 <span id="content-wc-num">0</span> 字 · 约 <span id="content-wc-min">1</span> 分钟读完</div>
+        <div class="edit-actions">
+            <button type="submit" class="btn-primary" aria-label="{% if is_new %}发布新文章{% else %}保存修改{% endif %}">{% if is_new %}发布喵{% else %}保存修改喵{% endif %}</button>
+            {# 5. 实时预览按钮：弹出模态框渲染当前编辑内容 #}
+            <button type="button" class="btn-sm" id="preview-btn" aria-label="实时预览">👁 预览</button>
+            {% if article %}
+            <a class="btn-sm" href="{{ article.get_absolute_url }}" aria-label="取消并返回">再想想</a>
+            {% else %}
+            <a class="btn-sm" href="{% url 'index' %}">再想想</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{# 5. 实时预览模态框：半透明遮罩 + 居中卡片 + 关闭按钮 #}
+<div class="preview-modal-mask" id="preview-modal" hidden role="dialog" aria-modal="true" aria-labelledby="preview-modal-title">
+    <div class="preview-modal">
+        <div class="preview-modal-head">
+            <span id="preview-modal-title">👁 实时预览</span>
+            <button type="button" class="preview-close" id="preview-close" aria-label="关闭预览">✕</button>
+        </div>
+        <div class="preview-modal-body article-body">
+            <h1 class="preview-title" id="preview-title">（未输入标题）</h1>
+            <div class="preview-content" id="preview-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+<script src="{% static 'assets/js/editor.min.js' %}"></script>
+<script src="{% static 'assets/js/edit_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

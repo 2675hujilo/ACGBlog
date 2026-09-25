@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}我的文章 · {{ site_name }}{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}"},{"@type":"ListItem","position":2,"name":"我的文章","url":"{{ request.build_absolute_uri }}"}]}
+</script>
+{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">我的文章</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block content %}
+{# ---------- 页面标题 + 写文章按钮 ---------- #}
+<div class="my-articles-header">
+    <h1 class="my-articles-title" id="my-articles-heading">📚 我的文章</h1>
+    <a class="like-btn" href="{% url 'article_new' %}">
+        <span class="like-icon">✍</span>
+        <span class="like-text">写新文章</span>
+    </a>
+</div>
+{# ---------- 筛选标签栏 ---------- #}
+<div class="filter-tabs" role="tablist" aria-label="按状态筛选文章">
+    <a class="filter-tab {% if not filter_status %}active{% endif %}" role="tab" aria-selected="{% if not filter_status %}true{% else %}false{% endif %}"
+       href="{% url 'my_articles' %}">
+        全部 <span class="tab-count">{{ counts.all }}</span>
+    </a>
+    <a class="filter-tab {% if filter_status == 'published' %}active{% endif %}" role="tab" aria-selected="{% if filter_status == 'published' %}true{% else %}false{% endif %}"
+       href="{% url 'my_articles' %}?status=published{% if search_q %}&q={{ search_q }}{% endif %}">
+        已发布 <span class="tab-count">{{ counts.published }}</span>
+    </a>
+    <a class="filter-tab {% if filter_status == 'draft' %}active{% endif %}" role="tab" aria-selected="{% if filter_status == 'draft' %}true{% else %}false{% endif %}"
+       href="{% url 'my_articles' %}?status=draft{% if search_q %}&q={{ search_q }}{% endif %}">
+        草稿 <span class="tab-count">{{ counts.draft }}</span>
+    </a>
+</div>
+{# ---------- 搜索框 ---------- #}
+<form class="my-search-bar" method="get" action="{% url 'my_articles' %}" role="search" aria-label="搜索我的文章">
+    {% if filter_status %}<input type="hidden" name="status" value="{{ filter_status }}">{% endif %}
+    <input type="search" name="q" value="{{ search_q }}" placeholder="搜索点什么呢…" autocomplete="off" aria-label="搜索我的文章标题">
+    <button type="submit">搜索喵</button>
+</form>
+{# ---------- 文章列表表格 ---------- #}
+<div class="my-articles-table-wrap" role="region" aria-label="我的文章表格">
+    {% if page_obj %}
+    <table class="my-articles-table" role="table" aria-label="我的文章列表">
+        <thead>
+            <tr>
+                                <th scope="col" role="columnheader">标题</th>
+                                <th scope="col" role="columnheader">状态</th>
+                <th>分类</th>
+                <th>阅读</th>
+                <th>点赞</th>
+                <th>评论</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in page_obj %}
+            <tr>
+                <td class="col-title">
+                    <a href="{{ article.get_absolute_url }}">{{ article.title }}</a>
+                </td>
+                <td>
+                    {% if article.status == 'published' %}
+                    <span class="badge badge-published">已发布</span>
+                    {% else %}
+                    <span class="badge badge-draft">草稿</span>
+                    {% endif %}
+                </td>
+                <td>{{ article.category.name|default:'—' }}</td>
+                <td>{{ article.views }}</td>
+                <td>{{ article.likes }}</td>
+                <td>{{ article.comment_count }}</td>
+                <td class="col-time">{{ article.updated_at|date:"m-d H:i" }}</td>
+                <td class="col-actions">
+                    <a class="btn-sm" href="{% url 'article_edit' article.pk %}">编辑喵</a>
+                    <form method="post" action="{% url 'article_delete' article.pk %}"
+                          class="inline-form js-delete-confirm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sm btn-danger">删除喵</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    {# 空状态 #}
+    <div class="profile-empty">
+                <div class="profile-empty-emoji">🐱</div>
+        <p>这里还空空如也呢~</p>
+        <p class="muted">快去写下第一篇文章吧喵~ 🌸</p>
+        <a class="like-btn" href="{% url 'article_new' %}" style="margin-top: 12px;">
+            <span class="like-icon">✍</span>
+            <span class="like-text">去写第一篇</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{# ---------- 分页器 ---------- #}
+{% if page_obj.has_other_pages %}
+{% include 'partials/_pagination.html' %}
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script defer src="{% static 'assets/js/features.min.js' %}"></script>
+{% endblock %}

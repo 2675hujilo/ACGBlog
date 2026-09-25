@@ -1,0 +1,107 @@
+/* ============================================================
+ * moe-tooltip.css  ·  萌语博客全站通用「萌系气泡提示」样式
+ * ------------------------------------------------------------
+ * 作用：替代浏览器原生 title 提示。原生提示位置不可控，
+ *       在顶部导航栏会与搜索框等元素重叠、被挤压遮挡；
+ *       本组件由 moe-tooltip.js 动态计算位置，默认显示在
+ *       元素「右侧」垂直居中，空间不足时自动翻转到左侧，
+ *       并带小箭头与弹性缩放动画，柔和圆润、清新通透。
+ * 配合：moe-tooltip.js（单例 #moe-tooltip 挂载到 <body> 末尾，
+ *       因此不会被按钮 overflow:hidden 或父容器裁切）。
+ * ============================================================ */
+
+/* 提示气泡单例：默认隐藏，fixed 定位，不拦截鼠标事件 */
+#moe-tooltip {
+    position: fixed;
+    z-index: 9999;                 /* 高于导航栏(900)/弹窗(1300)，保证永远可见 */
+    max-width: 240px;              /* 文案过长时换行，避免顶出视口 */
+    padding: 7px 13px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    letter-spacing: 0.2px;
+    color: #6b21a8;               /* 深紫文字，在浅色气泡上清晰可读 */
+    white-space: normal;
+    word-break: break-word;
+    pointer-events: none;          /* 纯展示，不阻挡下方元素点击 */
+    user-select: none;
+    /* 浅色系气泡：近白 → 浅薰衣草渐变（参考看板娘 waifu-tips 配色），柔和不刺眼 */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(253, 244, 255, 0.97));
+    border: 1px solid #e9d5ff;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.22);
+    /* 初始为缩放 0.8 + 透明的隐藏态，由 .show 触发动画 */
+    opacity: 0;
+    transform: scale(0.82);
+    transform-origin: left center;
+    transition: opacity 0.16s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity, transform;
+}
+
+/* 显示态：完全不透明 + 回弹到正常大小 */
+#moe-tooltip.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 小箭头：默认指向左侧（气泡在元素右侧时，箭头朝左指向元素） */
+#moe-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -5px;
+    width: 9px;
+    height: 9px;
+    margin-top: -4.5px;
+    background: inherit;
+    border-radius: 2px;
+    transform: rotate(45deg);
+}
+
+/* 气泡在元素「左侧」时：箭头翻转到右边，动画原点也改到右侧 */
+#moe-tooltip.tip-left {
+    transform-origin: right center;
+}
+#moe-tooltip.tip-left::after {
+    left: auto;
+    right: -5px;
+}
+
+/* 气泡在元素「上方 / 下方」时：缩放原点贴近元素，动画更自然 */
+#moe-tooltip.tip-top {
+    transform-origin: center bottom;
+}
+#moe-tooltip.tip-bottom {
+    transform-origin: center top;
+}
+
+/* 气泡在元素「上方」时：箭头朝下 */
+#moe-tooltip.tip-top::after {
+    top: auto;
+    bottom: -4px;
+    left: 50%;
+    margin-top: 0;
+    margin-left: -4.5px;
+}
+
+/* 气泡在元素「下方」时：箭头朝上 */
+#moe-tooltip.tip-bottom::after {
+    top: -4px;
+    left: 50%;
+    margin-top: 0;
+    margin-left: -4.5px;
+}
+
+/* 暗黑主题：气泡仍走浅色系（柔薰衣草），避免深色背景上再压深色块；
+   深紫文字保持高对比，描边略加深以勾勒轮廓。 */
+:root[data-theme="dark"] #moe-tooltip {
+    background: linear-gradient(135deg, rgba(246, 240, 255, 0.98), rgba(238, 228, 255, 0.98));
+    border-color: #c9b4ee;
+    color: #5b21b6;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+}
+
+/* 尊重系统「减少动态效果」偏好：关闭弹性动画，仅做淡入淡出 */
+@media (prefers-reduced-motion: reduce) {
+    #moe-tooltip { transition: opacity 0.12s ease; transform: none; }
+    #moe-tooltip.show { transform: none; }
+}

@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,follow">
+<title>500 - 服务器酱宕机啦…</title>
+{# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
+<script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/error500.min.css' %}?v={{ BUILD_TOKEN }}">
+</head>
+<body>
+    <span class="spark" aria-hidden="true">⚡</span>
+    <span class="spark">✨</span>
+    <span class="spark">💫</span>
+    <span class="spark">⚡</span>
+    <span class="spark">✨</span>
+    <div class="card" role="group" aria-label="服务器错误提示">
+        <div class="illust" role="img" aria-label="服务器错误">😵‍💫💻⚡</div>
+        <h1>服务器酱宕机啦…</h1>
+        <p class="sub" id="err-desc">魔力传输出现了点小问题</p>
+        <div class="err-btn-group">
+            {# 7. 返回上一页：调用 history.back() #}
+            <button type="button" class="btn-back" aria-label="返回上一页">← 返回上一页喵</button>
+            <a class="btn-home" href="/" aria-label="返回首页">🏠 回首页喵</a>
+        </div>
+    </div>
+</body>
+</html>

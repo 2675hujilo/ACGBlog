@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}我的收藏 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">我的收藏</span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/profile.min.css' %}">
+{% endblock %}
+{% block content %}
+<h1 class="settings-page-title">⭐ 我的收藏</h1>
+<div class="article-list" aria-label="收藏的文章">
+    {% for article in page_obj %}
+    {% include 'partials/_article_card.html' %}
+    {% empty %}
+    <div class="empty-state">
+        <img src="{% static 'assets/images/empty-state.svg' %}" alt="暂无收藏" class="empty-illust">
+        <p>还没有收藏任何文章喵~ 去发现好文吧 🌸</p>
+    </div>
+    {% endfor %}
+</div>
+{% include 'partials/_pagination.html' %}
+{% endblock %}

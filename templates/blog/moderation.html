@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}内容审核 · {{ site_name }}{% endblock %}
+{% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span>
+    <a href="{% url 'staff_console' %}">运营看板</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">内容审核</span>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/moderation_inline.min.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+
+{% block content %}
+<div class="moderation-wrap">
+
+  <div class="moderation-head">
+    <div>
+      <h1>🛡 内容审核 <span class="badge-admin-only">管理员限定</span></h1>
+      <div class="sub">审核待发布文章与用户举报；删除为软删除，可在回收站恢复喵~</div>
+    </div>
+    <a class="btn-sm" href="{% url 'staff_console' %}">🎛 返回看板</a>
+  </div>
+
+  <div class="moderation-tabs" role="tablist">
+    <a class="moderation-tab {% if tab == 'articles' %}is-active{% endif %}" href="?tab=articles" role="tab">📝 待审文章<span class="tab-count">{{ pending_count }}</span></a>
+    <a class="moderation-tab {% if tab == 'reports' %}is-active{% endif %}" href="?tab=reports" role="tab">🚩 待处理举报<span class="tab-count">{{ report_count }}</span></a>
+    <a class="moderation-tab {% if tab == 'promotions' %}is-active{% endif %}" href="?tab=promotions" role="tab">✨ 推广申请<span class="tab-count">{{ promotion_count }}</span></a>
+    <a class="moderation-tab {% if tab == 'history' %}is-active{% endif %}" href="?tab=history" role="tab">📜 审核历史<span class="tab-count">{{ history_count }}</span></a>
+    <a class="moderation-tab {% if tab == 'trash' %}is-active{% endif %}" href="?tab=trash" role="tab">🗑 回收站<span class="tab-count">{{ trash_count }}</span></a>
+  </div>
+
+  {# ============ 标签页一：待审文章 ============ #}
+  {% if tab == 'articles' %}
+    <div class="mod-toolbar">
+      <span class="toolbar-label">排序：</span>
+      <a class="chip-sort {% if sort == 'date' %}is-active{% endif %}" href="?tab=articles&sort=date&order={{ order }}">🕐 提交时间</a>
+      <a class="chip-sort {% if sort == 'category' %}is-active{% endif %}" href="?tab=articles&sort=category&order={{ order }}">📁 按分类</a>
+      <a class="chip-sort {% if sort == 'tag' %}is-active{% endif %}" href="?tab=articles&sort=tag&order={{ order }}">🏷 按标签</a>
+      <a class="chip-order" href="?tab=articles&sort={{ sort }}&order={% if order == 'desc' %}asc{% else %}desc{% endif %}">
+        {% if order == 'desc' %}⬇️ 降序{% else %}⬆️ 升序{% endif %}</a>
+    </div>
+    {% for article in pending_page %}
+    <div class="mod-item">
+      <div class="mod-item-head">
+        <span class="mod-item-title">📄 {{ article.title }}</span>
+        <span class="mod-item-meta">{{ article.author.username }} · {{ article.created_at|date:'Y-m-d H:i' }}</span>
+      </div>
+      <div class="mod-item-body muted">{{ article.excerpt|default:'（暂无摘要）' }}</div>
+      {% if article.tags.exists %}
+      <div class="mod-tags">{% for t in article.tags.all %}<span class="chip">#{{ t.name }}</span>{% endfor %}</div>
+      {% endif %}
+      <div class="mod-actions">
+        <form method="post" action="{% url 'moderate_article' article.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="approve">
+          <button type="submit" class="mod-btn btn-approve">✅ 通过发布</button>
+        </form>
+        <form method="post" action="{% url 'moderate_article' article.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="reject">
+          <button type="button" class="mod-btn btn-danger js-confirm"
+                  data-icon="📝" data-title="驳回并退回作者"
+                  data-body="确定驳回《{{ article.title|escapejs }}》吗？文章会退回草稿状态（不会删除），作者可修改后重新提交。"
+                  data-need-reason="1" data-reason-field="reason"
+                  data-ok-text="确认驳回">🗑 驳回退回</button>
+        </form>
+        <a class="mod-btn btn-ghost" href="{% url 'article_detail' article.pk %}">👁 预览</a>
+        <a class="mod-btn btn-ghost" href="{% url 'article_edit' article.pk %}">✏ 先编辑</a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mod-empty"><div class="me">🎉</div><p>太棒啦，没有待审核的文章喵~</p>
+      <a class="btn-primary" href="{% url 'staff_console' %}">🎛 返回看板</a></div>
+    {% endfor %}
+    {% if pending_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="待审文章分页">
+      {% if pending_page.has_previous %}<a href="?tab=articles&sort={{ sort }}&order={{ order }}&page={{ pending_page.previous_page_number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ pending_page.number }} / {{ pending_page.paginator.num_pages }} 页</span>
+      {% if pending_page.has_next %}<a href="?tab=articles&sort={{ sort }}&order={{ order }}&page={{ pending_page.next_page_number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+
+  {# ============ 标签页二：待处理举报 ============ #}
+  {% elif tab == 'reports' %}
+    {% for report in reports_page %}
+    <div class="mod-item">
+      <div class="mod-item-head">
+        <span class="mod-item-title">🚩 {{ report.reporter.username }} 举报了一条评论</span>
+        <span class="mod-item-meta">{{ report.created_at|date:'Y-m-d H:i' }}</span>
+      </div>
+      <div class="mod-item-body">
+        <strong>举报理由：</strong>{{ report.reason|linebreaksbr }}
+        {% if report.comment %}
+        <blockquote>
+          <div class="muted" style="margin-bottom:4px;">被举报评论 · {{ report.comment.user.username|default:'匿名' }}</div>
+          {{ report.comment.content|linebreaksbr }}
+          <div class="muted" style="margin-top:6px;font-size:.76rem;">
+            出自《<a href="{% url 'article_detail' report.comment.article_id %}">{{ report.comment.article.title }}</a>》</div>
+        </blockquote>
+        {% else %}
+        <blockquote class="muted">该评论已不存在（可能已被处理）。</blockquote>
+        {% endif %}
+      </div>
+      <div class="mod-actions">
+        {% if report.comment %}
+        <form method="post" action="{% url 'moderate_report' report.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="keep">
+          <button type="submit" class="mod-btn btn-keep">🙆 举报不成立·保留</button>
+        </form>
+        <form method="post" action="{% url 'moderate_report' report.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="delete_comment">
+          <button type="button" class="mod-btn btn-danger js-confirm"
+                  data-icon="🚩" data-title="隐藏违规评论"
+                  data-body="确定将该违规评论隐藏（软删除）吗？评论会进入回收站，需要时还能恢复。"
+                  data-ok-text="确认隐藏">🗑 隐藏违规评论</button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'moderate_report' report.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="keep">
+          <button type="submit" class="mod-btn btn-keep">🧹 清理该失效举报</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="mod-empty"><div class="me">🌟</div><p>没有待处理的举报，社区很和谐喵~</p>
+      <a class="btn-primary" href="{% url 'staff_console' %}">🎛 返回看板</a></div>
+    {% endfor %}
+    {% if reports_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="举报分页">
+      {% if reports_page.has_previous %}<a href="?tab=reports&rpage={{ reports_page.previous_page_number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ reports_page.number }} / {{ reports_page.paginator.num_pages }} 页</span>
+      {% if reports_page.has_next %}<a href="?tab=reports&rpage={{ reports_page.next_page_number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+
+  {# ============ Bug1：推广申请 + 全局设置 ============ #}
+  {% elif tab == 'promotions' %}
+    {# ---- 全局设置面板：新文章/新评论审核、评论撤回时限、置顶上限 ---- #}
+    <form method="post" action="{% url 'moderation_settings_save' %}" class="mod-settings">
+      {% csrf_token %}
+      <div class="mod-settings-title">⚙️ 审核全局设置</div>
+      <div class="mod-settings-grid">
+        <label class="switch-inline">
+          <input type="checkbox" name="require_article_review" {% if moderation_settings.require_article_review %}checked{% endif %}>
+          普通作者新文章需审核
+        </label>
+        <label class="switch-inline">
+          <input type="checkbox" name="require_comment_review" {% if moderation_settings.require_comment_review %}checked{% endif %}>
+          新评论需审核
+        </label>
+        <label class="num-inline">评论可撤回（分钟）
+          <input type="number" name="comment_recall_minutes" min="1" value="{{ moderation_settings.comment_recall_minutes }}">
+        </label>
+        <label class="num-inline">置顶上限（篇）
+          <input type="number" name="max_pinned" min="1" value="{{ moderation_settings.max_pinned }}">
+        </label>
+      </div>
+      <button type="submit" class="mod-btn btn-approve">💾 保存设置</button>
+    </form>
+
+    {# ---- 待审核推广申请列表 ---- #}
+    {% for pr in promo_page %}
+    <div class="mod-item">
+      <div class="mod-item-head">
+        <span class="mod-item-title">
+          {% if pr.kind == 'pin' %}📌{% elif pr.kind == 'feature' %}⭐{% else %}🔥{% endif %}
+          {{ pr.applicant.username|default:'匿名' }} 申请{{ pr.get_kind_display }}
+        </span>
+        <span class="mod-item-meta">{{ pr.created_at|date:'Y-m-d H:i' }}</span>
+      </div>
+      <div class="mod-item-body">
+        <strong>文章：</strong><a href="{% url 'article_detail' pr.article_id %}">{{ pr.article.title }}</a>
+        <blockquote><strong>申请理由：</strong>{{ pr.reason|linebreaksbr }}</blockquote>
+      </div>
+      <div class="mod-actions">
+        <form method="post" action="{% url 'moderate_promotion' pr.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="approve">
+          <button type="submit" class="mod-btn btn-approve">✅ 通过{{ pr.get_kind_display }}</button>
+        </form>
+        <form method="post" action="{% url 'moderate_promotion' pr.pk %}">
+          {% csrf_token %}<input type="hidden" name="action" value="reject">
+          <button type="button" class="mod-btn btn-danger js-confirm"
+                  data-icon="📝" data-title="驳回推广申请"
+                  data-body="确定驳回这条{{ pr.get_kind_display|escapejs }}申请吗？可填写驳回理由通知申请人。"
+                  data-need-reason="1" data-reason-field="reason"
+                  data-ok-text="确认驳回">🗑 驳回申请</button>
+        </form>
+        <a class="mod-btn btn-ghost" href="{% url 'article_detail' pr.article_id %}">👁 查看文章</a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mod-empty"><div class="me">🎈</div><p>暂无推广申请喵~</p></div>
+    {% endfor %}
+    {% if promo_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="推广申请分页">
+      {% if promo_page.has_previous %}<a href="?tab=promotions&ppage={{ promo_page.previous_page_number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ promo_page.number }} / {{ promo_page.paginator.num_pages }} 页</span>
+      {% if promo_page.has_next %}<a href="?tab=promotions&ppage={{ promo_page.next_page_number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+
+  {# ============ 标签页三：审核历史 ============ #}
+  {% elif tab == 'history' %}
+    <div class="mod-toolbar">
+      <span class="toolbar-label">动作：</span>
+      <select id="history-act-filter" aria-label="按动作筛选">
+        <option value="" {% if not act %}selected{% endif %}>全部动作</option>
+        {% for value, label in action_choices %}
+        <option value="{{ value }}" {% if act == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <ul class="mod-timeline">
+      {% for log in history_page %}
+      <li class="tl-item">
+        <span class="tl-dot">
+          {% if log.action == 'submit' %}📤{% elif log.action == 'approve' %}✅
+          {% elif log.action == 'reject' %}📝{% elif log.action == 'soft_delete' %}🗑
+          {% elif log.action == 'restore' %}♻️{% elif log.action == 'hard_delete' %}🔥
+          {% elif log.action == 'pin' %}📌{% elif log.action == 'unpin' %}📍
+          {% elif log.action == 'feature' %}⭐{% elif log.action == 'unfeature' %}🌠
+          {% elif log.action == 'hot' %}🔥{% elif log.action == 'unhot' %}🌡{% else %}•{% endif %}
+        </span>
+        <div class="tl-line">
+          <b>{{ log.moderator_name|default:'系统' }}</b>
+          <span class="tl-badge">{{ log.get_action_display }}</span>
+          {% if log.target_type == 'article' %}文章{% else %}评论{% endif %}
+          「{% if log.article_id %}<a href="{% url 'article_detail' log.article_id %}">{{ log.target_title }}</a>{% else %}{{ log.target_title }}{% endif %}」
+          <span class="tl-time">{{ log.created_at|date:'Y-m-d H:i:s' }}</span>
+        </div>
+        {% if log.reason %}<div class="tl-reason">💭 {{ log.reason|linebreaksbr }}</div>{% endif %}
+      </li>
+      {% empty %}
+      <div class="mod-empty"><div class="me">📭</div><p>还没有审核记录喵~</p></div>
+      {% endfor %}
+    </ul>
+    {% if history_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="审核历史分页">
+      {% if history_page.has_previous %}<a href="?tab=history&act={{ act }}&hpage={{ history_page.previous_page_number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ history_page.number }} / {{ history_page.paginator.num_pages }} 页</span>
+      {% if history_page.has_next %}<a href="?tab=history&act={{ act }}&hpage={{ history_page.next_page_number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+
+  {# ============ 标签页四：回收站 ============ #}
+  {% elif tab == 'trash' %}
+    <div class="trash-group-title">📄 已删除文章</div>
+    {% for article in trash_articles_page %}
+    <div class="trash-row">
+      <div class="trash-main">
+        <div class="t-title">{{ article.title }}</div>
+        <div class="t-meta">{{ article.author.username }} · 删除于 {{ article.deleted_at|date:'Y-m-d H:i' }}</div>
+      </div>
+      <div class="mod-actions" style="margin-top:0;">
+        <form method="post" action="{% url 'restore_article' article.pk %}">
+          {% csrf_token %}<button type="submit" class="mod-btn btn-restore">♻️ 恢复</button>
+        </form>
+        <form method="post" action="{% url 'hard_delete_article' article.pk %}">
+          {% csrf_token %}
+          <button type="button" class="mod-btn btn-danger js-confirm"
+                  data-icon="🔥" data-title="彻底删除文章"
+                  data-body="确定彻底删除《{{ article.title|escapejs }}》吗？此操作不可恢复喵！"
+                  data-ok-text="彻底删除">🔥 彻底删除</button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mod-empty"><div class="me">✨</div><p>回收站里没有文章喵~</p></div>
+    {% endfor %}
+    {% if trash_articles_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="回收站文章分页">
+      {% if trash_articles_page.has_previous %}<a href="?tab=trash&tpage={{ trash_articles_page.previous_page_number }}&tcpage={{ trash_comments_page.number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ trash_articles_page.number }} / {{ trash_articles_page.paginator.num_pages }} 页</span>
+      {% if trash_articles_page.has_next %}<a href="?tab=trash&tpage={{ trash_articles_page.next_page_number }}&tcpage={{ trash_comments_page.number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+
+    <div class="trash-group-title">💬 已删除评论</div>
+    {% for comment in trash_comments_page %}
+    <div class="trash-row">
+      <div class="trash-main">
+        <div class="t-title">{{ comment.content|striptags|truncatechars:60 }}</div>
+        <div class="t-meta">{{ comment.user.username|default:'匿名' }} ·
+          {% if comment.article_id %}出自《<a href="{% url 'article_detail' comment.article_id %}">{{ comment.article.title }}</a>》·{% endif %}
+          删除于 {{ comment.deleted_at|date:'Y-m-d H:i' }}</div>
+      </div>
+      <div class="mod-actions" style="margin-top:0;">
+        <form method="post" action="{% url 'restore_comment' comment.pk %}">
+          {% csrf_token %}<button type="submit" class="mod-btn btn-restore">♻️ 恢复</button>
+        </form>
+        <form method="post" action="{% url 'hard_delete_comment' comment.pk %}">
+          {% csrf_token %}
+          <button type="button" class="mod-btn btn-danger js-confirm"
+                  data-icon="🔥" data-title="彻底删除评论"
+                  data-body="确定彻底删除这条评论吗？此操作不可恢复喵！"
+                  data-ok-text="彻底删除">🔥 彻底删除</button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mod-empty"><div class="me">✨</div><p>回收站里没有评论喵~</p></div>
+    {% endfor %}
+    {% if trash_comments_page.has_other_pages %}
+    <nav class="mod-pager" aria-label="回收站评论分页">
+      {% if trash_comments_page.has_previous %}<a href="?tab=trash&tcpage={{ trash_comments_page.previous_page_number }}&tpage={{ trash_articles_page.number }}">‹ 上一页</a>{% else %}<span class="is-off">‹ 上一页</span>{% endif %}
+      <span class="pager-info">第 {{ trash_comments_page.number }} / {{ trash_comments_page.paginator.num_pages }} 页</span>
+      {% if trash_comments_page.has_next %}<a href="?tab=trash&tcpage={{ trash_comments_page.next_page_number }}&tpage={{ trash_articles_page.number }}">下一页 ›</a>{% else %}<span class="is-off">下一页 ›</span>{% endif %}
+    </nav>
+    {% endif %}
+  {% endif %}
+</div>
+
+{# ============ 萌系确认弹窗（全站替代浏览器原生 confirm）============ #}
+<div class="mod-modal-mask" id="modModal" hidden>
+  <div class="mod-modal" role="dialog" aria-modal="true" aria-labelledby="modModalTitle">
+    <div class="mod-modal-head">
+      <span class="mod-modal-icon" id="modModalIcon">⚠️</span>
+      <h3 id="modModalTitle">确认操作</h3>
+    </div>
+    <p class="mod-modal-body" id="modModalBody"></p>
+    <div class="mod-modal-reason" id="modModalReasonWrap" hidden>
+      <label for="modModalReason">理由 / 备注（会通知作者）</label>
+      <textarea id="modModalReason" maxlength="500" rows="3" placeholder="说点什么吧，比如哪里需要调整~"></textarea>
+    </div>
+    <div class="mod-modal-foot">
+      <button type="button" class="mod-btn" id="modModalCancel">取消</button>
+      <button type="button" class="mod-btn btn-danger" id="modModalOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'assets/js/moderation_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

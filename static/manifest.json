@@ -1,0 +1,27 @@
+{
+    "name": "萌语博客",
+    "short_name": "萌语博客",
+    "description": "一个粉紫蓝萌系的二次元小站，记录技术与生活的碎碎念喵~",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#f4f2fb",
+    "theme_color": "#a06cd5",
+    "lang": "zh-CN",
+    "icons": [
+        {
+            "src": "/static/assets/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/assets/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "categories": ["blog", "personalization", "entertainment"]
+}

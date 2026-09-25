@@ -1,0 +1,43 @@
+{% comment %}
+SEO / Open Graph meta 片段。
+各页面通过 {% include 'partials/_seo_meta.html' with meta_title=... meta_description=... %} 传参；
+未传参时回退到全局注入的 site_name / site_description / site_keywords。
+安全说明：所有 {{ var }} 均经过 Django 模板自动 HTML 转义，
+用户输入（如搜索关键词、文章标题）不会原样注入，杜绝 meta 标签层面的 XSS。
+实现说明：不用 {{ x|default:y }} 形式，因为当 y 不在上下文时作为过滤器参数会
+抛 VariableDoesNotExist；改用 {% if %}/{% else %} 显式判空，对未传参的页面（登录/编辑等）安全兜底。
+{% endcomment %}
+{# 页面描述：未传 meta_description 时回退站点默认描述 #}
+<meta name="description" content="{% if meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
+{# 页面关键词：未传 meta_keywords 时回退站点默认关键词 #}
+<meta name="keywords" content="{% if meta_keywords %}{{ meta_keywords }}{% else %}{{ site_keywords }}{% endif %}">
+{# Open Graph：社交分享 / 搜索引擎富媒体摘要 #}
+<meta property="og:type" content="{% if og_type %}{{ og_type }}{% else %}website{% endif %}">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{% if og_title %}{{ og_title }}{% elif meta_title %}{{ meta_title }}{% else %}{{ site_name }}{% endif %}">
+<meta property="og:description" content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
+{% if og_url %}<meta property="og:url" content="{{ og_url }}">{% endif %}
+{% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+<meta property="og:locale" content="zh_CN">
+{% if og_updated_time %}<meta property="og:updated_time" content="{{ og_updated_time }}">{% endif %}
+{# Twitter Card：与 OG 复用同一份摘要，summary 类型 #}
+<meta name="twitter:card" content="summary">
+<meta name="twitter:locale" content="zh_CN">
+<meta name="twitter:title" content="{% if og_title %}{{ og_title }}{% elif meta_title %}{{ meta_title }}{% else %}{{ site_name }}{% endif %}">
+<meta name="twitter:description" content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
+{% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+<meta name="twitter:site" content="">
+<meta name="twitter:creator" content="">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta name="twitter:card" content="{% if og_image %}summary_large_image{% else %}summary{% endif %}">
+<meta property="weixin:title" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+<meta itemprop="name" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+<meta property="weibo:title" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+<meta name="pinterest-rich-pin" content="true">
+<meta property="linkedin:owner" content="">
+<meta property="fb:app_id" content="">
+<meta name="instagram:owner" content="">
+{% if og_image %}
+<meta property="og:image:alt" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+<meta name="twitter:image:alt" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+{% endif %}

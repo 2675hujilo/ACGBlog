@@ -1,0 +1,88 @@
+/* Bug11 文件头注释
+ * 403 权限错误页样式：无权限插画、提示文案与返回首页/登录按钮。
+ */
+
+    /* ===== 自包含样式：粉紫蓝萌系错误页 ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+        min-height: 100vh;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #ffd6e7 0%, #e6d4ff 50%, #cfe2ff 100%);
+        overflow: hidden;
+        position: relative;
+        color: #4a3a6b;
+    }
+    /* 飘落的小锁 / 禁止符号装饰 */
+    .float {
+        position: fixed; top: -30px;
+        font-size: 1.2rem;
+        animation: fall linear infinite;
+        pointer-events: none;
+        z-index: 1;
+        opacity: .75;
+    }
+    .float:nth-child(1) { left: 12%; animation-duration: 10s; animation-delay: 0s; }
+    .float:nth-child(2) { left: 30%; animation-duration: 12s; animation-delay: 2s; }
+    .float:nth-child(3) { left: 50%; animation-duration: 9s;  animation-delay: 1s; }
+    .float:nth-child(4) { left: 70%; animation-duration: 11s; animation-delay: 3s; }
+    .float:nth-child(5) { left: 86%; animation-duration: 10s; animation-delay: .5s; }
+    @keyframes fall {
+        0%   { transform: translateY(-30px) rotate(0); opacity: 0; }
+        10%  { opacity: .75; }
+        100% { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: .3; }
+    }
+    .card {
+        position: relative; z-index: 2;
+        text-align: center;
+        padding: 48px 36px;
+        max-width: 520px;
+        background: rgba(255, 255, 255, .75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(160, 108, 213, .2);
+        border-radius: 28px;
+        box-shadow: 0 12px 40px rgba(160, 108, 213, .2);
+    }
+    /* 猫咪生气的小摇摆 */
+    .illust {
+        font-size: 4.5rem; line-height: 1; margin-bottom: 12px;
+        display: inline-block;
+        animation: wiggle 1.6s ease-in-out infinite;
+    }
+    @keyframes wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25%      { transform: rotate(-6deg); }
+        75%      { transform: rotate(6deg); }
+    }
+    h1 {
+        font-size: 1.9rem; font-weight: 800; margin-bottom: 10px;
+        background: linear-gradient(90deg, #e0557a, #a06cd5);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .sub { color: #6b6480; font-size: 1rem; margin-bottom: 28px; }
+    .btn-home {
+        display: inline-block;
+        padding: 11px 30px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #ff8fb1, #a06cd5);
+        color: #fff; text-decoration: none; font-weight: 600;
+        box-shadow: 0 6px 18px rgba(160, 108, 213, .35);
+        transition: transform .15s ease;
+    }
+    .btn-home:hover { animation: btn-bounce .45s ease; color: #fff; }
+    @keyframes btn-bounce {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%      { transform: translateY(-4px) scale(1.06); }
+    }
+    /* ===== 暗黑模式适配：由 <html data-theme="dark"> 触发 ===== */
+    :root[data-theme="dark"] body {
+        background: linear-gradient(135deg, #1a1528 0%, #2d1f3d 50%, #1a2540 100%);
+        color: #e9e4f6;
+    }
+    :root[data-theme="dark"] .card {
+        background: rgba(46, 40, 66, .85);
+        border-color: rgba(160, 108, 213, .3);
+    }
+    :root[data-theme="dark"] .sub { color: #a99fc8; }

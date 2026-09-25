@@ -1,0 +1,469 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-hans" dir="ltr">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="content-language" content="zh-CN">
+    <meta name="author" content="{{ site_name|default:'萌语博客' }}">
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="googlebot" content="index,follow">
+    <meta name="color-scheme" content="light dark">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="{{ site_name|default:'萌语博客' }}">
+    <meta name="application-name" content="{{ site_name|default:'萌语博客' }}">
+    <meta name="msapplication-TileColor" content="#a06cd5">
+    <meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Permissions-Policy" content="camera=(),microphone=(),geolocation=(),interest-cohort=()">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    {# SEO meta 块：各子模板通过 {% block seo_meta %} 填充 description/keywords/OG；未填充时输出站点默认值 #}
+    {% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+    {# RSS 订阅自动发现：浏览器 / RSS 阅读器识别 #}
+    <link rel="alternate" type="application/rss+xml" title="{{ site_name }} RSS" href="{% url 'rss_feed' %}">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+<link rel="alternate" hreflang="zh-CN" href="{{ request.build_absolute_uri }}">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"SiteNavigationElement","name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}","position":1}
+    </script>
+    <meta name="breadcrumb-depth" content="{% block crumb_depth %}2{% endblock %}">
+    <meta name="sitemap-priority" content="0.8">
+    <meta name="sitemap-changefreq" content="daily">
+    <meta name="last-modified" content="{% now 'c' %}">
+    <meta name="MobileOptimized" content="width">
+    <meta name="HandheldFriendly" content="true">
+    <meta property="og:locale:alternate" content="zh_CN">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preload" href="{% static 'assets/css/components.min.css' %}" as="style">
+    <link rel="preload" href="{% static 'assets/js/theme.min.js' %}" as="script">
+{% if og_image %}<link rel="preload" as="image" href="{{ og_image }}" fetchpriority="high">{% endif %}
+<link rel="prefetch" href="{% url 'index' %}" as="document">
+<link rel="modulepreload" href="{% static 'assets/js/common.min.js' %}">
+<link rel="prerender" href="{% url 'search' %}">
+<link rel="preload" href="{% static 'assets/css/base.min.css' %}" as="style" fetchpriority="high">
+    <link rel="preload" href="{% static 'assets/css/blog.min.css' %}" as="style">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Organization",
+    "name":"{{ site_name|default:'萌语博客' }}",
+    "url":"{{ request.scheme }}://{{ request.get_host }}",
+    "logo":"{% static 'assets/apple-touch-icon.png' %}",
+    "contactPoint":{"@type":"ContactPoint","contactType":"customer support"},
+    "sameAs":[],
+    "foundingDate":"2024-01-01",
+    "numberOfEmployees":{"@type":"QuantitativeValue","value":1},
+    "areaServed":"CN",
+    "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","reviewCount":"1"},
+    "potentialAction":{"@type":"SearchAction","target":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}?q={search_term_string}","query-input":"required name=search_term_string"}
+    }
+    </script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="preload" href="{% static 'assets/css/base.min.css' %}" as="style">
+    <link rel="preload" href="{% static 'assets/js/common.min.js' %}" as="script">
+    <link rel="apple-touch-icon" href="{% static 'assets/apple-touch-icon.png' %}">
+    {# 防闪烁脚本：必须在样式表之前内联执行，首帧渲染前就根据 localStorage/系统偏好设置好 data-theme #}
+    <script src="{% static 'assets/js/base_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    {# ===== Round5: 用户偏好注入（在所有 JS 之前，供 features/*.min.js 读取） ===== #}
+    <script>window.USER_PREFERENCES = {{ user_preferences_json|default:"{}"|safe }};</script>
+<link rel="stylesheet" href="{% static 'assets/css/base_inline_core.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
+<link rel="shortcut icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
+    {# 61. PWA：应用清单 + 主题色 #}
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#a06cd5">
+    <link rel="apple-touch-startup-image" href="{% static 'assets/apple-touch-icon.png' %}">
+    <meta name="theme-color" content="#a06cd5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#2d1f3d" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="{% static 'assets/icon-maskable-512.png' %}" sizes="512x512" purpose="maskable">
+    <link rel="shortcut" href="{% url 'article_new' %}" name="写文章" icons="{% static 'assets/apple-touch-icon.png' %}">
+    <meta name="share-target" content="post">
+    <meta name="file-handler" content="article">
+    <meta name="protocol-handler" content="web+blog">
+    <meta name="capture-handler" content="camera">
+    <meta name="display-override" content="standalone">
+    <meta name="window-controls-overlay" content="true">
+    {# 60. 打印专用样式表：仅在打印时生效 #}
+<link rel="stylesheet" href="{% static 'assets/css/print.min.css' %}" media="print">
+<link rel="stylesheet" href="{% static 'assets/css/base_inline_core.min.css' %}?v={{ BUILD_TOKEN }}">
+    {% comment %}
+===== 全站样式表：base.css 基础令牌 / components.css 组件库 / blog.css 三栏布局 =====
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'assets/css/base.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/components.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/blog.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# 第十七批 UI/UX 增强样式（骨架屏/涟漪/时间轴/面包屑等） #}
+    <link rel="stylesheet" href="{% static 'assets/css/enhance.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# 第三十批 UI 细节打磨（项1~30：分类标题/3D标签/作者卡/樱花模式等） #}
+    <link rel="stylesheet" href="{% static 'assets/css/ui_polish.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# Round5: 全站动效样式（粒子/淡入/打字机/萌系加载等，所有页面按需加载） #}
+    <link rel="stylesheet" href="{% static 'assets/css/effects.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# 萌系气泡提示：替代原生 title，默认显示在按钮右侧，避免被导航栏遮挡（bug1） #}
+    <link rel="stylesheet" href="{% static 'assets/css/moe-tooltip.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# Round6 修复与增强样式：粘性侧栏 / footer 重排 / FAB 快捷菜单 / 选中态对比等 #}
+    <link rel="stylesheet" href="{% static 'assets/css/round6.min.css' %}?v={{ BUILD_TOKEN }}">
+<link rel="stylesheet" href="{% static 'assets/css/inline_cleanup.min.css' %}?v={{ BUILD_TOKEN }}">
+<link rel="stylesheet" href="{% static 'assets/css/header_menus.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# 看板娘 Mascot 样式（右下角悬浮互动角色） #}
+    
+    <link rel="stylesheet" href="{% static 'assets/css/base_inline_components.min.css' %}?v={{ BUILD_TOKEN }}">
+    {% block extra_head %}{% endblock %}
+<link rel="stylesheet" href="{% static 'assets/live2d/waifu.css' %}?v=menu_fix_20260923">
+<link rel="stylesheet" href="{% static 'assets/css/base_inline_a11y.min.css' %}?v={{ BUILD_TOKEN }}">
+</head>
+<body data-theme-color="{{ user_preferences.theme_color|default:'purple_pink' }}" data-font-size="{{ user_preferences.font_size|default:'medium' }}" data-eye-protection="{{ user_preferences.eye_protection|default:'false' }}" data-amoled="{{ user_preferences.amoled_dark|default:'false' }}" data-holiday="">
+<a class="skip-link" href="#main-content" accesskey="0"></a>
+<div class="sr-only" aria-live="polite" aria-atomic="true" id="a11y-live"></div>
+<script src="{% static 'assets/js/base_user_prefs_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# 阅读进度条：由 common.js 随滚动更新宽度百分比 #}
+<div class="reading-progress" id="reading-progress" role="progressbar" aria-label="阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+{# 页面顶部加载进度条：内联脚本控制宽度，load 后淡出 #}
+<div id="page-loader" role="progressbar" aria-label="页面加载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+{# 樱花飘落装饰：5 个固定位置的纯 CSS 动画花瓣，pointer-events:none 不影响交互 #}
+<span class="sakura-deco sd1" aria-hidden="true"></span>
+<span class="sakura-deco sd2" aria-hidden="true"></span>
+<span class="sakura-deco sd3"></span>
+<span class="sakura-deco sd4"></span>
+<span class="sakura-deco sd5"></span>
+{# ===== Round5 E3: 粒子背景 canvas（由 effects.min.js 控制开关与参数） ===== #}
+<canvas id="particle-canvas" class="particle-canvas" aria-hidden="true"></canvas>
+{% comment %}
+===== 顶部导航栏（sticky 吸顶 + 毛玻璃） =====
+{% endcomment %}
+<header class="site-header" role="banner" data-scroll-header>
+    <nav class="nav-bar container" role="navigation" aria-label="主导航">
+        {# 品牌：Logo + 站点名称（工单15 起，名称/Logo 来自数据库 SiteInfo，可在站点设置修改） #}
+<a class="nav-brand" href="{% url 'index' %}" aria-label="{{ site_name }} 返回首页">{{ site_logo }} {{ site_name }}</a>
+        {# 导航链接组：首页/文章/笔记/独立页面/分类/标签/归档/系列/随机喵，active_kind 与 active_nav 控制高亮 #}
+<div class="nav-links" role="menubar">
+<a class="nav-link {% if active_nav == 'home' and not active_kind %}active{% endif %}" href="{% url 'index' %}" accesskey="h"><img src="{% static 'assets/icons/home.svg' %}" alt="" class="icon">首页</a>
+            <a class="nav-link {% if active_kind == 'article' %}active{% endif %}" href="{% url 'index' %}?kind=article"><img src="{% static 'assets/icons/article.svg' %}" alt="" class="icon">文章{% if nav_article_count %}<span class="nav-count-badge">{{ nav_article_count }}</span>{% endif %}</a>
+            <a class="nav-link {% if active_kind == 'note' %}active{% endif %}" href="{% url 'index' %}?kind=note">笔记</a>
+            <a class="nav-link {% if active_kind == 'page' %}active{% endif %}" href="{% url 'index' %}?kind=page">独立页面</a>
+            <a class="nav-link {% if active_nav == 'categories' %}active{% endif %}" href="{% url 'categories' %}"><img src="{% static 'assets/icons/category.svg' %}" alt="" class="icon">分类</a>
+            <a class="nav-link {% if active_nav == 'tags' %}active{% endif %}" href="{% url 'tags' %}"><img src="{% static 'assets/icons/tag.svg' %}" alt="" class="icon">标签</a>
+            <a class="nav-link {% if active_nav == 'archive' %}active{% endif %}" href="{% url 'archive' %}"><img src="{% static 'assets/icons/archive.svg' %}" alt="" class="icon">归档</a>
+            <a class="nav-link {% if active_nav == 'series' %}active{% endif %}" href="{% url 'series_list' %}">系列</a>
+            {# ===== Round5 D7: 随机一篇文章喵 ===== #}
+            <a class="nav-link" href="/random/" aria-label="随机一篇文章">🎲 随机喵</a>
+        </div>
+        {# 全局搜索框：GET 提交到 search 视图（工单16 要求保持不变） #}
+<div class="search-suggest-box">
+<form class="nav-search" action="{% url 'search' %}" method="get" role="search" aria-label="全站搜索">
+            <input type="search" id="nav-search-input" name="q" value="{{ q|default:'' }}" placeholder="搜索点什么呢…（按 / 聚焦）" aria-label="全局搜索" inputmode="search" spellcheck="false" enterkeyhint="search" autocomplete="off">
+            <button type="submit" aria-label="提交搜索">搜索喵</button>
+        </form>
+        {# ===== Round5 D1/D2: 搜索建议下拉 + 搜索历史 ===== #}
+        <div class="search-suggest-dropdown" id="search-suggest-dropdown" hidden role="listbox" aria-label="搜索建议">
+            <div class="search-history-label" id="search-history-label" hidden>🕐 搜索历史</div>
+            <div id="search-suggest-items"></div>
+        </div>
+        </div>
+        {# ===== 右侧操作区（工单16 重构为单行）：工具箱下拉 / 通知铃铛 / 用户头像下拉 ===== #}
+        <div class="nav-user">
+            {# ---- 工具箱：明暗🌙 / 鼠标🌸 / 樱花🌺 / 音效🔊 / 高对比◐ / 快捷键⌨ 合并入口 ---- #}
+            <button class="header-menu-btn" id="tools-menu-btn" type="button"
+                    aria-haspopup="true" aria-expanded="false" title="工具箱喵">
+                🧰 <span class="chev">▾</span>
+            </button>
+            <div class="header-menu-panel tools-panel" id="tools-menu-panel" hidden role="dialog" aria-label="工具箱">
+                <div class="panel-head">🎛 工具箱喵</div>
+                <div class="tool-row">
+                    <button class="theme-toggle" id="theme-toggle" type="button" title="切换明暗主题" aria-label="切换明暗主题" aria-pressed="false">🌙</button>
+                    <span class="tool-label">明暗主题</span>
+                </div>
+                <div class="tool-row">
+                    <button class="theme-toggle" id="mouse-effect-toggle" type="button" title="切换鼠标跟随特效" aria-label="切换鼠标特效" aria-pressed="false">🌸</button>
+                    <span class="tool-label">鼠标跟随特效</span>
+                </div>
+                <div class="tool-row">
+                    <button class="theme-toggle" id="sakura-mode-toggle" type="button" title="樱花飘落三档开关" aria-label="切换樱花模式" aria-haspopup="true">🌺</button>
+                    <span class="tool-label">樱花飘落</span>
+                </div>
+                <div class="tool-row">
+                    <button class="theme-toggle" id="sound-toggle" type="button" title="切换交互音效" aria-label="切换交互音效" aria-pressed="false">🔊</button>
+                    <span class="tool-label">交互音效</span>
+                </div>
+                <div class="tool-row">
+                    <button class="theme-toggle" id="contrast-toggle" type="button" title="切换高对比度" aria-label="切换高对比度" aria-pressed="false">◐</button>
+                    <span class="tool-label">高对比度</span>
+                </div>
+                <div class="tool-row">
+                    <button class="theme-toggle" id="shortcut-help-toggle" type="button" title="键盘快捷键（按 ?）" aria-label="打开键盘快捷键帮助面板" aria-haspopup="true">⌨</button>
+                    <span class="tool-label">键盘快捷键</span>
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                {# ===== Round5 F8: 通知中心铃铛 + 未读红点 ===== #}
+<div class="nav-notification" id="notification-wrapper">
+                    <button class="theme-toggle nav-notification-bell" id="notification-bell" type="button"
+                            title="通知中心" aria-label="打开通知中心" aria-haspopup="true" aria-expanded="false">
+                        🔔
+                        {% if unread_notification_count and unread_notification_count > 0 %}
+                        <span class="notification-badge" id="notification-badge" aria-label="未读通知 {{ unread_notification_count }} 条">{{ unread_notification_count }}</span>
+                        {% endif %}
+                    </button>
+                    {# 通知下拉面板（默认隐藏，由 common.js 展开） #}
+                    <div class="notification-panel" id="notification-panel" hidden role="dialog" aria-label="通知面板">
+                        <div class="notification-panel-head">
+                            <strong>🔔 通知喵</strong>
+                            <button type="button" class="notification-mark-all" id="notification-mark-all" aria-label="全部标记已读">全部已读</button>
+                        </div>
+                        <ul class="notification-list" id="notification-list">
+                            <li class="notification-item muted">这里还没有通知喵~</li>
+                        </ul>
+                        <a class="notification-panel-footer" href="/notifications/" aria-label="查看全部通知">查看全部通知 →</a>
+                    </div>
+                </div>
+
+                {# ===== 用户头像下拉菜单（工单16）：头像+昵称，点击展开 ===== #}
+                <button class="header-menu-btn" id="user-menu-btn" type="button"
+                        aria-haspopup="true" aria-expanded="false" title="我的小站">
+                    {% if user.avatar %}
+                    <img class="um-avatar" src="{{ user.avatar.url }}" alt="" width="26" height="26" loading="lazy" decoding="async">
+                    {% else %}
+                    <span class="um-avatar-fallback">{{ user.nickname|default:user.username|slice:":1" }}</span>
+                    {% endif %}
+                    <span class="um-name">{{ user.nickname|default:user.username }}</span>
+                    <span class="chev">▾</span>
+                </button>
+                <div class="header-menu-panel" id="user-menu-panel" hidden role="dialog" aria-label="用户菜单">
+                    <div class="panel-head">🐾 我的小站</div>
+                    <a class="user-menu-item" href="{% url 'user_settings' %}"><span class="umi-icon">⚙️</span>个人中心 / 设置</a>
+                    <a class="user-menu-item" href="/notifications/"><span class="umi-icon">🔔</span>通知中心</a>
+                    <a class="user-menu-item" href="{% url 'my_favorites' %}"><span class="umi-icon">⭐</span>我的收藏</a>
+                    <a class="user-menu-item" href="{% url 'reading_history_page' %}"><span class="umi-icon">🕐</span>阅读历史</a>
+                    <a class="user-menu-item" href="{% url 'my_liked' %}"><span class="umi-icon">👍</span>我的点赞</a>
+                    <a class="user-menu-item" href="{% url 'my_comments' %}"><span class="umi-icon">💬</span>我的评论</a>
+                    <a class="user-menu-item" href="{% url 'my_articles' %}"><span class="umi-icon">📝</span>我的文章</a>
+                    {% if user.is_staff %}
+                    <div class="panel-divider"></div>
+                    <a class="user-menu-item" href="{% url 'staff_console' %}"><span class="umi-icon">🎛</span>运营看板</a>
+                    <a class="user-menu-item" href="{% url 'site_settings' %}"><span class="umi-icon">🪄</span>站点设置</a>
+                    {% endif %}
+                    <div class="panel-divider"></div>
+                    <a class="user-menu-item" href="{% url 'article_new' %}"><span class="umi-icon">✍</span>写新文章</a>
+                    <form method="post" action="{% url 'logout' %}" class="logout-menu-form">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-menu-btn"><span class="umi-icon">🚪</span>退出登录</button>
+                    </form>
+                </div>
+            {% else %}
+                {# 未登录：登录 / 注册入口 #}
+                <a class="header-menu-btn" href="{% url 'login' %}">🔑 登录喵</a>
+                <a class="header-menu-btn" href="{% url 'register' %}">✨ 注册喵</a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
+{# 62. 网站公告条：有激活公告时显示，粉紫渐变背景；可关闭（localStorage 记录已关闭 id） #}
+{# 第4轮迭代#98: 条件渲染——无公告时公告条整块不输出（{% if site_notice %} 守卫） #}
+{# 第4轮 Round4-C9: 迁移为跨Agent接口 .announcement-banner / .announcement-close，data-notice-id 供 announcement.min.js 使用 #}
+{% if site_notice %}
+<div class="announcement-banner" id="announcementBanner" data-notice-id="{{ site_notice.id }}" role="status" aria-live="polite">
+    <span class="announcement-icon" aria-hidden="true">🌸</span>
+    <span class="announcement-content typewriter-text">{{ site_notice.content|safe }}</span>
+    <button type="button" class="announcement-close" id="announcementClose" aria-label="关闭公告">✕</button>
+</div>
+{% endif %}
+{% comment %}
+===== 主内容区：先渲染服务端 Flash 消息，再由子模板 block content 填充 =====
+{% endcomment %}
+<main class="site-main container scroll-fade-in" role="main" id="main-content">
+    {% if messages %}
+<div class="flash-stack" role="status" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
+        {% for m in messages %}
+        <div class="flash flash-{{ m.tags|default:'info' }}">{{ m }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {# 39. 面包屑导航：子模板通过 {% block breadcrumb %} 填充；未填充时不渲染 #}
+    {% block breadcrumb %}{% endblock %}
+    {% block content %}{% endblock %}
+
+{# Bug8：全站统一「确认弹窗」（服务端预置，moeConfirm 仅填充文案并显示，避免动态插入不绘制） #}
+<div class="moe-modal-overlay" id="globalConfirmModal" role="dialog" aria-modal="true" aria-labelledby="gcmTitle">
+    <div class="moe-modal-card">
+        <div class="moe-modal-title" id="gcmTitle">请确认喵~</div>
+        <div class="moe-modal-msg" id="gcmMsg"></div>
+        <div class="moe-modal-actions">
+            <button type="button" class="moe-btn moe-btn-cancel" id="gcmCancel">再想想</button>
+            <button type="button" class="moe-btn moe-btn-ok" id="gcmOk">确定喵</button>
+        </div>
+    </div>
+</div>
+</main>
+{% comment %}
+===== 页脚：版权与技术栈说明 =====
+{% endcomment %}
+<footer class="site-footer" role="contentinfo">
+    <div class="container">
+        {# Round6（bug7）页脚重排 + 工单14 排版优化：关于本站/快速导航/友链/订阅/统计 #}
+        <div class="footer-layout">
+            {# ① 横向带：关于本站（工单15 起文案来自数据库 SiteInfo） #}
+            <div class="footer-band footer-about-band">
+                <span class="footer-about-emoji" aria-hidden="true">{{ site_logo }}</span>
+                <div class="footer-about-text">
+                    <h4>关于{{ site_name }}</h4>
+                    <p>{% if footer_about %}{{ footer_about }}{% else %}{{ site_tagline }}{% endif %}</p>
+                </div>
+                {% if user.is_staff %}
+                {# 工单13：站点状态仅管理员可见（含下方订阅列同名链接） #}
+                <a class="btn-primary" href="{% url 'server_status' %}">💚 站点状态</a>
+                {% endif %}
+            </div>
+            {# ② 中间三竖列：快速导航 | 友情链接 | 关注订阅 #}
+            <div class="footer-cols">
+                <div class="footer-col-vertical">
+                    <h4>🧭 快速导航</h4>
+                    <ul aria-label="快速导航">
+                        <li><a href="{% url 'index' %}">🏠 首页</a></li>
+                        <li><a href="{% url 'categories' %}">📁 分类</a></li>
+                        <li><a href="{% url 'tags' %}">🏷 标签</a></li>
+                        <li><a href="{% url 'archive' %}">🗂 归档</a></li>
+                        <li><a href="{% url 'series_list' %}">📚 系列</a></li>
+                        <li><a href="{% url 'random_article' %}">🎲 随机一篇</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-vertical">
+                    <h4>🔗 友情链接</h4>
+                    <ul aria-label="友情链接">
+                        {% for link in friendly_links %}
+                        <li><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer nofollow" class="ext-link">{{ link.icon }} {{ link.name }}</a></li>
+                        {% empty %}
+                        <li class="muted">暂无友链喵~</li>
+                        {% endfor %}
+                    </ul>
+                    <p class="footer-apply-note">💌 想交换友链？<a href="mailto:admin@example.com">邮件联系站长</a></p>
+                </div>
+                <div class="footer-col-vertical">
+                    <h4>📡 关注与订阅</h4>
+                    <ul aria-label="关注与订阅">
+                        <li><a href="{% url 'rss_feed' %}">📡 RSS 订阅</a></li>
+                        <li><a href="{% url 'api:api_docs' %}">🧩 API 文档</a></li>
+                        {% if user.is_staff %}
+                        {# 工单13：站点状态仅管理员可见 #}
+                        <li><a href="{% url 'server_status' %}">💚 站点状态</a></li>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                        {# 已登录用户不再显示登录/注册，改为写文章入口 #}
+                        <li><a href="{% url 'article_new' %}">✍ 写文章</a></li>
+                        {% else %}
+                        <li><a href="{% url 'login' %}">🔐 登录</a></li>
+                        <li><a href="{% url 'register' %}">✨ 注册喵</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {# ③ 横向带：网站统计 #}
+            <div class="footer-band footer-stats-band" aria-label="网站统计">
+                <div class="footer-stat-pill"><b data-count="{{ footer_article_count }}">0</b><span>📝 文章</span></div>
+                <div class="footer-stat-pill"><b data-count="{{ footer_comment_count }}">0</b><span>💬 评论</span></div>
+                <div class="footer-stat-pill"><b data-count="{{ footer_views_total }}">0</b><span>👁 阅读</span></div>
+                <div class="footer-stat-pill"><b data-count="{{ footer_days }}">0</b><span>⏳ 运行天数</span></div>
+            </div>
+        </div>
+{# 版权信息（© 动态年份；工单15 起版权归属来自数据库，可在站点设置修改） #}
+<p class="footer-copy"><img src="{% static 'assets/icons/paw.svg' %}" alt="" class="icon"> © {% now "Y" %} {{ copyright_holder }} · 用 ❤️ 与粉紫蓝打造 · 樱花飘落中 <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon"> 🐾</p>
+        {% if footer_icp %}
+        {# 工单15：备案号（站点设置中填写） #}
+        <p class="footer-icp">{{ footer_icp }}</p>
+        {% endif %}
+    </div>
+</footer>
+{# ===== Round5 A6: 侧栏折叠全局按钮（移动端/窄屏隐藏侧栏） ===== #}
+<button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="展开快捷菜单" aria-haspopup="true" aria-expanded="false">☰</button>
+{# ===== Round5 A8: 键盘快捷键帮助面板（按 ? 或 ⌨ 按钮呼出） ===== #}
+<div class="shortcut-help-mask" id="shortcut-help-mask" hidden role="dialog" aria-modal="true" aria-labelledby="shortcut-help-title">
+    <div class="shortcut-help-panel" role="document">
+        <div class="shortcut-help-head">
+            <strong id="shortcut-help-title">⌨ 键盘快捷键喵</strong>
+            <button type="button" class="shortcut-help-close" id="shortcut-help-close" aria-label="关闭快捷键面板">✕</button>
+        </div>
+        <ul class="shortcut-list" aria-label="快捷键列表">
+            <li><kbd>/</kbd><span>聚焦搜索喵</span></li>
+            <li><kbd>?</kbd><span>打开本面板喵</span></li>
+            <li><kbd>J</kbd> <kbd>K</kbd><span>下一篇 / 上一篇喵</span></li>
+            <li><kbd>T</kbd><span>回到顶部喵</span></li>
+            <li><kbd>F</kbd><span>切换专注模式喵</span></li>
+            <li><kbd>N</kbd><span>新建文章喵</span></li>
+            <li><kbd>Esc</kbd><span>关闭弹窗喵</span></li>
+            <li><kbd>↑</kbd><span>滚动到顶部喵</span></li>
+        </ul>
+        <p class="muted shortcut-tip">小提示：同时按下 ↑↓←→ B A 可以触发彩蛋喵~ 🌸</p>
+    </div>
+</div>
+{# ===== Round5 E13: 萌系加载动画元素（effects.min.js 按需显示） ===== #}
+<div class="moe-loading" id="moe-loading" aria-hidden="true" hidden>
+    <div class="moe-loading-cat">🐱</div>
+    <div class="moe-loading-text">加载中喵...</div>
+</div>
+<div id="offline-banner" role="alert" aria-label="离线提示" hidden >📡 网络已断开，当前为离线模式</div>
+<div id="online-status" role="status" aria-live="polite"  title="在线"></div>
+<span id="last-saved" hidden role="status"></span>
+<button type="button" id="sync-button" hidden aria-label="同步离线数据">🔄 同步</button>
+<ul id="offline-articles" hidden aria-label="离线可用文章"></ul>
+<span id="queue-count" hidden aria-label="待同步数量">0</span>
+<button type="button" id="retry-all" hidden aria-label="重试全部失败请求">重试全部</button>
+<button type="button" id="clear-queue" hidden aria-label="清空待同步队列">清空队列</button>
+<span id="storage-usage" hidden aria-label="本地存储用量">0 MB</span>
+<span id="storage-limit" hidden aria-label="本地存储上限">50 MB</span>
+<button class="back-to-top" id="back-to-top" type="button" aria-label="回到顶部" data-tooltip="回到顶部" tabindex="0">
+<svg class="btt-ring" width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="阅读进度环">
+<title>阅读进度环</title><desc>环形进度指示当前文章阅读百分比</desc>
+        <circle class="btt-ring-bg" cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="4"/>
+        <circle class="btt-ring-fg" cx="26" cy="26" r="22" fill="none"
+                stroke="url(#bttGrad)" stroke-width="4" stroke-linecap="round"
+                transform="rotate(-90 26 26)"/>
+        <defs>
+            <linearGradient id="bttGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ff8fb1"/><stop offset=".5" stop-color="#a06cd5"/><stop offset="1" stop-color="#6ea8fe"/>
+            </linearGradient>
+        </defs>
+    </svg>
+<svg class="btt-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></svg>
+</button>
+{% comment %}
+===== 全局脚本：defer 异步加载，DOM 解析完成后执行 =====
+{% endcomment %}
+<script defer src="{% static 'assets/js/common.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/header-menus.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+
+<script defer src="{% static 'assets/js/theme.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/mouse-effect.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# 24. 樱花模式三档开关 #}
+<script defer src="{% static 'assets/js/sakura-mode.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# Round4-C9: 可关闭公告横幅增强（关闭动画/淡入），由前端 Agent 提供 #}
+<script defer src="{% static 'assets/js/announcement.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# ===== Round5: 全站动效 JS（粒子/打字机/萌系加载/滚动淡入/音效/高对比度/快捷键/Konami/节日检测） ===== #}
+<script defer src="{% static 'assets/js/features/effects.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# 萌系气泡提示逻辑（bug1）：默认右侧显示，自动升级导航按钮 title #}
+<script defer src="{% static 'assets/js/moe-tooltip.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# Round6 交互：FAB 快捷菜单 / 标签防拖拽 / 榜单切换（bug2、bug22） #}
+<script defer src="{% static 'assets/js/round6.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# analytics onerror 保留：script 加载失败须在标签上兜底移除，无法外移 #}
+<script async src="{% static 'assets/js/analytics.js' %}" onerror="this.remove()"></script>
+    <script src="{% static 'assets/js/base_page_progress.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <script src="{% static 'assets/js/base_service_worker.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script src="{% static 'assets/js/base_announcement_banner.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+
+<script src="{% static 'assets/live2d/engine/pixi.min.js' %}?v=20260923"></script>
+<script src="{% static 'assets/live2d/engine/live2d.core.min.js' %}?v=20260923"></script>
+<script src="{% static 'assets/live2d/engine/live2dcubismcore.min.js' %}?v=20260923"></script>
+<script src="{% static 'assets/live2d/engine/pixi-live2d-display.min.js' %}?v=20260923"></script>
+<script src="{% static 'assets/live2d/engine/renderer.js' %}?v=20260923"></script>
+<script src="{% static 'assets/live2d/waifu-init-new.js' %}?v=20260923"></script>
+<script src="{% static 'assets/js/waifu-footer-avoid.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script src="{% static 'assets/js/waifu-mobile.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script src="{% static 'assets/js/base_content_visible.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script src="{% static 'assets/js/article_card_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# 页面级脚本：子模板通过 {% block extra_js %} 追加（detail 的评论/点赞/目录、edit 的编辑器等） #}
+{% block extra_js %}{% endblock %}
+</body>
+</html>

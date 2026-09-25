@@ -1,0 +1,102 @@
+﻿{% load static %}
+{% load blog_extras %}
+{% comment %}
+  文章列表卡片（bug4 重排）：
+  - 缩略图在【右侧】，来源优先级：封面 → 正文首图（智能过滤编辑器图标/工具条）→ 无图则隐藏（文字全宽）；
+  - 左侧为标题 / 摘要 / 互动数据 / 作者信息；长文本自动截断。
+  - 窄屏下缩略图自动改为顶部通栏（见 round6.css 移动端媒体查询）。
+{% endcomment %}
+{% with cover_url=article.cover_image|file_url body_img=article.content|body_first_image %}
+{% with thumb=cover_url|default:body_img %}
+<article class="article-card animate-in{% if not thumb %} no-cover{% endif %}" role="article" aria-labelledby="card-title-{{ article.pk }}"
+         data-article-id="{{ article.pk }}" data-views="{{ article.views }}"
+         data-likes="{{ article.likes }}" data-comment-count="{{ article.comment_count }}"
+         data-category="{% if article.category %}{{ article.category.name }}{% endif %}"
+         data-tags="{% for t in article.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+    {# ========== 右上角统一角标区 ========== #}
+    <div class="card-corner-badges" aria-label="文章标记">
+        {# Bug4：角标严格读取置顶/精华/热门标记字段（旧逻辑误按点赞>=100、浏览>=200 推断） #}
+        {% if article.is_pinned %}<span class="corner-badge cb-pinned" title="置顶文章">📌 置顶</span>{% endif %}
+        {% if article.is_featured %}<span class="corner-badge cb-featured" title="精华文章">⭐ 精华</span>{% endif %}
+        {% if article.is_hot %}<span class="corner-badge cb-hot" title="热门文章">🔥 热门喵</span>{% endif %}
+        {% if article.kind == 'note' %}<span class="corner-badge cb-note" title="笔记">📝 笔记</span>{% endif %}
+        {% if article.kind == 'page' %}<span class="corner-badge cb-page" title="独立页面">📄 页面</span>{% endif %}
+        {% if article.is_protected %}<span class="corner-badge cb-locked" title="加密文章">🔒</span>{% endif %}
+        {% if article.status == 'draft' %}<span class="corner-badge cb-draft" title="草稿">草稿</span>{% endif %}
+        {% if article.is_scheduled %}<span class="corner-badge cb-scheduled" title="定时发布">🕐 {{ article.published_at|date:"m-d H:i" }}</span>{% endif %}
+        {% if article.created_at|is_new %}<span class="corner-badge cb-new" title="最新发布">NEW喵</span>{% endif %}
+    </div>
+    <div class="article-card-body">
+        {# ========== 左侧：文字内容区（标题/摘要/互动数据/作者信息） ========== #}
+        <div class="article-card-text">
+            {# 第一行：标题（最多2行，溢出省略） #}
+            <h2 class="article-card-title grad-hover clamp-2" id="card-title-{{ article.pk }}">
+                <a href="{{ article.get_absolute_url }}">{% if q %}{{ article.title|highlight:q }}{% else %}{{ article.title }}{% endif %}</a>
+            </h2>
+
+            {# 第二行：内容预览（最多3行，溢出省略） #}
+            <p class="article-card-excerpt clamp-3">{% if q %}{{ article.excerpt|highlight:q }}{% else %}{{ article.excerpt }}{% endif %}</p>
+
+            {# 第三行：互动数据 #}
+            <div class="article-card-stats">
+                <span class="stat-item" title="阅读量">
+                    <img src="{% static 'assets/icons/eye.svg' %}" alt="" class="icon"> {{ article.views }}
+                </span>
+                <span class="stat-item" title="点赞数">
+                    <img src="{% static 'assets/icons/heart.svg' %}" alt="" class="icon"> {{ article.likes }}
+                </span>
+                <span class="stat-item" title="收藏数">
+                    <img src="{% static 'assets/icons/star.svg' %}" alt="" class="icon"> {{ article.favorites.count }}
+                </span>
+                <span class="stat-item" title="评论数">
+                    <img src="{% static 'assets/icons/comment.svg' %}" alt="" class="icon"> {{ article.comment_count }}
+                </span>
+                <span class="stat-item" title="阅读时长">
+                    <img src="{% static 'assets/icons/clock.svg' %}" alt="" class="icon"> {{ article.reading_time }}
+                </span>
+                {% if article.rating_count %}
+                <span class="stat-item" title="平均评分 ⭐{{ article.rating_avg }}（{{ article.rating_count }}人评）">
+                    ⭐ {{ article.rating_avg }}
+                </span>
+                {% endif %}
+            </div>
+
+            {# 第四行：作者 + 分类 + 标签 + 更新时间 #}
+            <div class="article-card-footer">
+                <a class="author-link-inline" href="{% url 'user_profile' article.author.username %}" aria-label="作者 {{ article.author.nickname|default:article.author.username }} 的主页">
+                    <span class="avatar-circle avatar-xs" data-username="{{ article.author.username }}">
+                        {% if article.author.avatar %}
+                        <img src="{{ article.author.avatar.url }}" alt="作者头像" loading="lazy" width="40" height="40">
+                        {% else %}
+                        <span class="avatar-initial">{{ article.author.nickname|default:article.author.username|slice:":1" }}</span>
+                        {% endif %}
+                    </span>
+                    {{ article.author.nickname|default:article.author.username }}
+                </a>
+                {% if article.category %}
+                <span class="footer-category">
+                    <a href="{% url 'category_detail' article.category.pk %}" data-category-id="{{ article.category.pk }}">{{ article.category.icon|default:'📁' }} {{ article.category.name }}</a>
+                </span>
+                {% endif %}
+                {% if article.tags.all %}
+                <span class="footer-tags">
+                    {% for tag in article.tags.all|slice:":3" %}
+                    <a class="chip" href="{% url 'tag_detail' tag.pk %}" data-tag-id="{{ tag.pk }}">{{ tag.name }}</a>
+                    {% endfor %}
+                </span>
+                {% endif %}
+                <time class="footer-date" datetime="{{ article.updated_at|date:'c' }}" aria-label="更新时间">
+                    <img src="{% static 'assets/icons/calendar.svg' %}" alt="" class="icon"> {{ article.updated_at|date:"Y-m-d" }}
+                </time>
+            </div>
+        </div>
+        {# ========== 右侧：封面 / 正文首图缩略图（无图则整块不输出，文字自动填满） ========== #}
+        {% if thumb %}
+        <a class="article-card-thumb" href="{{ article.get_absolute_url }}" aria-label="{{ article.title }}">
+            <img src="{{ thumb }}" alt="{{ article.title }} 缩略图" loading="lazy" decoding="async" fetchpriority="low" width="184" height="130">
+        </a>
+        {% endif %}
+    </div>
+</article>
+{% endwith %}
+{% endwith %}

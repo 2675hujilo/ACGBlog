@@ -1,0 +1,25 @@
+<!-- 空状态插图：打开的空盒子，小猫从里面探出头，300x200 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="emptyBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe6f0"/>
+      <stop offset="1" stop-color="#e6dcff"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#emptyBg)"/>
+  <!-- 盒子身 -->
+  <path d="M90 110 h120 l-10 70 h-100z" fill="#fff" stroke="#c9a8f0" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 翻开的盒盖 -->
+  <path d="M90 110 l-18 -30 h60 l48 30z" fill="#f3ecff" stroke="#c9a8f0" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M210 110 l18 -30 h-60l-48 30z" fill="#f3ecff" stroke="#c9a8f0" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 小猫探头 -->
+  <g stroke="#7a5a9e" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M135 108 l5 -24 16 9a22 22 0 0 1 8 0l16-9 5 24a26 26 0 0 1 3 14c0 14-11 22-21 22s-21-8-21-22a26 26 0 0 1 3-14z" fill="#fff7fb"/>
+  </g>
+  <circle cx="150" cy="118" r="3.5" fill="#5a3d7a"/>
+  <circle cx="168" cy="118" r="3.5" fill="#5a3d7a"/>
+  <ellipse cx="144" cy="127" rx="4" ry="2.5" fill="#ff9ec2" opacity=".7"/>
+  <ellipse cx="174" cy="127" rx="4" ry="2.5" fill="#ff9ec2" opacity=".7"/>
+  <!-- 问号漂浮 -->
+  <text x="225" y="80" font-family="sans-serif" font-size="34" fill="#a06cd5" opacity=".6" font-weight="bold">?</text>
+</svg>

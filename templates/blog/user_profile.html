@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ profile_user.nickname|default:profile_user.username }} 的主页 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ profile_user.nickname|default:profile_user.username }}</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/profile.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/user_profile_inline.min.css' %}?v={{ BUILD_TOKEN }}">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ProfilePage","mainEntity":{
+"@type":"Person",
+"name":"{{ profile_user.nickname|default:profile_user.username }}",
+"url":"{{ request.scheme }}://{{ request.get_host }}{% url 'user_profile' profile_user.username %}",
+"image":"{% if profile_user.avatar %}{{ request.scheme }}://{{ request.get_host }}{{ profile_user.avatar.url }}{% endif %}",
+"jobTitle":"博主",
+"worksFor":{"@type":"Organization","name":"{{ site_name|default:'萌语博客' }}"},
+"sameAs":[],"follows":{"@type":"Person"},
+"knowsAbout":["{{ profile_user.introduction|default:''|truncatechars:80|escapejs }}"],
+"email":"",
+"nationality":"CN"
+}
+,"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}"},{"@type":"ListItem","position":2,"name":"{{ profile_user.nickname|default:profile_user.username }}","url":"{{ request.build_absolute_uri }}"}]}
+}
+</script>
+{% endblock %}
+{% block content %}
+{# ---------- 用户资料卡 ---------- #}
+<div class="profile-card" aria-label="用户资料">
+    {# ===== Round5 F11: 个人主页背景图 ===== #}
+    <div class="profile-banner" id="profile-banner"></div>
+    <div class="profile-avatar-lg has-online-dot">
+        {% if profile_user.avatar %}
+<img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.nickname|default:profile_user.username }}" loading="lazy" decoding="async" fetchpriority="low" width="120" height="120">
+        {% else %}
+        <img src="{% static 'assets/images/default-avatar.svg' %}" alt="{{ profile_user.nickname|default:profile_user.username }} 的头像" loading="lazy" decoding="async" fetchpriority="low" width="120" height="120">
+        {% endif %}
+    </div>
+    <div class="profile-info">
+<h1 class="profile-name">{{ profile_user.nickname|default:profile_user.username }}</h1>
+        <p class="profile-username">@{{ profile_user.username }}</p>
+        {% if profile_user.introduction %}
+<p class="profile-intro">{{ profile_user.introduction }}</p>
+        {% else %}
+        <p class="profile-intro muted">这个人很懒，什么都没写喵~ 🐾</p>
+        {% endif %}
+<p class="profile-joined">🌸 加入于 <time datetime="{{ profile_user.date_joined|date:'c' }}">{{ profile_user.date_joined|date:"Y年m月d日" }}</time></p>
+        {# ===== Round5 F11: 个性签名 ===== #}
+        {% if profile_user.signature %}
+        <p class="profile-signature muted" style="font-style:italic;margin:8px 0;">「 {{ profile_user.signature }} 」</p>
+        {% endif %}
+        {% if is_own_profile %}
+        <a class="btn-sm btn-edit-profile" href="{% url 'user_settings' %}">✏️ 编辑资料</a>
+        {% endif %}
+    </div>
+    {# ===== Round5 F12: 在线状态标记 ===== #}
+    <span class="online-dot profile-online-dot" aria-label="在线"></span>
+</div>
+{# ---------- 统计数据行 ---------- #}
+<div class="profile-stats" aria-label="用户统计">
+    <div class="stat-pill stat-pink">
+                <span class="stat-icon">📝</span>
+<span class="stat-num">{{ user_stats.article_count }}</span>
+        <span class="stat-label">文章</span>
+    </div>
+    <div class="stat-pill stat-purple">
+        <span class="stat-icon">👁</span>
+<span class="stat-num">{{ user_stats.total_views }}</span>
+        <span class="stat-label">阅读量</span>
+    </div>
+    <div class="stat-pill stat-pink">
+        <span class="stat-icon">👍</span>
+<span class="stat-num">{{ user_stats.total_likes }}</span>
+        <span class="stat-label">获赞</span>
+    </div>
+    <div class="stat-pill stat-blue">
+        <span class="stat-icon">💬</span>
+<span class="stat-num">{{ user_stats.total_comments }}</span>
+        <span class="stat-label">评论</span>
+    </div>
+    <div class="stat-pill stat-blue">
+        <span class="stat-icon">⭐</span>
+<span class="stat-num">{{ user_stats.fav_count }}</span>
+        <span class="stat-label">收藏</span>
+    </div>
+</div>
+{# ===== Round5 F10: 成就徽章墙 ===== #}
+<div class="badge-wall" aria-label="成就徽章墙" style="margin:20px 0;">
+    <h2 class="profile-section-title">🏅 成就徽章</h2>
+    <div class="badge-grid">
+        <div class="badge-item">
+            <div style="font-size:1.8rem;">🌸</div><div class="muted" style="font-size:.75rem;">初来乍到</div>
+        </div>
+        <div class="badge-item">
+            <div style="font-size:1.8rem;">✍️</div><div class="muted" style="font-size:.75rem;">笔耕不辍</div>
+        </div>
+        <div class="badge-item">
+            <div style="font-size:1.8rem;">🔥</div><div class="muted" style="font-size:.75rem;">人气之星</div>
+        </div>
+        <div class="badge-item">
+            <div style="font-size:1.8rem;">💬</div><div class="muted" style="font-size:.75rem;">社交达人</div>
+        </div>
+        <div class="badge-item">
+            <div style="font-size:1.8rem;">🌟</div><div class="muted" style="font-size:.75rem;">长期相伴</div>
+        </div>
+    </div>
+</div>
+{# ---------- 文章列表标题 ---------- #}
+<h2 class="profile-section-title">📖 发布的文章</h2>
+{# ---------- 文章列表（复用 _article_card.html 样式） ---------- #}
+<div class="article-list" aria-label="用户发布的文章">
+    {% for article in page_obj %}
+    {% include 'partials/_article_card.html' %}
+    {% empty %}
+    {# 空状态：萌系文案 #}
+    <div class="profile-empty">
+                <div class="profile-empty-emoji">🐱</div>
+        <p>这位小伙伴还没有发布文章呢~</p>
+        <p class="muted">快去创作第一篇吧喵~ 🌸</p>
+    </div>
+    {% endfor %}
+</div>
+{# ---------- 分页器 ---------- #}
+{% if page_obj.has_other_pages %}
+{% include 'partials/_pagination.html' %}
+{% endif %}
+{# ---------- 收藏的文章 ---------- #}
+{% if fav_articles %}
+<h2 class="profile-section-title">⭐ 收藏的文章</h2>
+<div class="article-list">
+    {% for article in fav_articles %}
+    {% include 'partials/_article_card.html' %}
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script defer src="{% static 'assets/js/features/profile.min.js' %}"></script>
+{% endblock %}

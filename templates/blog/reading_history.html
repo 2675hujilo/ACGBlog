@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}阅读历史 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">阅读历史</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="notif-center-head">
+    <h1 class="my-page-title">📚 阅读历史</h1>
+    <button type="button" class="btn-sm" id="rh-clear-all">🗑 清空历史</button>
+</div>
+<ul class="reading-history-full" id="rh-full-list" aria-label="阅读历史列表"></ul>
+<div class="empty-state my-empty" id="rh-empty" hidden>
+    <div class="my-empty-emoji" aria-hidden="true">📚</div>
+    <p>还没有阅读记录，去读点什么吧~</p>
+    <a class="btn-primary" href="{% url 'index' %}">🏠 去首页逛逛</a>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'assets/js/reading_history_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

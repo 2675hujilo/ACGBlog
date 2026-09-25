@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}API 文档 · {{ site_name }}{% endblock %}
+{% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">API 文档</span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"APIReference","name":"开放 API 文档 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
+</script>
+{% endblock %}
+{% block content %}
+{# 70. API 文档页：可折叠端点卡片 + 搜索框过滤 #}
+<div class="apidocs-wrap">
+    <h1 id="api-docs-heading">🧩 开放 API 文档</h1>
+    <p class="muted">本站所有 RESTful 接口一览，支持前端搜索过滤喵~</p>
+    <input type="search" id="apidocs-search" class="apidocs-search" role="searchbox" aria-label="过滤接口文档"
+           placeholder="🔍 输入方法 / 路径 / 说明关键词过滤…">
+    <div id="apidocs-list" role="region" aria-label="接口列表">
+        {% for ep in endpoints %}
+        <details class="api-card" aria-label="接口文档" data-key="{{ ep.method }} {{ ep.path }} {{ ep.desc }}">
+            <summary>
+                <span class="api-method method-{{ ep.method|lower|cut:'/'|first }}">{{ ep.method }}</span>
+                <code class="api-path">{{ ep.path }}</code>
+                <span class="api-desc">{{ ep.desc }}</span>
+            </summary>
+            <div class="api-body">
+                <p><b>参数：</b>{{ ep.params }}</p>
+                <p><b>请求示例：</b></p>
+                <pre class="api-code">{{ ep.curl }}</pre>
+                <p><b>响应示例：</b></p>
+                <pre class="api-code">{{ ep.resp }}</pre>
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+</div>
+<script src="{% static 'assets/js/api_docs_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

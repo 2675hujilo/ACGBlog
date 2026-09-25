@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="404 - 你要找的页面不存在">
+<meta name="robots" content="noindex,follow">
+<title>404 - 页面被喵喵吃了喵~</title>
+{# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
+<script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/error404.min.css' %}?v={{ BUILD_TOKEN }}">
+</head>
+<body>
+    <span class="petal" aria-hidden="true"></span>
+    <span class="petal"></span>
+    <span class="petal"></span>
+    <span class="petal"></span>
+    <span class="petal"></span>
+    <span class="petal"></span>
+    <div class="card">
+        <noscript><div class="noscript-banner" role="alert" >🌸 JavaScript 已禁用，樱花飘落动画与热门文章快捷跳转将降级。</div></noscript>
+        <div class="illust" role="img" aria-label="被喵吃掉的页面">🐱🌸✨</div>
+        <h1>页面被喵喵吃了喵~</h1>
+        <p class="sub">你找的内容好像跑到异次元去了…</p>
+        {# 6. 直接在 404 页搜索：提交到 /search/ #}
+        <form class="err-search" action="/search/" method="get" role="search">
+            <input type="search" name="q" placeholder="搜索点什么呢…" aria-label="站内搜索" autocomplete="off">
+            <button type="submit" aria-label="搜索">搜索喵</button>
+        </form>
+        {# 6. 热门文章快捷链接（视图传入阅读量最高的 5 篇） #}
+        {% if hot_articles %}
+        <div class="hot-links" aria-label="热门文章推荐">
+            <div class="hot-t">🔥 热门文章，去看看吧喵</div>
+            {% for hot in hot_articles %}
+            <a href="{{ hot.get_absolute_url }}">📖 {{ hot.title }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <p style="margin-top:18px;"><a class="btn-home" href="/" aria-label="返回首页">回到首页喵</a></p>
+    </div>
+    {# ===== Round5 H5: 404 接樱花小游戏 ===== #}
+    <div class="error-game-wrap">
+        <button type="button" id="game-start-btn" class="error-game-start-btn">🌸 玩个小游戏吧喵（接樱花）</button>
+        <canvas id="game-canvas" width="320" height="200" class="error-game-canvas"></canvas>
+        <p id="game-score" class="error-game-score">得分：0</p>
+    </div>
+    <script src="{% static 'assets/js/error_game.min.js' %}?v={{ BUILD_TOKEN }}"></script>

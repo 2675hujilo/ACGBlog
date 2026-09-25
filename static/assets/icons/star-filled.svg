@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="url(#g)" stroke="none">
+  <!-- 实心五角星（粉紫渐变，用于评分已激活态） -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8fb1"/>
+      <stop offset="1" stop-color="#a06cd5"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 2l2.9 6.6 7.1.8-5.3 4.8 1.5 7-6.2-3.6L5.8 21.2l1.5-7L2 9.4l7.1-.8z"/>
+</svg>

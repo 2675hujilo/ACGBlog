@@ -1,0 +1,44 @@
+<!-- 分类图标集合 sprite：用 <symbol> 定义，引用方式 <svg><use href="#cat-tech"/></svg>，整体 300x300 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <linearGradient id="catBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd0e2"/>
+      <stop offset=".5" stop-color="#d9c2f5"/>
+      <stop offset="1" stop-color="#bcd8ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="300" rx="16" fill="url(#catBg)" opacity=".25"/>
+  <!-- 技术：代码尖括号 -->
+  <symbol id="cat-tech" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="20" fill="#a06cd5" opacity=".15"/>
+    <path d="M18 18l-8 6 8 6M30 18l8 6-8 6M26 14l-4 20" stroke="#a06cd5" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <!-- 生活：咖啡杯 -->
+  <symbol id="cat-life" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="20" fill="#ff8fb1" opacity=".15"/>
+    <path d="M14 20h18v10a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z" stroke="#e0557a" stroke-width="3" fill="none" stroke-linejoin="round"/>
+    <path d="M32 22h3a4 4 0 0 1 0 8h-3M19 12v3M25 12v3" stroke="#e0557a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <!-- 阅读：书本 -->
+  <symbol id="cat-read" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="20" fill="#6ea8fe" opacity=".15"/>
+    <path d="M12 14c4-2 8-2 12 0 4-2 8-2 12 0v22c-4-2-8-2-12 0-4-2-8-2-12 0z" stroke="#3a7bd5" stroke-width="3" fill="none" stroke-linejoin="round"/>
+    <path d="M24 14v22" stroke="#3a7bd5" stroke-width="3"/>
+  </symbol>
+  <!-- 旅行：相机/地图钉 -->
+  <symbol id="cat-travel" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="20" fill="#7ed4a8" opacity=".15"/>
+    <path d="M24 10c-6 0-11 5-11 11 0 8 11 17 11 17s11-9 11-17c0-6-5-11-11-11z" stroke="#3aa86e" stroke-width="3" fill="none" stroke-linejoin="round"/>
+    <circle cx="24" cy="21" r="4" stroke="#3aa86e" stroke-width="3" fill="none"/>
+  </symbol>
+  <!-- 引用示例：在 2x2 网格绘制四个 -->
+  <use href="#cat-tech" x="25" y="30" width="60" height="60"/>
+  <use href="#cat-life" x="165" y="30" width="60" height="60"/>
+  <use href="#cat-read" x="25" y="165" width="60" height="60"/>
+  <use href="#cat-travel" x="165" y="165" width="60" height="60"/>
+  <!-- 标签说明 -->
+  <text x="55" y="110" font-family="sans-serif" font-size="13" fill="#7a5a9e" text-anchor="middle">技术</text>
+  <text x="195" y="110" font-family="sans-serif" font-size="13" fill="#7a5a9e" text-anchor="middle">生活</text>
+  <text x="55" y="245" font-family="sans-serif" font-size="13" fill="#7a5a9e" text-anchor="middle">阅读</text>
+  <text x="195" y="245" font-family="sans-serif" font-size="13" fill="#7a5a9e" text-anchor="middle">旅行</text>
+</svg>

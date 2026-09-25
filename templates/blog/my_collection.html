@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load blog_extras %}
+{% block title %}{{ page_title }} · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ page_title }}</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block content %}
+<h1 class="my-page-title">{{ page_icon }} {{ page_title }}</h1>
+{% if page_obj.object_list %}
+<div class="my-collection-list">
+    {% if kind == 'articles' %}
+        {% for article in page_obj.object_list %}
+            {% include 'partials/_article_card.html' %}
+        {% endfor %}
+    {% elif kind == 'comments' %}
+        {% for comment in page_obj.object_list %}
+        <article class="my-comment-row" aria-label="我的评论">
+            <div class="my-comment-head">
+                <a class="my-comment-article" href="{{ comment.article.get_absolute_url }}">📄 {{ comment.article.title }}</a>
+                <time class="my-comment-time" datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:'Y-m-d H:i' }}</time>
+            </div>
+            <p class="my-comment-body">{{ comment.content|truncatechars:200 }}</p>
+            <div class="my-comment-foot">
+                {% if comment.is_approved %}
+                <span class="my-comment-status is-ok">✅ 已通过</span>
+                {% else %}
+                <span class="my-comment-status is-pending">⏳ 待审核</span>
+                {% endif %}
+                <a class="btn-sm" href="{{ comment.article.get_absolute_url }}">查看上下文 →</a>
+            </div>
+        </article>
+        {% endfor %}
+    {% endif %}
+</div>
+{% include 'partials/_pagination.html' %}
+{% else %}
+<div class="empty-state my-empty">
+    <div class="my-empty-emoji" aria-hidden="true">{{ page_icon }}</div>
+    <p>{{ empty_text }}</p>
+    <a class="btn-primary" href="{% url 'index' %}">🏠 去首页逛逛</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}运营看板 · {{ site_name }}{% endblock %}
+{% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑">
+    <a href="{% url 'index' %}">🏠 首页</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">运营看板</span>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/console_inline.min.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+
+{% block content %}
+<div class="console-wrap">
+
+  <div class="console-head">
+    <div>
+      <h1>🎛 运营看板 <span class="badge-admin-only">管理员限定</span></h1>
+      <div class="sub">站点运营数据一览喵~ 数据实时统计，仅供管理员查看 ✨</div>
+    </div>
+    <div class="console-links">
+      <a href="{% url 'moderation_queue' %}">🛡 内容审核</a>
+      <a href="/admin/">⚙️ 高级后台</a>
+      <a href="{% url 'article_new' %}">✍ 写文章</a>
+      <a href="{% url 'index' %}">🏠 回首页</a>
+      <button type="button" id="btn-refresh-assets" class="refresh-btn" data-url="{% url 'api_refresh_assets' %}" title="重新压缩全部 CSS/JS、写入新版本号并清空缓存">♻️ 刷新静态缓存</button>
+    </div>
+  </div>
+
+  {# ===== 核心指标卡片 ===== #}
+  <div class="stat-grid">
+    <a class="stat-card" href="{% url 'moderation_queue' %}?tab=articles"><div class="ico" style="background:var(--grad-purple)">📄</div><div class="num">{{ stats.article_published }}</div><div class="lbl">已发布文章</div><div class="mini">待审核 {{ stats.article_pending }} · 草稿 {{ stats.article_draft }}</div><span class="go">➜</span></a>
+    <div class="stat-card"><div class="ico" style="background:var(--grad-pink)">💬</div><div class="num">{{ stats.comment_total }}</div><div class="lbl">评论总数</div></div>
+    <div class="stat-card"><div class="ico" style="background:var(--grad-blue)">👥</div><div class="num">{{ stats.user_total }}</div><div class="lbl">注册用户</div></div>
+    <div class="stat-card"><div class="ico" style="background:var(--grad-orange)">👁</div><div class="num">{{ stats.total_views }}</div><div class="lbl">累计浏览</div></div>
+    <div class="stat-card"><div class="ico" style="background:linear-gradient(135deg,#ff7a9c,#ff4d6d)">❤️</div><div class="num">{{ stats.total_likes }}</div><div class="lbl">累计点赞</div></div>
+    <div class="stat-card"><div class="ico" style="background:var(--grad-green)">📅</div><div class="num">{{ stats.today_visits }}</div><div class="lbl">今日访问</div><div class="mini">独立 {{ stats.today_uv }} 人</div></div>
+    <div class="stat-card"><div class="ico" style="background:var(--grad-cyan)">🟢</div><div class="num">{{ stats.online }}</div><div class="lbl">当前在线</div><div class="mini">近 5 分钟</div></div>
+    <div class="stat-card"><div class="ico" style="background:linear-gradient(135deg,#b18cff,#7db8ff)">🏷</div><div class="num">{{ stats.category_total }}</div><div class="lbl">分类</div><div class="mini">标签 {{ stats.tag_total }} 个</div></div>
+    <a class="stat-card {% if stats.reports %}is-alert{% endif %}" href="{% url 'moderation_queue' %}?tab=reports"><div class="ico" style="background:linear-gradient(135deg,#ffd166,#ffb020)">🚩</div><div class="num">{{ stats.reports }}</div><div class="lbl">待处理举报</div><span class="go">➜</span></a>
+  </div>
+
+  {# ===== 近14天访问趋势 ===== #}
+  <div class="console-panel" style="margin-bottom:18px;">
+    <h2>📈 近 14 天访问趋势</h2>
+    <div class="trend-chart">
+      {% for t in trend %}
+      <div class="trend-col">
+        <div class="trend-bar" data-v="{{ t.count }}" title="{{ t.label }}：{{ t.count }} 次访问喵" style="height:{{ t.bar_h }}%;"></div>
+        <div class="trend-x">{{ t.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="trend-note">💡 柱高采用开方刻度（弱化个别峰值日的挤压），柱顶常驻当天真实访问次数；鼠标悬停柱子会高亮特显喵</div>
+  </div>
+
+  <div class="panel-grid">
+    {# ===== 热门文章 ===== #}
+    <div class="console-panel">
+      <h2>🔥 热门文章 Top {{ top_articles|length }}</h2>
+      {% for a in top_articles %}
+      <div class="bar-row">
+        <span class="bar-name"><a href="{% url 'article_detail' a.id %}" style="color:inherit;text-decoration:none;">{{ forloop.counter }}. {{ a.title }}</a></span>
+        <span class="bar-track"><span class="bar-fill" style="width:{{ a.pct }}%;"></span></span>
+        <span class="bar-val">👁{{ a.views }}</span>
+      </div>
+      {% empty %}<div class="console-empty">还没有文章喵~</div>{% endfor %}
+    </div>
+    {# ===== 分类分布 ===== #}
+    <div class="console-panel">
+      <h2>📂 分类文章分布</h2>
+      {% for c in cat_dist %}
+      <div class="bar-row">
+        <span class="bar-name">{{ c.name }}</span>
+        <span class="bar-track"><span class="bar-fill blue" style="width:{{ c.pct }}%;"></span></span>
+        <span class="bar-val">{{ c.n }} 篇</span>
+      </div>
+      {% empty %}<div class="console-empty">还没有分类喵~</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="panel-grid">
+    {# ===== 最近评论 ===== #}
+    <div class="console-panel">
+      <h2>💬 最新评论</h2>
+      <ul class="mini-list">
+        {% for cm in recent_comments %}
+        <li>
+          <span class="av">{{ cm.user__username|default:'匿'|slice:':1' }}</span>
+          <span class="ml-main">
+            <div class="ml-title">{{ cm.snippet }}</div>
+            <div class="ml-sub">{{ cm.user__username|default:'匿名' }} · 《{{ cm.article__title|truncatechars:18 }}》</div>
+          </span>
+          <span class="ml-time">{{ cm.created_at|date:'m-d H:i' }}</span>
+        </li>
+        {% empty %}<div class="console-empty">还没有评论喵~</div>{% endfor %}
+      </ul>
+    </div>
+    {# ===== 最近用户 + 浏览器 ===== #}
+    <div class="console-panel">
+      <h2>🧑‍🤝‍🧑 最新注册</h2>
+      <ul class="mini-list">
+        {% for uu in recent_users %}
+        <li>
+          <span class="av">{{ uu.username|slice:':1'|upper }}</span>
+          <span class="ml-main"><div class="ml-title">{{ uu.username }}</div></span>
+          <span class="ml-time">{{ uu.date_joined|date:'m-d H:i' }}</span>
+        </li>
+        {% empty %}<div class="console-empty">还没有用户喵~</div>{% endfor %}
+      </ul>
+      {% if browsers %}
+      <h2 style="margin-top:16px;">🌐 浏览器分布</h2>
+      <div class="browser-tags">
+        {% for b in browsers %}<span>{{ b.browser }} · {{ b.n }}</span>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script src="{% static 'assets/js/console_refresh_assets.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

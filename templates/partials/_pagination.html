@@ -1,0 +1,32 @@
+{% load static %}
+{% load blog_extras %}
+{% comment %}
+  通用分页条（bug6 重写）：
+  - 上一页 / 下一页；
+  - 智能页码：首页 + 尾页 + 当前页左右各 3 页，缺口用「…」；
+  - 自动保留当前 URL 的全部查询参数（仅替换 page）。
+{% endcomment %}
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+{% smart_page_range page_obj.number page_obj.paginator.num_pages 3 as pages %}
+<nav class="pagination no-refresh-pagination" aria-label="分页">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"><img src="{% static 'assets/icons/prev-page.svg' %}" alt="" class="icon"> 上一页喵</a>
+    {% else %}
+        <span class="page-link disabled" aria-disabled="true"><img src="{% static 'assets/icons/prev-page.svg' %}" alt="" class="icon"> 上一页喵</span>
+    {% endif %}
+    {% for n in pages %}
+        {% if n == 0 %}
+            <span class="page-link page-ellipsis" aria-hidden="true">…</span>
+        {% elif n == page_obj.number %}
+            <span class="page-link current" aria-current="page">{{ n }}</span>
+        {% else %}
+            <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ n }}" data-page="{{ n }}">{{ n }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">下一页喵 <img src="{% static 'assets/icons/next-page.svg' %}" alt="" class="icon"></a>
+    {% else %}
+        <span class="page-link disabled" aria-disabled="true">下一页喵 <img src="{% static 'assets/icons/next-page.svg' %}" alt="" class="icon"></span>
+    {% endif %}
+</nav>
+{% endif %}

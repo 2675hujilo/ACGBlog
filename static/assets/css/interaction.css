@@ -1,0 +1,226 @@
+/* Bug11 文件头注释
+ * 交互反馈样式：点赞、收藏、分享、加载、拖拽等动态状态的视觉反馈。
+ * 主要元素：按钮按下/激活态、加载动画、悬浮卡片位移与过渡。
+ */
+/* ============================================================
+ * interaction.css —— 互动增强（C类）+ 搜索发现（D类）
+ * 覆盖：文章踩/评论排序/折叠/搜索/举报/楼层/只看楼主/热度标记/
+ *       收藏夹/评论草稿/撤回/点赞爆炸/分享感谢弹窗/搜索建议/
+ *       历史/词云/标签热力/分类树/随机/归档时间线/热门榜
+ * ============================================================ */
+
+/* ---------- C1 文章踩按钮（与点赞并列） ---------- */
+.action-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.dislike-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--c-border); background: var(--c-card);
+    color: var(--c-text); transition: all .2s;
+}
+.dislike-btn:hover { border-color: var(--c-danger); color: var(--c-danger); }
+.dislike-btn.disliked {
+    background: var(--c-danger); color: #fff; border-color: transparent;
+}
+.dislike-btn svg { width: 18px; height: 18px; }
+
+/* ---------- C2 评论排序栏 / C3 长评论折叠 ---------- */
+.comment-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.comment-sort { display: flex; gap: 6px; }
+.comment-sort button {
+    padding: 4px 12px; border-radius: 999px; font-size: .8rem; cursor: pointer;
+    border: 1px solid var(--c-border); background: var(--c-card); color: var(--c-text);
+}
+.comment-sort button.active {
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff; border-color: transparent;
+}
+.comment-folded .comment-text { max-height: 4.5em; overflow: hidden; position: relative; }
+.comment-folded .comment-text::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1.5em;
+    background: linear-gradient(transparent, var(--c-surface));
+}
+.fold-toggle {
+    background: none; border: none; color: var(--c-primary); cursor: pointer;
+    font-size: .8rem; padding: 2px 0;
+}
+.fold-toggle:hover { text-decoration: underline; }
+
+/* ---------- C4 评论搜索 / C5 举报 / C7 楼层 / C8 只看楼主 ---------- */
+.comment-search-box {
+    display: flex; gap: 6px; margin-bottom: 10px;
+}
+.comment-search-box input {
+    flex: 1; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--c-border); background: var(--c-input-bg); color: var(--c-text);
+}
+.comment-item { transition: background .2s; }
+.comment-item.highlight { background: var(--c-primary-soft); }
+.comment-floor {
+    display: inline-block; font-size: .72rem; color: var(--c-text-dim);
+    background: var(--c-primary-soft); padding: 1px 7px; border-radius: 6px;
+    cursor: pointer; margin-left: 6px;
+}
+.comment-floor:hover { color: var(--c-primary); }
+.comment-item.op-only-hidden { display: none; }
+/* 工单7：只看楼主且楼主无评论时的萌系空状态 */
+.op-only-empty {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 14px 0; padding: 22px 16px;
+    border: 1.5px dashed var(--c-border); border-radius: 14px;
+    background: var(--c-primary-soft); color: var(--c-text-dim);
+    font-size: .9rem; text-align: center;
+}
+.op-only-empty span { line-height: 1.5; }
+.comment-item.is-op .badge-op {
+    display: inline-block; font-size: .68rem; color: #fff;
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    padding: 1px 7px; border-radius: 6px; margin-left: 6px;
+}
+.badge-op { display: none; }
+.comment-report {
+    background: none; border: none; color: var(--c-text-dim); cursor: pointer;
+    font-size: .72rem; margin-left: 8px;
+}
+.comment-report:hover { color: var(--c-danger); }
+
+/* ---------- C9 评论热度🔥标记（Bug9：火花由「头像前」移到「用户名后」，避免压住头像） ---------- */
+.comment-hot > .comment-hot-spark { display: none; }
+.comment-hot .comment-author::after {
+    content: "🔥"; margin-left: 4px; font-size: .85rem;
+}
+
+/* ---------- C10 收藏夹管理 ---------- */
+.favorite-folder-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px; margin: 14px 0;
+}
+.favorite-folder {
+    padding: 14px; border-radius: var(--radius); border: 1px solid var(--c-border);
+    background: var(--c-card); cursor: pointer; transition: all .2s; text-align: center;
+}
+.favorite-folder:hover { border-color: var(--c-purple); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.favorite-folder .ff-count { font-size: .78rem; color: var(--c-text-dim); }
+.favorite-folder .ff-name { font-weight: 700; margin: 6px 0; }
+
+/* ---------- C12 评论草稿 / C13 撤回 ---------- */
+.draft-tip {
+    font-size: .75rem; color: var(--c-purple); margin-top: 4px;
+}
+.comment-recallable .recall-btn {
+    font-size: .72rem; color: var(--c-danger); background: none;
+    border: none; cursor: pointer; margin-left: 8px;
+}
+.comment-recallable .recall-btn:hover { text-decoration: underline; }
+
+/* ---------- C14 点赞爆炸粒子（由 effects.js 生成 .heart-burst） ---------- */
+.heart-burst {
+    position: fixed; pointer-events: none; z-index: 9999;
+    font-size: 18px; animation: heartFly .9s ease-out forwards;
+}
+@keyframes heartFly {
+    0% { opacity: 1; transform: translate(0, 0) scale(.6); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.3); }
+}
+
+/* ---------- C15 分享感谢弹窗 ---------- */
+.thanks-modal-mask {
+    position: fixed; inset: 0; background: rgba(20, 15, 35, .5);
+    z-index: 1200; display: flex; align-items: center; justify-content: center;
+}
+.thanks-modal {
+    padding: 30px 36px; border-radius: 20px; background: var(--c-surface);
+    text-align: center; box-shadow: var(--shadow-hover);
+    animation: thanksPop .35s ease;
+}
+.thanks-modal .thanks-icon { font-size: 2.4rem; }
+.thanks-modal h4 { margin: 10px 0 6px; }
+.thanks-modal p { color: var(--c-text-dim); font-size: .85rem; margin: 0; }
+@keyframes thanksPop {
+    0% { transform: scale(.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- D1 实时搜索建议下拉（增强 common.js 的 .search-suggestions） ---------- */
+.search-suggestions {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--c-surface); border: 1px solid var(--c-border);
+    border-radius: 0 0 12px 12px; box-shadow: var(--shadow-hover);
+    list-style: none; margin: 0; padding: 6px 0; max-height: 320px; overflow-y: auto;
+    display: none; z-index: 800;
+}
+.search-suggestions.show { display: block; }
+.search-suggestions li {
+    padding: 8px 14px; cursor: pointer; font-size: .88rem; color: var(--c-text);
+}
+.search-suggestions li:hover, .search-suggestions li.active { background: var(--c-primary-soft); }
+.search-suggestions .ss-history-label {
+    font-size: .7rem; color: var(--c-text-dim); padding: 4px 14px 0; cursor: default;
+}
+
+/* ---------- D2 搜索历史 / D12 无结果推荐 ---------- */
+.search-history-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.search-history-tags .tag-hist {
+    padding: 4px 12px; border-radius: 999px; background: var(--c-primary-soft);
+    color: var(--c-primary); font-size: .8rem; cursor: pointer;
+}
+.search-history-tags .tag-hist:hover { background: var(--c-purple); color: #fff; }
+.search-empty-recommend { margin-top: 20px; }
+
+/* ---------- D3 热门搜索词云 ---------- */
+.hot-word-cloud { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.hot-word-cloud .hw {
+    cursor: pointer; color: var(--c-primary); transition: transform .2s;
+}
+.hot-word-cloud .hw:hover { transform: scale(1.15); }
+
+/* ---------- D5 标签云热力（颜色深浅按热度） ---------- */
+.tag-cloud .tag-item.heat-1 { font-size: .8rem; opacity: .6; }
+.tag-cloud .tag-item.heat-2 { font-size: .95rem; opacity: .8; }
+.tag-cloud .tag-item.heat-3 { font-size: 1.1rem; opacity: 1; }
+.tag-cloud .tag-item.heat-4 { font-size: 1.3rem; color: var(--c-pink); font-weight: 700; }
+
+/* ---------- D6 分类导航树 ---------- */
+.category-tree { list-style: none; padding-left: 0; }
+.category-tree ul { list-style: none; padding-left: 18px; border-left: 2px dashed var(--c-border); }
+.category-tree li { margin: 6px 0; }
+.category-tree .ct-toggle { cursor: pointer; color: var(--c-text-dim); margin-right: 4px; }
+
+/* ---------- D9 归档时间线 ---------- */
+.archive-timeline { position: relative; padding-left: 28px; }
+.archive-timeline::before {
+    content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(var(--c-pink), var(--c-purple), var(--c-blue));
+}
+.archive-timeline .tl-item { position: relative; margin-bottom: 18px; }
+.archive-timeline .tl-item::before {
+    content: ''; position: absolute; left: -24px; top: 6px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--c-purple); border: 2px solid var(--c-surface);
+}
+
+/* ---------- D10 热门榜切换 ---------- */
+.hot-rank-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.hot-rank-tabs button {
+    padding: 5px 14px; border-radius: 999px; border: 1px solid var(--c-border);
+    background: var(--c-card); color: var(--c-text); cursor: pointer; font-size: .82rem;
+}
+.hot-rank-tabs button.active {
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff; border-color: transparent;
+}
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 768px) {
+    .comment-toolbar { flex-direction: column; align-items: stretch; }
+    .favorite-folder-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- 打印隐藏 ---------- */
+@media print {
+    .comment-toolbar, .comment-search-box, .comment-report, .recall-btn,
+    .thanks-modal-mask, .search-history-tags, .hot-word-cloud,
+    .hot-rank-tabs, .dislike-btn { display: none !important; }
+}

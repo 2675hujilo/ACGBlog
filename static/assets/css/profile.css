@@ -1,0 +1,177 @@
+/* Bug11 文件头注释
+ * 用户个人主页样式：头像、昵称、统计数据、标签页与其文章/评论列表布局。
+ * 包含封面横幅、数据卡片与窄屏堆叠适配。
+ */
+/* ============================================================
+ * profile.css —— 个人中心（F类）
+ * 覆盖：头像裁剪/资料/偏好/徽章墙/通知中心/在线状态/个人主页
+ * ============================================================ */
+
+/* ---------- F1 头像裁剪 ---------- */
+.avatar-crop-wrap {
+    position: relative; width: 200px; height: 200px; margin: 0 auto;
+    border-radius: 50%; overflow: hidden; border: 3px solid var(--c-border);
+}
+.avatar-crop-wrap img { position: absolute; max-width: none; }
+.avatar-crop-actions { text-align: center; margin-top: 12px; }
+.avatar-crop-actions button {
+    padding: 6px 16px; border-radius: 999px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple)); color: #fff;
+}
+
+/* ---------- F2 资料编辑表单 ---------- */
+.profile-form { max-width: 560px; margin: 0 auto; }
+.profile-form .form-row { margin-bottom: 14px; }
+.profile-form label { display: block; font-size: .85rem; color: var(--c-text-dim); margin-bottom: 4px; }
+.profile-form input, .profile-form textarea {
+    width: 100%; padding: 9px 14px; border-radius: 10px;
+    border: 1px solid var(--c-border); background: var(--c-input-bg); color: var(--c-text);
+}
+
+/* ---------- F3 密码强度条（features.js 已绑定，此处样式） ---------- */
+.password-strength { height: 6px; border-radius: 3px; background: var(--c-primary-soft); margin-top: 6px; overflow: hidden; }
+.password-strength .strength-bar { height: 100%; width: 0; transition: width .3s, background .3s; }
+.strength-weak .strength-bar { background: var(--c-danger); width: 33%; }
+.strength-medium .strength-bar { background: #ffd166; width: 66%; }
+.strength-strong .strength-bar { background: #3bbf6b; width: 100%; }
+
+/* ---------- F4/F5/F6/F7 列表页通用 ---------- */
+.profile-list { display: flex; flex-direction: column; gap: 12px; }
+.profile-list-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-radius: var(--radius);
+    background: var(--c-card); border: 1px solid var(--c-border);
+}
+.profile-list-item .pli-meta { font-size: .78rem; color: var(--c-text-dim); margin-top: 4px; }
+
+/* ---------- F8 通知中心 ---------- */
+.notification-badge {
+    position: absolute; top: -4px; right: -6px; min-width: 18px; height: 18px;
+    padding: 0 5px; border-radius: 999px; background: var(--c-danger); color: #fff;
+    font-size: .68rem; line-height: 18px; text-align: center;
+}
+.notification-item {
+    display: flex; gap: 12px; padding: 12px 16px; border-radius: 10px;
+    border-bottom: 1px solid var(--c-border); position: relative;
+}
+.notification-item.unread { background: var(--c-primary-soft); }
+.notification-item.unread::before {
+    content: ''; position: absolute; left: 4px; top: 18px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--c-pink);
+}
+.notification-item .nt-time { font-size: .72rem; color: var(--c-text-dim); }
+.notification-empty { text-align: center; color: var(--c-text-dim); padding: 40px 0; }
+
+/* ---------- F10 成就徽章墙 ---------- */
+.badge-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 14px;
+}
+.badge-cell {
+    text-align: center; padding: 16px 8px; border-radius: var(--radius);
+    background: var(--c-card); border: 1px solid var(--c-border);
+}
+.badge-cell .badge-icon { font-size: 1.8rem; }
+.badge-cell .badge-name { font-size: .8rem; margin-top: 6px; font-weight: 700; }
+.badge-cell .badge-desc { font-size: .68rem; color: var(--c-text-dim); }
+.badge-cell.locked { opacity: .4; filter: grayscale(1); }
+
+/* ---------- F11 个人主页背景/签名 ---------- */
+.profile-header-banner {
+    height: 160px; border-radius: var(--radius); margin-bottom: -50px;
+    background: linear-gradient(120deg, var(--c-pink), var(--c-purple), var(--c-blue));
+    background-size: 200% 100%; animation: bannerShift 8s ease infinite;
+}
+@keyframes bannerShift { 0% { background-position: 0 0; } 100% { background-position: 200% 0; } }
+.profile-avatar-wrap {
+    width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--c-surface);
+    overflow: hidden; position: relative; z-index: 2; background: var(--c-card);
+}
+.profile-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.profile-signature { color: var(--c-text-dim); font-size: .9rem; margin-top: 8px; }
+
+/* ---------- F12 在线状态（头像绿点） ---------- */
+.online-indicator {
+    position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px;
+    border-radius: 50%; background: #3bbf6b; border: 2px solid var(--c-surface);
+}
+.online-indicator.offline { background: #999; }
+
+/* ---------- F9 偏好设置开关 ---------- */
+.preference-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px dashed var(--c-border);
+}
+.preference-row .pr-label { font-size: .9rem; }
+.preference-row .pr-desc { font-size: .75rem; color: var(--c-text-dim); }
+.switch { position: relative; width: 44px; height: 24px; }
+.switch input { display: none; }
+.switch .slider {
+    position: absolute; inset: 0; border-radius: 999px;
+    background: var(--c-primary-soft); cursor: pointer; transition: background .2s;
+}
+.switch .slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+    border-radius: 50%; background: #fff; transition: transform .2s;
+}
+.switch input:checked + .slider { background: linear-gradient(135deg, var(--c-pink), var(--c-purple)); }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 768px) {
+    .badge-grid { grid-template-columns: repeat(3, 1fr); }
+    .profile-header-banner { height: 110px; }
+}
+
+/* ---------- 打印隐藏 ---------- */
+@media print {
+    .notification-badge, .avatar-crop-actions, .switch { display: none !important; }
+}
+
+
+/* ===== Bug21: 头像选择与裁剪 ===== */
+#id_avatar { display: none !important; }
+.avatar-pick-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 4px; }
+.avatar-file-name { font-size: .85rem; color: var(--c-text-dim); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.avatar-crop-viewport {
+    width: 240px; height: 240px; margin: 0 auto; position: relative; overflow: hidden;
+    border-radius: 50%; border: 3px solid var(--c-border); cursor: grab; touch-action: none;
+    background: linear-gradient(135deg, rgba(255,143,177,.14), rgba(110,168,254,.14));
+    box-shadow: var(--shadow-card);
+}
+.avatar-crop-viewport:active { cursor: grabbing; }
+.avatar-crop-viewport img {
+    position: absolute; left: 50%; top: 50%; max-width: none;
+    user-select: none; -webkit-user-drag: none; pointer-events: none;
+}
+.avatar-crop-controls { display: flex; align-items: center; gap: 10px; max-width: 280px; margin: 12px auto 0; }
+.avatar-crop-controls input[type="range"] { flex: 1; accent-color: var(--c-purple); height: 6px; cursor: pointer; }
+:root[data-theme="dark"] .avatar-crop-viewport { border-color: rgba(255,255,255,.18); }
+
+/* ===== bug13：完整显示 / 填满圆形 模式切换 ===== */
+.avatar-fit-toggle {
+    display: flex; justify-content: center; gap: 8px; margin: 4px 0 12px; flex-wrap: wrap;
+}
+.avatar-fit-btn {
+    padding: 6px 16px; border-radius: 999px; cursor: pointer; font-size: .85rem;
+    border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text-dim);
+    transition: all .18s ease;
+}
+.avatar-fit-btn:hover { color: var(--c-primary); border-color: var(--c-primary); }
+.avatar-fit-btn.is-active {
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
+    color: #fff; border-color: transparent; box-shadow: var(--shadow-card);
+}
+/* 模糊铺底：cover 铺满圆形 + 高斯模糊，仅在整图模式下淡入 */
+#avatar-crop-bg {
+    left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important;
+    object-fit: cover; transform: scale(1.18); filter: blur(16px) saturate(1.1);
+    opacity: 0; transition: opacity .25s ease;
+}
+:root[data-theme="dark"] .avatar-fit-btn.is-active { box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+
+/* ===== 第三轮迁移：user_profile.html 行内 style 外移 ===== */
+.profile-banner { height: 120px; background: linear-gradient(135deg,#ff8fb1,#a06cd5,#6ea8fe); border-radius: var(--radius) var(--radius) 0 0; margin: -20px -20px 10px; }
+.profile-online-dot { position: absolute; bottom: 8px; right: 8px; width: 14px; height: 14px; }
+.badge-grid { grid-template-columns: repeat(auto-fill,minmax(80px,1fr)); gap: 12px; margin-top: 10px; }
+.badge-item { text-align: center; padding: 10px; background: var(--c-card); border-radius: var(--radius-sm); }

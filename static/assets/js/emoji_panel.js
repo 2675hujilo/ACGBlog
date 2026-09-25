@@ -1,0 +1,74 @@
+/* Bug11 文件头注释
+ * 表情面板脚本：动态在 body 生成 .emoji-panel，含颜文字与 Emoji，点击插入光标处。
+ * 支持点击外部/Esc 关闭，并定位到触发按钮附近。
+ */
+/**
+ * emoji_panel.js —— 评论表情包面板（第4轮新增）
+ * 点击 .emoji-trigger 弹出颜文字+emoji面板，点击插入textarea光标处；外部点击/ESC关闭。
+ */
+(function () {
+    'use strict';
+    var KAOMOJI = ['(≧▽≦)','(=^･ω･^=)','(ノ´ヮ`)ノ*:・゚✧','(；ω；)','( ´_ゝ`)','ヽ(✿ﾟ▽ﾟ)ノ','(╯°□°）╯︵ ┻━┻','(｡•́︿•̀｡)','(*≧ω≦)','(¬‿¬)','(◕ᴗ◕✿)','(つ✧ω✧)つ'];
+    var EMOJI = ['😀','😍','🥰','😢','😡','👍','👏','🎉','💖','✨','🌸','🍰','🐱','🌙','🔥','💡'];
+
+    function buildPanel(trigger) {
+        var panel = document.createElement('div');
+        panel.className = 'emoji-panel';
+        panel.setAttribute('role', 'dialog');
+        var html = '<div class="emoji-section"><div class="emoji-section-title">颜文字</div><div class="emoji-grid">';
+        KAOMOJI.forEach(function (k) { html += '<button type="button" class="emoji-item emoji-kaomoji" data-text="' + k + '">' + k + '</button>'; });
+        html += '</div></div><div class="emoji-section"><div class="emoji-section-title">Emoji</div><div class="emoji-grid">';
+        EMOJI.forEach(function (e) { html += '<button type="button" class="emoji-item" data-text="' + e + '">' + e + '</button>'; });
+        html += '</div></div>';
+        panel.innerHTML = html;
+        document.body.appendChild(panel);
+        panel.addEventListener('click', function (e) {
+            var item = e.target.closest('.emoji-item');
+            if (!item) return;
+            var text = item.getAttribute('data-text');
+            var form = trigger.closest('form') || document;
+            var ta = form.querySelector('textarea') || document.querySelector('.comment-form textarea, textarea[name="content"]');
+            if (ta) {
+                var s = ta.selectionStart || ta.value.length;
+                var en = ta.selectionEnd || s;
+                ta.value = ta.value.slice(0, s) + text + ta.value.slice(en);
+                ta.selectionStart = ta.selectionEnd = s + text.length;
+                ta.focus();
+            }
+            closePanel();
+        });
+        return panel;
+    }
+
+    var currentPanel = null;
+    function closePanel() {
+        if (currentPanel) { currentPanel.remove(); currentPanel = null; }
+        document.body.classList.remove('emoji-panel-open');
+    }
+    function openPanel(trigger) {
+        if (currentPanel) { closePanel(); return; }
+        currentPanel = buildPanel(trigger);
+        document.body.classList.add('emoji-panel-open');
+        var r = trigger.getBoundingClientRect();
+        currentPanel.style.top = (r.bottom + window.scrollY + 6) + 'px';
+        currentPanel.style.left = Math.max(8, r.left + window.scrollX - 20) + 'px';
+    }
+
+    function init() {
+        document.querySelectorAll('.emoji-trigger').forEach(function (t) {
+            t.addEventListener('click', function (e) {
+                e.preventDefault(); e.stopPropagation();
+                openPanel(t);
+            });
+        });
+        document.addEventListener('click', function (e) {
+            if (currentPanel && !currentPanel.contains(e.target) && !e.target.closest('.emoji-trigger')) closePanel();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && currentPanel) closePanel();
+        });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();

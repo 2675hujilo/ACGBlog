@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}账号设置 · {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">设置</span><meta itemprop="position" content="2"></span>
+</nav>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/profile.min.css' %}?v={{ BUILD_TOKEN }}">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}"},{"@type":"ListItem","position":2,"name":"设置","url":"{{ request.build_absolute_uri }}"}]}
+</script>
+{% endblock %}
+{% block content %}
+<h1 class="settings-page-title" id="settings-heading">⚙️ 账号设置</h1>
+<div class="settings-container" aria-label="账号设置表单">
+    {# ============ 卡片1：基本资料 ============ #}
+    <div class="settings-card">
+        <h2 class="settings-card-title">📝 基本资料</h2>
+        <fieldset style="border:none;padding:0;margin:0;"><legend class="sr-only">基本资料</legend>
+        <form method="post" action="{% url 'user_settings' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_nickname">昵称</label>
+                <input type="text" id="id_nickname" name="nickname" aria-label="昵称"
+                       value="{{ user.nickname|default:'' }}" maxlength="50"
+                       placeholder="给自己起个可爱的昵称吧~">
+                <span class="form-hint" id="nickname-hint">最多 50 个字</span>
+            </div>
+            <div class="form-group">
+                <label for="id_introduction">个人介绍</label>
+                <textarea id="id_introduction" name="introduction" rows="4" aria-label="个人介绍"
+                          maxlength="500"
+                          placeholder="介绍一下自己吧喵~ 🌸">{{ user.introduction|default:'' }}</textarea>
+                <span class="form-hint">最多 500 字，不支持 HTML 标签</span>
+            </div>
+            <button type="submit" name="profile_form" class="like-btn">
+                <span class="like-icon">💾</span>
+                <span class="like-text">保存修改喵</span>
+            </button>
+        </form>
+    </div>
+    {# ============ 卡片2：头像设置 ============ #}
+    <div class="settings-card">
+        <h2 class="settings-card-title">📷 头像设置</h2>
+        <div class="avatar-preview-area">
+            <div class="avatar-preview-circle" id="avatar-preview">
+                {% if user.avatar %}
+                <img id="avatar-preview-img" src="{{ user.avatar.url }}" alt="当前头像" loading="lazy" decoding="async" fetchpriority="low" width="96" height="96">
+                {% else %}
+                <span class="avatar-preview-initial" id="avatar-preview-initial" aria-hidden="true">{{ user.nickname|default:user.username|slice:":1" }}</span>
+                <img id="avatar-preview-img" src="" alt="预览" style="display:none;">
+                {% endif %}
+            </div>
+            <p class="muted">当前头像预览</p>
+        </div>
+        <fieldset style="border:none;padding:0;margin:0;"><legend class="sr-only">头像设置</legend>
+        <form method="post" action="{% url 'user_settings' %}" enctype="multipart/form-data" id="avatar-form">
+            {% csrf_token %}
+            {# 裁剪后用 form.submit() 程序化提交时不会带按钮名，用 hidden 保证后端能识别头像表单 #}
+            <input type="hidden" name="avatar_form" value="1">
+            {# Bug21: 原生文件框视觉隐藏，由萌系按钮触发；选图后可拖动/缩放裁剪 #}
+            <input type="file" id="id_avatar" name="avatar" accept=".jpg,.jpeg,.png,.gif,.webp,image/*" aria-label="上传新头像"
+                   class="sr-only">
+            <div class="avatar-pick-row">
+                <button type="button" id="avatar-pick-btn" class="like-btn" aria-label="选择头像图片">
+                    <span class="like-icon">🖼</span>
+                    <span class="like-text">选择图片喵</span>
+                </button>
+                <span class="avatar-file-name" id="avatar-file-name">还没有选择图片哦~</span>
+            </div>
+            <span class="form-hint">仅支持 jpg / png / gif / webp，大小不超过 2MB，选好后可拖动裁剪喵~</span>
+            <div class="avatar-crop-area" id="avatar-crop-area" hidden style="margin:14px 0;">
+                {# 裁剪适配模式：完整显示（整图可见，空白处用模糊同图填充）/ 填满圆形（经典 cover 裁切） #}
+                <div class="avatar-fit-toggle" role="group" aria-label="裁剪适配模式">
+                    <button type="button" class="avatar-fit-btn is-active" data-fit="contain">🌸 完整显示</button>
+                    <button type="button" class="avatar-fit-btn" data-fit="cover">⭕ 填满圆形</button>
+                </div>
+                <div class="avatar-crop-viewport" id="avatar-crop-viewport">
+                    {# 模糊填充底：整图模式下铺满圆形，避免出现空白角 #}
+                    <img id="avatar-crop-bg" src="" alt="" aria-hidden="true" draggable="false">
+                    <img id="avatar-crop-img" src="" alt="裁剪预览" draggable="false">
+                </div>
+                <div class="avatar-crop-controls">
+                    <span aria-hidden="true">🔍</span>
+                    <input type="range" id="avatar-crop-zoom" min="1" max="3" step="0.02" value="1" aria-label="缩放头像">
+                </div>
+                <p class="muted" style="font-size:.8rem;text-align:center;margin:6px 0 0;">拖动图片调整位置，滑块或滚轮缩放；「完整显示」可看全整张图，头像会按圆形区域裁剪喵~</p>
+            </div>
+            <button type="submit" name="avatar_form" class="like-btn">
+                <span class="like-icon">📤</span>
+                <span class="like-text">保存头像喵</span>
+            </button>
+        </form>
+    </div>
+    {# ============ 卡片3：修改密码 ============ #}
+    <div class="settings-card">
+        <h2 class="settings-card-title">🔐 修改密码</h2>
+        <form method="post" action="{% url 'user_settings' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_old_password">旧密码</label>
+                <input type="password" id="id_old_password" name="old_password" autocomplete="current-password" aria-label="旧密码"
+                       placeholder="输入当前密码">
+            </div>
+            <div class="form-group">
+                <label for="id_new_password">新密码</label>
+                <input type="password" id="id_new_password" name="new_password" autocomplete="new-password" aria-label="新密码"
+                       placeholder="至少 8 位字符">
+                {# 密码强度指示器 #}
+                <div class="password-strength" id="password-strength">
+                    <div class="strength-bar" role="progressbar" aria-label="密码强度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div class="strength-fill" id="strength-fill"></div>
+                    </div>
+                    <span class="strength-text" id="strength-text" aria-live="polite">输入密码查看强度</span>
+                    <output id="strength-output" for="id_new_password">0</output>
+                    <progress id="strength-progress" max="100" value="0" aria-label="密码强度进度">0</progress>
+                    <meter id="strength-meter" min="0" max="100" low="30" high="70" optimum="90" value="0" aria-label="密码强度计量">0</meter>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="id_confirm_password">确认新密码</label>
+                <input type="password" id="id_confirm_password" name="confirm_password" autocomplete="new-password" aria-label="确认新密码"
+                       placeholder="再次输入新密码">
+            </div>
+            <button type="submit" name="password_form" class="like-btn">
+                <span class="like-icon">🔑</span>
+                <span class="like-text">修改密码</span>
+            </button>
+        </form>
+    </div>
+    {# ===== Round5 F9: 阅读偏好设置（Bug22: 已接线，实时生效并持久化） ===== #}
+    <div class="settings-card">
+        <h2 class="settings-card-title">🎨 阅读偏好</h2>
+        <form method="post" action="{% url 'user_settings' %}" id="preferences-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="pref-theme-color">主题色</label>
+                <select id="pref-theme-color" name="theme_color" aria-label="主题色选择">
+                    <option value="purple_pink">🌸 紫粉萌系</option>
+                    <option value="blue_green">🌊 蓝绿清新</option>
+                    <option value="orange_yellow">🍊 橙黄暖阳</option>
+                    <option value="rose">🌹 玫瑰粉恋</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pref-font-size">字体大小</label>
+                <select id="pref-font-size" name="font_size" aria-label="字体大小选择">
+                    <option value="small">小</option>
+                    <option value="medium" selected>中</option>
+                    <option value="large">大</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" name="eye_protection" aria-label="护眼模式"> 👁 护眼模式
+                </label>
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" name="amoled_dark" aria-label="AMOLED 纯黑模式"> 🌑 AMOLED 纯黑
+                </label>
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" name="sound_enabled" checked aria-label="交互音效"> 🔊 交互音效
+                </label>
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" name="effects_enabled" checked aria-label="页面动效"> ✨ 页面动效
+                </label>
+            </div>
+            <button type="submit" name="preferences_form" class="like-btn">
+                <span class="like-icon">💾</span>
+                <span class="like-text">保存偏好喵</span>
+            </button>
+        </form>
+    </div>
+    {# ===== Round5: 个人中心快捷入口 ===== #}
+    <div class="settings-card">
+        <h2 class="settings-card-title">📂 我的小站</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <a class="btn-sm" href="/notifications/">🔔 通知中心</a>
+            <a class="btn-sm" href="/favorites/">⭐ 我的收藏</a>
+            <a class="btn-sm" href="/reading-history/">📚 阅读历史</a>
+            <a class="btn-sm" href="/liked/">👍 我的点赞</a>
+            <a class="btn-sm" href="/my-comments/">💬 我的评论</a>
+            <a class="btn-sm" href="{% url 'my_articles' %}">📝 我的文章</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script defer src="{% static 'assets/js/features.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/features/settings_prefs.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/features/avatar_crop.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

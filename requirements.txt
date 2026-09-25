@@ -1,0 +1,34 @@
+# 萌语博客运行依赖（Windows + MySQL 8 + Python 3.10）
+# 第3轮迭代：全部直接依赖精确固定版本；清理未被项目引用的包
+# （django-ckeditor / django-simpleui / django-mptt / django-plotly-dash /
+#   django-user-agents / django-extensions / django-redis / django-celery-results /
+#   pillow-avif-plugin 等均已确认零 import，不再列入）。
+# 富文本编辑器 CKEditor4 为本地静态资源（static/ckeditor），无需 pip 安装。
+
+# ---- Web 框架 ----
+Django==5.2.17
+djangorestframework==3.15.2
+whitenoise==6.12.0
+
+# ---- 数据库 ----
+mysqlclient==2.2.7
+
+# ---- 异步任务 / 缓存 ----
+celery==5.3.1
+redis==5.2.1
+
+# ---- 静态资源 / 图片 ----
+Pillow==10.3.0
+
+# ---- HTML 净化（评论 / 富文本白名单清洗）----
+bleach==6.4.0
+
+# ---- HTTP 客户端（传递依赖，锁定 chardet 兼容版本以消除 RequestsDependencyWarning）----
+requests==2.32.3
+chardet==5.2.0
+
+# ---- 第5轮新增：搜索拼音 / 文章导出 / 二维码 ----
+pypinyin==0.55.0
+html2text==2025.4.15
+qrcode==8.2
+xhtml2pdf==0.2.20
