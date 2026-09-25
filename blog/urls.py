@@ -64,6 +64,8 @@ urlpatterns = [
     path('settings/', views.user_settings, name='user_settings'),
     path('console/', views.staff_console, name='staff_console'),
     path('console/site-settings/', views.site_settings_page, name='site_settings'),
+    # 工单 Bug9 追加：全站文案总表（提示词）可视化编辑页，仅管理员
+    path('console/site-messages/', views.site_messages_page, name='site_messages'),
     # Round6（bug16）内容审核：待审文章 / 举报审批
     path('console/moderation/', views.moderation_queue, name='moderation_queue'),
     path('console/moderation/article/<int:pk>/', views.moderate_article, name='moderate_article'),

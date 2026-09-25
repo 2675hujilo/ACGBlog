@@ -2,6 +2,7 @@
 
 目前提供：
 - ``highlight`` 过滤器：在搜索结果中把关键词包一层 ``<mark>`` 标签用于高亮。
+- ``format`` 过滤器：给文案注册表（``MSG``）里带占位符的文案填参。
 
 安全要点：
     过滤器内部先对【原文】和【关键词】分别做 ``escape`` HTML 转义，
@@ -95,6 +96,68 @@ def time_until(delta):
     if minutes:
         return f'{minutes} 分钟'
     return f'{secs} 秒'
+
+
+@register.filter(name='msgfmt', is_safe=True)
+def msgfmt(template_text, a1=None, a2=None, a3=None):
+    """给带占位符的文案填参（供 ``MSG`` 命名空间在模板侧使用）。
+
+    背景与命名
+    ----------
+    Django **自带一个名为 ``format`` 的内置过滤器**（``date|format:"Y-m-d"`` 那种），
+    自定义同名过滤器会触发 ``TemplateSyntaxError``。实测踩过两次坑，务必记住：
+
+      1. 名字不能叫 ``format``（与内置冲突）；
+      2. **不能用 ``*args`` 收集参数**。Django 的 ``FilterExpression.args_check`` 用
+         ``inspect.getfullargspec`` 校验参数个数，而 ``*args`` 不计入 ``args`` 列表：
+         写成 ``def f(text, *args)`` 会被算成「只接受 1 个参数」，
+         于是 ``{{ x|msgfmt:y }}``（2 个）直接报
+         ``msgfmt requires 1 arguments, 2 provided`` —— 整页 500。
+         因此这里显式声明 3 个可选位置参数（``a1/a2/a3``），
+         既满足校验，也覆盖了本项目的实际用法（最多 3 个占位符）。
+
+    用法::
+
+        {{ MSG.a11y.notification_unread|msgfmt:unread_count }}
+        {{ MSG.brand.about_title|msgfmt:site_name }}
+        {{ MSG.moderation.page_of|msgfmt:'pending_page.number|pending_page.paginator.num_pages' }}
+
+    多参数怎么办
+    ------------
+    Django 模板过滤器语法 ``{{ v|filter:arg }}`` **只接受一个参数**，
+    写 ``|msgfmt:a:b`` 会抛 ``TemplateSyntaxError``。因此多参数场景把值用 ``|``
+    拼成一个字符串传入，本过滤器内部按 ``|`` 拆分（见下方实现）。
+
+    设计要点：
+      · **容错优先**：占位符与实参不匹配时返回原文而不是抛异常 ——
+        文案问题绝不能让页面 500（与 ``site_messages.msg()`` 口径一致）；
+      · 只做纯文本格式化，不 ``mark_safe``：含 HTML 的文案由调用方自行决定
+        是否加 ``|safe``，避免默认放开转义扩大 XSS 面。
+
+    Args:
+        template_text: 文案原文（``{{ MSG.x }}`` 取到的值）。
+        a1: 单个参数，或形如 ``'值1|值2'`` 的多值字符串。
+        a2, a3: 兼容直接传多个参数的调用（模板里通常用不到，见上）。
+
+    Returns:
+        str: 格式化后的文案；不匹配时原样返回。
+    """
+    if template_text is None:
+        return ''
+    provided = [a for a in (a1, a2, a3) if a is not None]
+    if not provided:
+        return template_text
+    # 单参数且含分隔符 → 拆分（多参数的正确写法，绕开过滤器只收一个参数的限制）
+    if len(provided) == 1 and isinstance(provided[0], str) and '|' in provided[0]:
+        provided = provided[0].split('|')
+    try:
+        return str(template_text).format(*provided)
+    except (IndexError, KeyError, ValueError):
+        return template_text
+
+
+#: 兼容别名：模板里也可以写 ``|fmt``（更短，日常书写更方便）
+register.filter('fmt', msgfmt)
 
 
 # 迭代#249: highlight过滤器docstring完善

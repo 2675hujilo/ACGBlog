@@ -23,7 +23,7 @@ from django.db.models.functions import TruncDate
 
 from .models import (AccessLog, Article, Category, Comment, EditLog,
                      Favorite, FriendlyLink, Rating, Series, SiteInfo,
-                     SiteNotice, Tag, User)
+                     SiteMessage, SiteNotice, Tag, User)
 from django import forms
 from django.contrib.admin import TabularInline
 
@@ -642,3 +642,67 @@ class SiteInfoAdmin(admin.ModelAdmin):
         """无论从哪里进入，都直接编辑唯一记录。"""
         info = SiteInfo.load()
         return super().change_view(request, str(info.pk), form_url, extra_context)
+
+
+class MessageDomainFilter(admin.SimpleListFilter):
+    """文案覆盖列表的「所属域」过滤器。
+
+    域不是数据库字段，而是 key 的点号前缀（``auth.login_failed`` → ``auth``），
+    所以必须用 ``SimpleListFilter`` 自定义，不能直接把方法名放进 ``list_filter``
+    （那样 Django 会报 ``admin.E116: does not refer to a Field``）。
+    """
+
+    title = '所属域'
+    parameter_name = 'domain'
+
+    def lookups(self, request, model_admin):
+        """列出数据库里实际出现过的域（去重、按字母序）。"""
+        domains = {m.key.split('.', 1)[0] for m in SiteMessage.objects.all()}
+        return [(d, d) for d in sorted(domains)]
+
+    def queryset(self, request, queryset):
+        """按 ``<域>.`` 前缀过滤。"""
+        if self.value():
+            return queryset.filter(key__startswith=self.value() + '.')
+        return queryset
+
+
+@register(SiteMessage, site=blog_admin_site)
+class SiteMessageAdmin(admin.ModelAdmin):
+    """文案覆盖后台：在线修改全站提示词，保存即生效（无需改代码 / 重启）。
+
+    - 列表页展示「键 / 当前文案 / 是否启用 / 修改人 / 时间」，可按域筛选；
+    - 表单里只读展示「代码默认值」，避免把占位符写错导致格式化失败；
+    - 保存 / 删除自动失效覆盖层缓存（见 ``SiteMessage.save`` / ``delete``）。
+    """
+
+    list_display = ('key', 'text_short', 'is_enabled', 'updated_by', 'updated_at')
+    list_filter = ('is_enabled', MessageDomainFilter)
+    search_fields = ('key', 'text', 'description')
+    readonly_fields = ('created_at', 'updated_at', 'updated_by', 'code_default')
+    fields = ('key', 'text', 'description', 'is_enabled', 'code_default',
+              'updated_by', 'created_at', 'updated_at')
+    ordering = ('key',)
+    list_per_page = 50
+
+    @admin.display(description='文案')
+    def text_short(self, obj):
+        """列表页只显示前 40 个字符，避免长文案撑破表格。"""
+        return obj.text[:40] + ('…' if len(obj.text) > 40 else '')
+
+    @admin.display(description='代码默认值（只读）')
+    def code_default(self, obj):
+        """显示 ``site_messages.MESSAGES`` 中该 key 的原始文案，便于对照与回滚。"""
+        from .site_messages import MESSAGES
+        if not obj or not getattr(obj, 'key', ''):
+            return '（填写 key 并保存后显示）'
+        default = MESSAGES.get(obj.key)
+        if default is None:
+            return '⚠️ 代码中不存在该 key —— 请核对拼写，否则这条覆盖不会生效'
+        return default
+
+    def save_model(self, request, obj, form, change):
+        """记录最后修改人，便于追溯。"""
+        if request.user.is_authenticated:
+            obj.updated_by = request.user
+        super().save_model(request, obj, form, change)

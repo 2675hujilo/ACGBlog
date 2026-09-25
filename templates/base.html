@@ -1,4 +1,4 @@
-{% load static %}
+{% load static blog_extras %}
 <!DOCTYPE html>
 <html lang="zh-hans" dir="ltr" data-waifu="{% if waifu_enabled %}on{% else %}off{% endif %}">
 <head>
@@ -123,9 +123,9 @@
 <div class="sr-only" aria-live="polite" aria-atomic="true" id="a11y-live"></div>
 <script src="{% static 'assets/js/base_user_prefs_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# 阅读进度条：由 common.js 随滚动更新宽度百分比 #}
-<div class="reading-progress" id="reading-progress" role="progressbar" aria-label="阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div class="reading-progress" id="reading-progress" role="progressbar" aria-label="{{ MSG.a11y.reading_progress }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
 {# 页面顶部加载进度条：内联脚本控制宽度，load 后淡出 #}
-<div id="page-loader" role="progressbar" aria-label="页面加载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div id="page-loader" role="progressbar" aria-label="{{ MSG.a11y.page_progress }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
 {# 樱花飘落装饰：5 个固定位置的纯 CSS 动画花瓣，pointer-events:none 不影响交互 #}
 <span class="sakura-deco sd1" aria-hidden="true"></span>
 <span class="sakura-deco sd2" aria-hidden="true"></span>
@@ -138,31 +138,31 @@
 ===== 顶部导航栏（sticky 吸顶 + 毛玻璃） =====
 {% endcomment %}
 <header class="site-header" role="banner" data-scroll-header>
-    <nav class="nav-bar container" role="navigation" aria-label="主导航">
+    <nav class="nav-bar container" role="navigation" aria-label="{{ MSG.a11y.main_nav }}">
         {# 品牌：Logo + 站点名称（工单15 起，名称/Logo 来自数据库 SiteInfo，可在站点设置修改） #}
 <a class="nav-brand" href="{% url 'index' %}" aria-label="{{ site_name }} 返回首页">{{ site_logo }} {{ site_name }}</a>
         {# 导航链接组：首页/文章/笔记/独立页面/分类/标签/归档/系列/随机喵，active_kind 与 active_nav 控制高亮 #}
 <div class="nav-links" role="menubar">
-<a class="nav-link {% if active_nav == 'home' and not active_kind %}active{% endif %}" href="{% url 'index' %}" accesskey="h"><img src="{% static 'assets/icons/home.svg' %}" alt="" class="icon">首页</a>
-            <a class="nav-link {% if active_kind == 'article' %}active{% endif %}" href="{% url 'index' %}?kind=article"><img src="{% static 'assets/icons/article.svg' %}" alt="" class="icon">文章{% if nav_article_count %}<span class="nav-count-badge">{{ nav_article_count }}</span>{% endif %}</a>
-            <a class="nav-link {% if active_kind == 'note' %}active{% endif %}" href="{% url 'index' %}?kind=note">笔记</a>
-            <a class="nav-link {% if active_kind == 'page' %}active{% endif %}" href="{% url 'index' %}?kind=page">独立页面</a>
-            <a class="nav-link {% if active_nav == 'categories' %}active{% endif %}" href="{% url 'categories' %}"><img src="{% static 'assets/icons/category.svg' %}" alt="" class="icon">分类</a>
-            <a class="nav-link {% if active_nav == 'tags' %}active{% endif %}" href="{% url 'tags' %}"><img src="{% static 'assets/icons/tag.svg' %}" alt="" class="icon">标签</a>
-            <a class="nav-link {% if active_nav == 'archive' %}active{% endif %}" href="{% url 'archive' %}"><img src="{% static 'assets/icons/archive.svg' %}" alt="" class="icon">归档</a>
-            <a class="nav-link {% if active_nav == 'series' %}active{% endif %}" href="{% url 'series_list' %}">系列</a>
+<a class="nav-link {% if active_nav == 'home' and not active_kind %}active{% endif %}" href="{% url 'index' %}" accesskey="h"><img src="{% static 'assets/icons/home.svg' %}" alt="" class="icon">{{ MSG.nav.home }}</a>
+            <a class="nav-link {% if active_kind == 'article' %}active{% endif %}" href="{% url 'index' %}?kind=article"><img src="{% static 'assets/icons/article.svg' %}" alt="" class="icon">{{ MSG.nav.articles }}{% if nav_article_count %}<span class="nav-count-badge">{{ nav_article_count }}</span>{% endif %}</a>
+            <a class="nav-link {% if active_kind == 'note' %}active{% endif %}" href="{% url 'index' %}?kind=note">{{ MSG.nav.notes }}</a>
+            <a class="nav-link {% if active_kind == 'page' %}active{% endif %}" href="{% url 'index' %}?kind=page">{{ MSG.nav.pages }}</a>
+            <a class="nav-link {% if active_nav == 'categories' %}active{% endif %}" href="{% url 'categories' %}"><img src="{% static 'assets/icons/category.svg' %}" alt="" class="icon">{{ MSG.nav.categories }}</a>
+            <a class="nav-link {% if active_nav == 'tags' %}active{% endif %}" href="{% url 'tags' %}"><img src="{% static 'assets/icons/tag.svg' %}" alt="" class="icon">{{ MSG.nav.tags }}</a>
+            <a class="nav-link {% if active_nav == 'archive' %}active{% endif %}" href="{% url 'archive' %}"><img src="{% static 'assets/icons/archive.svg' %}" alt="" class="icon">{{ MSG.nav.archive }}</a>
+            <a class="nav-link {% if active_nav == 'series' %}active{% endif %}" href="{% url 'series_list' %}">{{ MSG.nav.series }}</a>
             {# ===== Round5 D7: 随机一篇文章喵 ===== #}
-            <a class="nav-link" href="/random/" aria-label="随机一篇文章">🎲 随机喵</a>
+            <a class="nav-link" href="/random/" aria-label="{{ MSG.a11y.random_article }}">{{ MSG.nav.random }}</a>
         </div>
         {# 全局搜索框：GET 提交到 search 视图（工单16 要求保持不变） #}
 <div class="search-suggest-box">
-<form class="nav-search" action="{% url 'search' %}" method="get" role="search" aria-label="全站搜索">
-            <input type="search" id="nav-search-input" name="q" value="{{ q|default:'' }}" placeholder="搜索点什么呢…（按 / 聚焦）" aria-label="全局搜索" inputmode="search" spellcheck="false" enterkeyhint="search" autocomplete="off">
-            <button type="submit" aria-label="提交搜索">搜索喵</button>
+<form class="nav-search" action="{% url 'search' %}" method="get" role="search" aria-label="{{ MSG.a11y.site_search }}">
+            <input type="search" id="nav-search-input" name="q" value="{{ q|default:'' }}" placeholder="{{ MSG.nav.search_placeholder }}" aria-label="{{ MSG.a11y.global_search }}" inputmode="search" spellcheck="false" enterkeyhint="search" autocomplete="off">
+            <button type="submit" aria-label="{{ MSG.a11y.submit_search }}">{{ MSG.nav.search_btn }}</button>
         </form>
         {# ===== Round5 D1/D2: 搜索建议下拉 + 搜索历史 ===== #}
-        <div class="search-suggest-dropdown" id="search-suggest-dropdown" hidden role="listbox" aria-label="搜索建议">
-            <div class="search-history-label" id="search-history-label" hidden>🕐 搜索历史</div>
+        <div class="search-suggest-dropdown" id="search-suggest-dropdown" hidden role="listbox" aria-label="{{ MSG.a11y.search_suggest }}">
+            <div class="search-history-label" id="search-history-label" hidden>{{ MSG.a11y.search_history }}</div>
             <div id="search-suggest-items"></div>
         </div>
         </div>
@@ -170,34 +170,34 @@
         <div class="nav-user">
             {# ---- 工具箱：明暗🌙 / 鼠标🌸 / 樱花🌺 / 音效🔊 / 高对比◐ / 快捷键⌨ 合并入口 ---- #}
             <button class="header-menu-btn" id="tools-menu-btn" type="button"
-                    aria-haspopup="true" aria-expanded="false" title="工具箱喵">
+                    aria-haspopup="true" aria-expanded="false" title="{{ MSG.a11y.toolbox_tip }}">
                 🧰 <span class="chev">▾</span>
             </button>
-            <div class="header-menu-panel tools-panel" id="tools-menu-panel" hidden role="dialog" aria-label="工具箱">
-                <div class="panel-head">🎛 工具箱喵</div>
+            <div class="header-menu-panel tools-panel" id="tools-menu-panel" hidden role="dialog" aria-label="{{ MSG.a11y.toolbox }}">
+                <div class="panel-head">{{ MSG.a11y.toolbox_head }}</div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="theme-toggle" type="button" title="切换明暗主题" aria-label="切换明暗主题" aria-pressed="false">🌙</button>
-                    <span class="tool-label">明暗主题</span>
+                    <button class="theme-toggle" id="theme-toggle" type="button" title="{{ MSG.a11y.theme_toggle }}" aria-label="{{ MSG.a11y.theme_toggle }}" aria-pressed="false">🌙</button>
+                    <span class="tool-label">{{ MSG.toolbox.theme_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="mouse-effect-toggle" type="button" title="切换鼠标跟随特效" aria-label="切换鼠标特效" aria-pressed="false">🌸</button>
-                    <span class="tool-label">鼠标跟随特效</span>
+                    <button class="theme-toggle" id="mouse-effect-toggle" type="button" title="{{ MSG.a11y.mouse_effect }}" aria-label="{{ MSG.a11y.mouse_effect_aria }}" aria-pressed="false">🌸</button>
+                    <span class="tool-label">{{ MSG.toolbox.mouse_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="sakura-mode-toggle" type="button" title="樱花飘落三档开关" aria-label="切换樱花模式" aria-haspopup="true">🌺</button>
-                    <span class="tool-label">樱花飘落</span>
+                    <button class="theme-toggle" id="sakura-mode-toggle" type="button" title="{{ MSG.a11y.sakura_mode }}" aria-label="{{ MSG.a11y.sakura_mode_aria }}" aria-haspopup="true">🌺</button>
+                    <span class="tool-label">{{ MSG.toolbox.sakura_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="sound-toggle" type="button" title="切换交互音效" aria-label="切换交互音效" aria-pressed="false">🔊</button>
-                    <span class="tool-label">交互音效</span>
+                    <button class="theme-toggle" id="sound-toggle" type="button" title="{{ MSG.a11y.sound_toggle }}" aria-label="{{ MSG.a11y.sound_toggle }}" aria-pressed="false">🔊</button>
+                    <span class="tool-label">{{ MSG.toolbox.sound_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="contrast-toggle" type="button" title="切换高对比度" aria-label="切换高对比度" aria-pressed="false">◐</button>
-                    <span class="tool-label">高对比度</span>
+                    <button class="theme-toggle" id="contrast-toggle" type="button" title="{{ MSG.a11y.contrast_toggle }}" aria-label="{{ MSG.a11y.contrast_toggle }}" aria-pressed="false">◐</button>
+                    <span class="tool-label">{{ MSG.toolbox.contrast_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="shortcut-help-toggle" type="button" title="键盘快捷键（按 ?）" aria-label="打开键盘快捷键帮助面板" aria-haspopup="true">⌨</button>
-                    <span class="tool-label">键盘快捷键</span>
+                    <button class="theme-toggle" id="shortcut-help-toggle" type="button" title="{{ MSG.a11y.shortcut_help }}" aria-label="{{ MSG.a11y.shortcut_help_aria }}" aria-haspopup="true">⌨</button>
+                    <span class="tool-label">{{ MSG.toolbox.shortcut_label }}</span>
                 </div>
             </div>
 
@@ -205,28 +205,28 @@
                 {# ===== Round5 F8: 通知中心铃铛 + 未读红点 ===== #}
 <div class="nav-notification" id="notification-wrapper">
                     <button class="theme-toggle nav-notification-bell" id="notification-bell" type="button"
-                            title="通知中心" aria-label="打开通知中心" aria-haspopup="true" aria-expanded="false">
+                            title="{{ MSG.nav.notifications }}" aria-label="{{ MSG.a11y.notification_open }}" aria-haspopup="true" aria-expanded="false">
                         🔔
                         {% if unread_notification_count and unread_notification_count > 0 %}
                         <span class="notification-badge" id="notification-badge" aria-label="未读通知 {{ unread_notification_count }} 条">{{ unread_notification_count }}</span>
                         {% endif %}
                     </button>
                     {# 通知下拉面板（默认隐藏，由 common.js 展开） #}
-                    <div class="notification-panel" id="notification-panel" hidden role="dialog" aria-label="通知面板">
+                    <div class="notification-panel" id="notification-panel" hidden role="dialog" aria-label="{{ MSG.a11y.notification_panel }}">
                         <div class="notification-panel-head">
-                            <strong>🔔 通知喵</strong>
-                            <button type="button" class="notification-mark-all" id="notification-mark-all" aria-label="全部标记已读">全部已读</button>
+                            <strong>{{ MSG.toolbox.notification_head }}</strong>
+                            <button type="button" class="notification-mark-all" id="notification-mark-all" aria-label="{{ MSG.a11y.notification_mark_all }}">{{ MSG.notify.mark_all_read }}</button>
                         </div>
                         <ul class="notification-list" id="notification-list">
-                            <li class="notification-item muted">这里还没有通知喵~</li>
+                            <li class="notification-item muted">{{ MSG.toolbox.notification_empty }}</li>
                         </ul>
-                        <a class="notification-panel-footer" href="/notifications/" aria-label="查看全部通知">查看全部通知 →</a>
+                        <a class="notification-panel-footer" href="/notifications/" aria-label="{{ MSG.a11y.notification_footer }}">{{ MSG.toolbox.notification_all }}</a>
                     </div>
                 </div>
 
                 {# ===== 用户头像下拉菜单（工单16）：头像+昵称，点击展开 ===== #}
                 <button class="header-menu-btn" id="user-menu-btn" type="button"
-                        aria-haspopup="true" aria-expanded="false" title="我的小站">
+                        aria-haspopup="true" aria-expanded="false" title="{{ MSG.toolbox.menu_head }}">
                     {% if user.avatar %}
                     <img class="um-avatar" src="{{ user.avatar.url }}" alt="" width="26" height="26" loading="lazy" decoding="async">
                     {% else %}
@@ -235,31 +235,33 @@
                     <span class="um-name">{{ user.nickname|default:user.username }}</span>
                     <span class="chev">▾</span>
                 </button>
-                <div class="header-menu-panel" id="user-menu-panel" hidden role="dialog" aria-label="用户菜单">
-                    <div class="panel-head">🐾 我的小站</div>
-                    <a class="user-menu-item" href="{% url 'user_settings' %}"><span class="umi-icon">⚙️</span>个人中心 / 设置</a>
-                    <a class="user-menu-item" href="/notifications/"><span class="umi-icon">🔔</span>通知中心</a>
-                    <a class="user-menu-item" href="{% url 'my_favorites' %}"><span class="umi-icon">⭐</span>我的收藏</a>
-                    <a class="user-menu-item" href="{% url 'reading_history_page' %}"><span class="umi-icon">🕐</span>阅读历史</a>
-                    <a class="user-menu-item" href="{% url 'my_liked' %}"><span class="umi-icon">👍</span>我的点赞</a>
-                    <a class="user-menu-item" href="{% url 'my_comments' %}"><span class="umi-icon">💬</span>我的评论</a>
-                    <a class="user-menu-item" href="{% url 'my_articles' %}"><span class="umi-icon">📝</span>我的文章</a>
+                <div class="header-menu-panel" id="user-menu-panel" hidden role="dialog" aria-label="{{ MSG.a11y.user_menu }}">
+                    <div class="panel-head">{{ MSG.toolbox.menu_head }}</div>
+                    <a class="user-menu-item" href="{% url 'user_settings' %}"><span class="umi-icon">⚙️</span>{{ MSG.toolbox.menu_settings }}</a>
+                    {# Bug9：徽章成就面板入口（直达设置页的徽章区块） #}
+                    <a class="user-menu-item" href="{% url 'user_settings' %}#my-badges"><span class="umi-icon">🏅</span>{{ MSG.toolbox.menu_badges }}</a>
+                    <a class="user-menu-item" href="/notifications/"><span class="umi-icon">🔔</span>{{ MSG.toolbox.menu_notifications }}</a>
+                    <a class="user-menu-item" href="{% url 'my_favorites' %}"><span class="umi-icon">⭐</span>{{ MSG.toolbox.menu_favorites }}</a>
+                    <a class="user-menu-item" href="{% url 'reading_history_page' %}"><span class="umi-icon">🕐</span>{{ MSG.toolbox.menu_history }}</a>
+                    <a class="user-menu-item" href="{% url 'my_liked' %}"><span class="umi-icon">👍</span>{{ MSG.toolbox.menu_liked }}</a>
+                    <a class="user-menu-item" href="{% url 'my_comments' %}"><span class="umi-icon">💬</span>{{ MSG.toolbox.menu_comments }}</a>
+                    <a class="user-menu-item" href="{% url 'my_articles' %}"><span class="umi-icon">📝</span>{{ MSG.toolbox.menu_articles }}</a>
                     {% if user.is_staff %}
                     <div class="panel-divider"></div>
-                    <a class="user-menu-item" href="{% url 'staff_console' %}"><span class="umi-icon">🎛</span>运营看板</a>
-                    <a class="user-menu-item" href="{% url 'site_settings' %}"><span class="umi-icon">🪄</span>站点设置</a>
+                    <a class="user-menu-item" href="{% url 'staff_console' %}"><span class="umi-icon">🎛</span>{{ MSG.toolbox.menu_console }}</a>
+                    <a class="user-menu-item" href="{% url 'site_settings' %}"><span class="umi-icon">🪄</span>{{ MSG.toolbox.menu_site_settings }}</a>
                     {% endif %}
                     <div class="panel-divider"></div>
-                    <a class="user-menu-item" href="{% url 'article_new' %}"><span class="umi-icon">✍</span>写新文章</a>
+                    <a class="user-menu-item" href="{% url 'article_new' %}"><span class="umi-icon">✍</span>{{ MSG.toolbox.menu_write }}</a>
                     <form method="post" action="{% url 'logout' %}" class="logout-menu-form">
                         {% csrf_token %}
-                        <button type="submit" class="logout-menu-btn"><span class="umi-icon">🚪</span>退出登录</button>
+                        <button type="submit" class="logout-menu-btn"><span class="umi-icon">🚪</span>{{ MSG.nav.logout }}</button>
                     </form>
                 </div>
             {% else %}
                 {# 未登录：登录 / 注册入口 #}
-                <a class="header-menu-btn" href="{% url 'login' %}">🔑 登录喵</a>
-                <a class="header-menu-btn" href="{% url 'register' %}">✨ 注册喵</a>
+                <a class="header-menu-btn" href="{% url 'login' %}">{{ MSG.nav.login }}</a>
+                <a class="header-menu-btn" href="{% url 'register' %}">{{ MSG.nav.register }}</a>
             {% endif %}
         </div>
     </nav>
@@ -271,7 +273,7 @@
 <div class="announcement-banner" id="announcementBanner" data-notice-id="{{ site_notice.id }}" role="status" aria-live="polite">
     <span class="announcement-icon" aria-hidden="true">🌸</span>
     <span class="announcement-content typewriter-text">{{ site_notice.content|safe }}</span>
-    <button type="button" class="announcement-close" id="announcementClose" aria-label="关闭公告">✕</button>
+    <button type="button" class="announcement-close" id="announcementClose" aria-label="{{ MSG.a11y.close_notice }}">✕</button>
 </div>
 {% endif %}
 {% comment %}
@@ -292,11 +294,11 @@
 {# Bug8：全站统一「确认弹窗」（服务端预置，moeConfirm 仅填充文案并显示，避免动态插入不绘制） #}
 <div class="moe-modal-overlay" id="globalConfirmModal" role="dialog" aria-modal="true" aria-labelledby="gcmTitle">
     <div class="moe-modal-card">
-        <div class="moe-modal-title" id="gcmTitle">请确认喵~</div>
+        <div class="moe-modal-title" id="gcmTitle">{{ MSG.js.confirm_default }}</div>
         <div class="moe-modal-msg" id="gcmMsg"></div>
         <div class="moe-modal-actions">
-            <button type="button" class="moe-btn moe-btn-cancel" id="gcmCancel">再想想</button>
-            <button type="button" class="moe-btn moe-btn-ok" id="gcmOk">确定喵</button>
+            <button type="button" class="moe-btn moe-btn-cancel" id="gcmCancel">{{ MSG.btn.cancel }}</button>
+            <button type="button" class="moe-btn moe-btn-ok" id="gcmOk">{{ MSG.btn.confirm }}</button>
         </div>
     </div>
 </div>
@@ -317,62 +319,62 @@
                 </div>
                 {% if user.is_staff %}
                 {# 工单13：站点状态仅管理员可见（含下方订阅列同名链接） #}
-                <a class="btn-primary" href="{% url 'server_status' %}">💚 站点状态</a>
+                <a class="btn-primary" href="{% url 'server_status' %}">{{ MSG.brand.status_link }}</a>
                 {% endif %}
             </div>
-            {# ② 中间三竖列：快速导航 | 友情链接 | 关注订阅 #}
+            {# ② 中间三竖列：快速导航 | 友情链接 | {{ MSG.user.following }}订阅 #}
             <div class="footer-cols">
                 <div class="footer-col-vertical">
-                    <h4>🧭 快速导航</h4>
-                    <ul aria-label="快速导航">
-                        <li><a href="{% url 'index' %}">🏠 首页</a></li>
-                        <li><a href="{% url 'categories' %}">📁 分类</a></li>
-                        <li><a href="{% url 'tags' %}">🏷 标签</a></li>
-                        <li><a href="{% url 'archive' %}">🗂 归档</a></li>
-                        <li><a href="{% url 'series_list' %}">📚 系列</a></li>
-                        <li><a href="{% url 'random_article' %}">🎲 随机一篇</a></li>
+                    <h4>{{ MSG.footer.quick_nav }}</h4>
+                    <ul aria-label="{{ MSG.footer.nav_aria }}">
+                        <li><a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a></li>
+                        <li><a href="{% url 'categories' %}">{{ MSG.footer.nav_categories }}</a></li>
+                        <li><a href="{% url 'tags' %}">{{ MSG.footer.nav_tags }}</a></li>
+                        <li><a href="{% url 'archive' %}">{{ MSG.footer.nav_archive }}</a></li>
+                        <li><a href="{% url 'series_list' %}">{{ MSG.footer.nav_series }}</a></li>
+                        <li><a href="{% url 'random_article' %}">{{ MSG.footer.nav_random }}</a></li>
                     </ul>
                 </div>
                 <div class="footer-col-vertical">
-                    <h4>🔗 友情链接</h4>
-                    <ul aria-label="友情链接">
+                    <h4>{{ MSG.footer.friendly_links }}</h4>
+                    <ul aria-label="{{ MSG.footer.friend_aria }}">
                         {% for link in friendly_links %}
                         <li><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer nofollow" class="ext-link">{{ link.icon }} {{ link.name }}</a></li>
                         {% empty %}
-                        <li class="muted">暂无友链喵~</li>
+                        <li class="muted">{{ MSG.empty.friendly_links }}</li>
                         {% endfor %}
                     </ul>
-                    <p class="footer-apply-note">💌 想交换友链？<a href="mailto:admin@example.com">邮件联系站长</a></p>
+                    <p class="footer-apply-note">{{ MSG.footer.friend_apply }}<a href="mailto:admin@example.com">{{ MSG.footer.friend_mail }}</a></p>
                 </div>
                 <div class="footer-col-vertical">
-                    <h4>📡 关注与订阅</h4>
-                    <ul aria-label="关注与订阅">
-                        <li><a href="{% url 'rss_feed' %}">📡 RSS 订阅</a></li>
-                        <li><a href="{% url 'api:api_docs' %}">🧩 API 文档</a></li>
+                    <h4>{{ MSG.footer.subscribe }}</h4>
+                    <ul aria-label="{{ MSG.footer.subscribe_aria }}">
+                        <li><a href="{% url 'rss_feed' %}">{{ MSG.footer.rss }}</a></li>
+                        <li><a href="{% url 'api:api_docs' %}">{{ MSG.footer.api_docs }}</a></li>
                         {% if user.is_staff %}
                         {# 工单13：站点状态仅管理员可见 #}
-                        <li><a href="{% url 'server_status' %}">💚 站点状态</a></li>
+                        <li><a href="{% url 'server_status' %}">{{ MSG.brand.status_link }}</a></li>
                         {% endif %}
                         {% if user.is_authenticated %}
                         {# 已登录用户不再显示登录/注册，改为写文章入口 #}
-                        <li><a href="{% url 'article_new' %}">✍ 写文章</a></li>
+                        <li><a href="{% url 'article_new' %}">{{ MSG.nav.write }}</a></li>
                         {% else %}
-                        <li><a href="{% url 'login' %}">🔐 登录</a></li>
-                        <li><a href="{% url 'register' %}">✨ 注册喵</a></li>
+                        <li><a href="{% url 'login' %}">{{ MSG.nav.login }}</a></li>
+                        <li><a href="{% url 'register' %}">{{ MSG.nav.register }}</a></li>
                         {% endif %}
                     </ul>
                 </div>
             </div>
             {# ③ 横向带：网站统计 #}
-            <div class="footer-band footer-stats-band" aria-label="网站统计">
-                <div class="footer-stat-pill"><b data-count="{{ footer_article_count }}">0</b><span>📝 文章</span></div>
-                <div class="footer-stat-pill"><b data-count="{{ footer_comment_count }}">0</b><span>💬 评论</span></div>
-                <div class="footer-stat-pill"><b data-count="{{ footer_views_total }}">0</b><span>👁 阅读</span></div>
-                <div class="footer-stat-pill"><b data-count="{{ footer_days }}">0</b><span>⏳ 运行天数</span></div>
+            <div class="footer-band footer-stats-band" aria-label="{{ MSG.brand.stats_aria }}">
+                <div class="footer-stat-pill"><b data-count="{{ footer_article_count }}">0</b><span>{{ MSG.brand.stats_articles }}</span></div>
+                <div class="footer-stat-pill"><b data-count="{{ footer_comment_count }}">0</b><span>{{ MSG.brand.stats_comments }}</span></div>
+                <div class="footer-stat-pill"><b data-count="{{ footer_views_total }}">0</b><span>{{ MSG.brand.stats_views }}</span></div>
+                <div class="footer-stat-pill"><b data-count="{{ footer_days }}">0</b><span>{{ MSG.brand.stats_days }}</span></div>
             </div>
         </div>
 {# 版权信息（© 动态年份；工单15 起版权归属来自数据库，可在站点设置修改） #}
-<p class="footer-copy"><img src="{% static 'assets/icons/paw.svg' %}" alt="" class="icon"> © {% now "Y" %} {{ copyright_holder }} · 用 ❤️ 与粉紫蓝打造 · 樱花飘落中 <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon"> 🐾</p>
+<p class="footer-copy"><img src="{% static 'assets/icons/paw.svg' %}" alt="" class="icon"> © {% now "Y" %} {{ copyright_holder }} · {{ MSG.brand.slogan }} <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon"> 🐾</p>
         {% if footer_icp %}
         {# 工单15：备案号（站点设置中填写） #}
         <p class="footer-icp">{{ footer_icp }}</p>
@@ -380,45 +382,45 @@
     </div>
 </footer>
 {# ===== Round5 A6: 侧栏折叠全局按钮（移动端/窄屏隐藏侧栏） ===== #}
-<button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="展开快捷菜单" aria-haspopup="true" aria-expanded="false">☰</button>
+<button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="{{ MSG.a11y.quick_menu }}" aria-haspopup="true" aria-expanded="false">☰</button>
 {# ===== Round5 A8: 键盘快捷键帮助面板（按 ? 或 ⌨ 按钮呼出） ===== #}
 <div class="shortcut-help-mask" id="shortcut-help-mask" hidden role="dialog" aria-modal="true" aria-labelledby="shortcut-help-title">
     <div class="shortcut-help-panel" role="document">
         <div class="shortcut-help-head">
-            <strong id="shortcut-help-title">⌨ 键盘快捷键喵</strong>
-            <button type="button" class="shortcut-help-close" id="shortcut-help-close" aria-label="关闭快捷键面板">✕</button>
+            <strong id="shortcut-help-title">{{ MSG.toolbox.shortcut_title }}</strong>
+            <button type="button" class="shortcut-help-close" id="shortcut-help-close" aria-label="{{ MSG.a11y.close_shortcut_panel }}">✕</button>
         </div>
-        <ul class="shortcut-list" aria-label="快捷键列表">
-            <li><kbd>/</kbd><span>聚焦搜索喵</span></li>
-            <li><kbd>?</kbd><span>打开本面板喵</span></li>
-            <li><kbd>J</kbd> <kbd>K</kbd><span>下一篇 / 上一篇喵</span></li>
-            <li><kbd>T</kbd><span>回到顶部喵</span></li>
-            <li><kbd>F</kbd><span>切换专注模式喵</span></li>
-            <li><kbd>N</kbd><span>新建文章喵</span></li>
-            <li><kbd>Esc</kbd><span>关闭弹窗喵</span></li>
-            <li><kbd>↑</kbd><span>滚动到顶部喵</span></li>
+        <ul class="shortcut-list" aria-label="{{ MSG.a11y.shortcut_list }}">
+            <li><kbd>/</kbd><span>{{ MSG.toolbox.shortcut_search }}</span></li>
+            <li><kbd>?</kbd><span>{{ MSG.toolbox.shortcut_panel }}</span></li>
+            <li><kbd>J</kbd> <kbd>K</kbd><span>{{ MSG.toolbox.shortcut_nav }}</span></li>
+            <li><kbd>T</kbd><span>{{ MSG.toolbox.shortcut_top }}</span></li>
+            <li><kbd>F</kbd><span>{{ MSG.toolbox.shortcut_focus }}</span></li>
+            <li><kbd>N</kbd><span>{{ MSG.toolbox.shortcut_new }}</span></li>
+            <li><kbd>Esc</kbd><span>{{ MSG.toolbox.shortcut_close }}</span></li>
+            <li><kbd>↑</kbd><span>{{ MSG.toolbox.shortcut_scroll }}</span></li>
         </ul>
-        <p class="muted shortcut-tip">小提示：同时按下 ↑↓←→ B A 可以触发彩蛋喵~ 🌸</p>
+        <p class="muted shortcut-tip">{{ MSG.toolbox.easter_egg }}</p>
     </div>
 </div>
 {# ===== Round5 E13: 萌系加载动画元素（effects.min.js 按需显示） ===== #}
 <div class="moe-loading" id="moe-loading" aria-hidden="true" hidden>
     <div class="moe-loading-cat">🐱</div>
-    <div class="moe-loading-text">加载中喵...</div>
+    <div class="moe-loading-text">{{ MSG.offline.loading }}</div>
 </div>
-<div id="offline-banner" role="alert" aria-label="离线提示" hidden >📡 网络已断开，当前为离线模式</div>
-<div id="online-status" role="status" aria-live="polite"  title="在线"></div>
+<div id="offline-banner" role="alert" aria-label="{{ MSG.a11y.offline_hint }}" hidden >{{ MSG.offline.disconnected }}</div>
+<div id="online-status" role="status" aria-live="polite"  title="{{ MSG.a11y.online_status }}"></div>
 <span id="last-saved" hidden role="status"></span>
-<button type="button" id="sync-button" hidden aria-label="同步离线数据">🔄 同步</button>
-<ul id="offline-articles" hidden aria-label="离线可用文章"></ul>
-<span id="queue-count" hidden aria-label="待同步数量">0</span>
-<button type="button" id="retry-all" hidden aria-label="重试全部失败请求">重试全部</button>
-<button type="button" id="clear-queue" hidden aria-label="清空待同步队列">清空队列</button>
-<span id="storage-usage" hidden aria-label="本地存储用量">0 MB</span>
-<span id="storage-limit" hidden aria-label="本地存储上限">50 MB</span>
-<button class="back-to-top" id="back-to-top" type="button" aria-label="回到顶部" data-tooltip="回到顶部" tabindex="0">
-<svg class="btt-ring" width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="阅读进度环">
-<title>阅读进度环</title><desc>环形进度指示当前文章阅读百分比</desc>
+<button type="button" id="sync-button" hidden aria-label="{{ MSG.a11y.sync_offline }}">{{ MSG.offline.sync }}</button>
+<ul id="offline-articles" hidden aria-label="{{ MSG.a11y.offline_articles }}"></ul>
+<span id="queue-count" hidden aria-label="{{ MSG.a11y.pending_sync }}">0</span>
+<button type="button" id="retry-all" hidden aria-label="{{ MSG.a11y.retry_all }}">{{ MSG.offline.retry_all }}</button>
+<button type="button" id="clear-queue" hidden aria-label="{{ MSG.a11y.clear_queue }}">{{ MSG.offline.clear_queue }}</button>
+<span id="storage-usage" hidden aria-label="{{ MSG.a11y.storage_used }}">0 MB</span>
+<span id="storage-limit" hidden aria-label="{{ MSG.a11y.storage_limit }}">50 MB</span>
+<button class="back-to-top" id="back-to-top" type="button" aria-label="{{ MSG.nav.back_top }}" data-tooltip="{{ MSG.nav.back_top }}" tabindex="0">
+<svg class="btt-ring" width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="{{ MSG.a11y.reading_ring }}">
+<title>{{ MSG.a11y.reading_ring }}</title><desc>{{ MSG.a11y.reading_ring_desc }}</desc>
         <circle class="btt-ring-bg" cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="4"/>
         <circle class="btt-ring-fg" cx="26" cy="26" r="22" fill="none"
                 stroke="url(#bttGrad)" stroke-width="4" stroke-linecap="round"

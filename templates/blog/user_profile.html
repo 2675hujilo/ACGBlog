@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static blog_extras %}
 {% block title %}{{ profile_user.nickname|default:profile_user.username }} 的主页 · {{ site_name }}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
-    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span><meta itemprop="position" content="1"></a>
     <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ profile_user.nickname|default:profile_user.username }}</span><meta itemprop="position" content="2"></span>
 </nav>
 {% endblock %}
@@ -29,7 +29,7 @@
 {% endblock %}
 {% block content %}
 {# ---------- 用户资料卡 ---------- #}
-<div class="profile-card" aria-label="用户资料">
+<div class="profile-card" aria-label="{{ MSG.auto.用户资料 }}">
     {# ===== Round5 F11: 个人主页背景图 ===== #}
     <div class="profile-banner" id="profile-banner"></div>
     <div class="profile-avatar-lg has-online-dot">
@@ -45,46 +45,46 @@
         {% if profile_user.introduction %}
 <p class="profile-intro">{{ profile_user.introduction }}</p>
         {% else %}
-        <p class="profile-intro muted">这个人很懒，什么都没写喵~ 🐾</p>
+        <p class="profile-intro muted">{{ MSG.auto.这个人很懒_什么都没写喵 }}</p>
         {% endif %}
-<p class="profile-joined">🌸 加入于 <time datetime="{{ profile_user.date_joined|date:'c' }}">{{ profile_user.date_joined|date:"Y年m月d日" }}</time></p>
+<p class="profile-joined">{{ MSG.auto.加入于 }} <time datetime="{{ profile_user.date_joined|date:'c' }}">{{ profile_user.date_joined|date:"Y年m月d日" }}</time></p>
         {# ===== Round5 F11: 个性签名 ===== #}
         {% if profile_user.signature %}
         <p class="profile-signature muted" style="font-style:italic;margin:8px 0;">「 {{ profile_user.signature }} 」</p>
         {% endif %}
         {% if is_own_profile %}
-        <a class="btn-sm btn-edit-profile" href="{% url 'user_settings' %}">✏️ 编辑资料</a>
+        <a class="btn-sm btn-edit-profile" href="{% url 'user_settings' %}">{{ MSG.auto.编辑资料 }}</a>
         {% endif %}
     </div>
     {# ===== Round5 F12: 在线状态标记 ===== #}
-    <span class="online-dot profile-online-dot" aria-label="在线"></span>
+    <span class="online-dot profile-online-dot" aria-label="{{ MSG.a11y.online_status }}"></span>
 </div>
 {# ---------- 统计数据行 ---------- #}
-<div class="profile-stats" aria-label="用户统计">
+<div class="profile-stats" aria-label="{{ MSG.auto.用户统计 }}">
     <div class="stat-pill stat-pink">
                 <span class="stat-icon">📝</span>
 <span class="stat-num">{{ user_stats.article_count }}</span>
-        <span class="stat-label">文章</span>
+        <span class="stat-label">{{ MSG.brand.stats_articles }}</span>
     </div>
     <div class="stat-pill stat-purple">
         <span class="stat-icon">👁</span>
 <span class="stat-num">{{ user_stats.total_views }}</span>
-        <span class="stat-label">阅读量</span>
+        <span class="stat-label">{{ MSG.auto.阅读量 }}</span>
     </div>
     <div class="stat-pill stat-pink">
         <span class="stat-icon">👍</span>
 <span class="stat-num">{{ user_stats.total_likes }}</span>
-        <span class="stat-label">获赞</span>
+        <span class="stat-label">{{ MSG.auto.获赞 }}</span>
     </div>
     <div class="stat-pill stat-blue">
         <span class="stat-icon">💬</span>
 <span class="stat-num">{{ user_stats.total_comments }}</span>
-        <span class="stat-label">评论</span>
+        <span class="stat-label">{{ MSG.brand.stats_comments }}</span>
     </div>
     <div class="stat-pill stat-blue">
         <span class="stat-icon">⭐</span>
 <span class="stat-num">{{ user_stats.fav_count }}</span>
-        <span class="stat-label">收藏</span>
+        <span class="stat-label">{{ MSG.auto.收藏 }}</span>
     </div>
 </div>
 {% comment %}===== Bug9 任务1：成就徽章可视化面板（已获得 + 折叠的未获得 + 获取方式与进度） =====
@@ -92,17 +92,17 @@
    数据来自视图 _build_badge_panel()，文案来自后端文案表 MSG.badge.*{% endcomment %}
 {% include 'partials/_badge_panel.html' %}
 {# ---------- 文章列表标题 ---------- #}
-<h2 class="profile-section-title">📖 发布的文章</h2>
+<h2 class="profile-section-title">{{ MSG.auto.发布的文章 }}</h2>
 {# ---------- 文章列表（复用 _article_card.html 样式） ---------- #}
-<div class="article-list" aria-label="用户发布的文章">
+<div class="article-list" aria-label="{{ MSG.auto.用户发布的文章 }}">
     {% for article in page_obj %}
     {% include 'partials/_article_card.html' %}
     {% empty %}
     {# 空状态：萌系文案 #}
     <div class="profile-empty">
                 <div class="profile-empty-emoji">🐱</div>
-        <p>这位小伙伴还没有发布文章呢~</p>
-        <p class="muted">快去创作第一篇吧喵~ 🌸</p>
+        <p>{{ MSG.auto.这位小伙伴还没有发布文章呢 }}</p>
+        <p class="muted">{{ MSG.auto.快去创作第一篇吧喵 }}</p>
     </div>
     {% endfor %}
 </div>
@@ -112,7 +112,7 @@
 {% endif %}
 {# ---------- 收藏的文章 ---------- #}
 {% if fav_articles %}
-<h2 class="profile-section-title">⭐ 收藏的文章</h2>
+<h2 class="profile-section-title">{{ MSG.auto.收藏的文章_2 }}</h2>
 <div class="article-list">
     {% for article in fav_articles %}
     {% include 'partials/_article_card.html' %}

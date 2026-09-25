@@ -121,6 +121,10 @@
     /* 显示气泡 */
     function show(target) {
       if (!target || !target.getAttribute) return;
+      /* 带 data-tip-local 的元素**自带本地气泡**，全站气泡必须让位，
+         否则同一个按钮会同时弹出两个提示（看板娘工具栏曾出现「换模型」左右各一个）。
+         判定覆盖祖先：标记在按钮上、子节点触发 mouseover 时也能正确跳过。 */
+      if (target.closest && target.closest('[data-tip-local]')) return;
       var text = target.getAttribute('data-tip');
       if (!text) return;
       if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }

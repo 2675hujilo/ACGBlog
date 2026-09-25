@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% load blog_extras %}
 {% block title %}分类导航 · {{ site_name }}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="面包屑">
-    <a href="{% url 'index' %}">🏠 首页</a>
-    <span class="crumb-sep">›</span><span class="crumb-current">分类</span>
+<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
+    <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.footer.nav_categories }}</span>
 </nav>
 {% endblock %}
 {% block extra_head %}
@@ -12,23 +13,23 @@
 </script>
 {% endblock %}
 {% block content %}
-<noscript><div class="noscript-banner" role="alert" >🌸 JavaScript 已禁用，分类卡片的悬停动效不可用，点击仍可正常进入分类。</div></noscript>
+<noscript><div class="noscript-banner" role="alert" >{{ MSG.auto.javascript_已禁用_分类卡片的悬停动效 }}</div></noscript>
 <div class="list-toolbar">
     <h1 id="main-heading">📁 分类导航 <span class="muted" style="font-size:.9rem;">（共 {{ categories|length }} 个分类）</span></h1>
 </div>
-<div class="cat-grid cat-grid--v2 cat-tree" role="tree" aria-label="分类卡片">
+<div class="cat-grid cat-grid--v2 cat-tree" role="tree" aria-label="{{ MSG.auto.分类卡片 }}">
     {% for c in categories %}
-    <a class="cat-card cat-card--v2" aria-label="查看分类文章" href="{% url 'category_detail' c.pk %}" data-category-id="{{ c.pk }}">
+    <a class="cat-card cat-card--v2" aria-label="{{ MSG.auto.查看分类文章 }}" href="{% url 'category_detail' c.pk %}" data-category-id="{{ c.pk }}">
         {# 1. 大号分类名（2rem粗体）+ 文章数粉紫渐变圆形徽章 #}
         <div class="cat-head">
             <span class="cat-title-big">{{ c.icon|default:'📁' }} {{ c.name }}</span>
             <span class="cat-count-badge">{{ c.n }}</span>
         </div>
         {# 1. 分类描述：大标题下方灰色小字 #}
-        <div class="cat-desc-big">{{ c.description|default:'这个分类还没有介绍~' }}</div>
+        <div class="cat-desc-big">{% if c.description %}{{ c.description }}{% else %}{{ MSG.empty.category_intro }}{% endif %}</div>
     </a>
     {% empty %}
-        <p class="empty-tip">还没有分类喵</p>
+        <p class="empty-tip">{{ MSG.index.cat_empty }}</p>
     {% endfor %}
 </div>
 {% endblock %}

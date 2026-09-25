@@ -14,10 +14,10 @@ log_stats 由 AccessLogAdmin.changelist_view 注入（当前筛选口径）。
 {% block content %}
 {% if log_stats %}
 <div class="stats-bar">
-  <span>📊 总访问量：<b>{{ log_stats.total }}</b></span>
-  <span>🌐 独立 IP：<b>{{ log_stats.unique_ips }}</b></span>
-  <span>⏱ 平均耗时：<b>{{ log_stats.avg_duration }}ms</b></span>
-  <span>🚫 404 数：<b class="{% if log_stats.not_found > 0 %}stat-bad{% else %}stat-good{% endif %}">{{ log_stats.not_found }}</b></span>
+  <span>{{ MSG.auto.总访问量 }}<b>{{ log_stats.total }}</b></span>
+  <span>{{ MSG.auto.独立_ip }}<b>{{ log_stats.unique_ips }}</b></span>
+  <span>{{ MSG.auto.平均耗时 }}<b>{{ log_stats.avg_duration }}ms</b></span>
+  <span>{{ MSG.auto.404_数 }}<b class="{% if log_stats.not_found > 0 %}stat-bad{% else %}stat-good{% endif %}">{{ log_stats.not_found }}</b></span>
 </div>
 {% endif %}
 {{ block.super }}

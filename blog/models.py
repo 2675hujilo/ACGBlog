@@ -1920,3 +1920,99 @@ class ModerationSettings(models.Model):
         obj, _ = cls.objects.get_or_create(pk=cls.SINGLETON_ID, defaults={})
         cache.set(cls.CACHE_KEY, obj, 3600)
         return obj
+
+
+class SiteMessage(models.Model):
+    """全站文案「覆盖项」：让运营在后台改提示词，而不用改代码、不用重启。
+
+    为什么是「覆盖」而不是「全量入库」
+    ----------------------------------
+    全站 286 条文案的**唯一登记处仍是** ``blog/site_messages.py::MESSAGES``（代码默认值），
+    本表只保存**被运营改过的那几条**。这样设计换来四个性质：
+
+    1. **零启动依赖**：进程启动即有全量文案，数据库挂了 / 迁移没跑 / 全新部署，
+       站点文案照常显示，不会出现「文案表空了满屏占位符」；
+    2. **性能几乎无成本**：读取侧把整表合并成一个 dict 缓存在 LocMemCache
+       （TTL 300s，保存时通过版本号立即失效），热路径是**字典查找**，零 SQL；
+       对比「286 条逐条查库」是数量级的差别；
+    3. **可审计**：表里有什么，就是「被改过的文案」清单（``pending_keys()``）；
+    4. **可回滚**：把记录的 ``is_enabled`` 关掉或直接删除，立刻回到代码默认值。
+
+    与 ``SiteInfo`` 的关系：``SiteInfo`` 管站点级少量字段（站名 / 页脚等），
+    本表管**全站提示词**（按钮 / 错误 / flash / 前端 toast 等），职责不重叠。
+    """
+
+    key = models.CharField(
+        max_length=120, unique=True, db_index=True, verbose_name='文案键',
+        help_text='对应 blog/site_messages.py 中的 key，例如 auth.login_failed')
+    text = models.TextField(
+        verbose_name='文案内容',
+        help_text='支持 {}/ {name} 占位符，写法必须与原文案一致，否则格式化失败会回退原文')
+    description = models.CharField(
+        max_length=200, blank=True, default='', verbose_name='用途备注',
+        help_text='给自己看的说明，例如「登录失败提示，出现在登录页顶部」')
+    is_enabled = models.BooleanField(
+        default=True, verbose_name='启用覆盖',
+        help_text='取消勾选即恢复代码里的默认文案（无需删除记录）')
+    updated_by = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='site_messages_updated', verbose_name='最后修改人')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        verbose_name = '文案覆盖'
+        verbose_name_plural = '文案覆盖（提示词）'
+        ordering = ['key']
+        indexes = [models.Index(fields=['is_enabled', 'key'], name='idx_msg_enabled_key')]
+
+    def __str__(self):
+        flag = '' if self.is_enabled else '（已停用）'
+        return '%s = %s%s' % (self.key, self.text[:30], flag)
+
+    def save(self, *args, **kwargs):
+        """保存后立刻让覆盖层缓存失效，全站下一次取文案即生效。"""
+        super().save(*args, **kwargs)
+        from .site_messages import invalidate_overrides
+        invalidate_overrides()
+
+    def delete(self, *args, **kwargs):
+        """删除后同样失效缓存，恢复到代码默认值。"""
+        result = super().delete(*args, **kwargs)
+        from .site_messages import invalidate_overrides
+        invalidate_overrides()
+        return result
+
+
+class SiteMessageRetired(models.Model):
+    """被「弃用」的文案 key（从文案总表里删除，不再参与渲染与统计）。
+
+    用途
+    ----
+    文案总表里有些 key 属「预留登记」：注册了但没有任何界面引用，
+    留着只会让运营困惑「为什么改了没反应」。管理员可以在页面上直接删除，
+    这里记录被删除的 key；``site_messages.all_messages()`` 会用本表做过滤。
+
+    注意
+    ----
+    · 只应删除「未接入」的 key。若模板 / 视图仍在引用被弃用的 key，
+      渲染会走 ``⟪key⟫`` 兜底（不会 500），并被回归检查发现，
+      因此页面上的删除按钮只对未接入项展示。
+    · 删除是**可逆**的：删除本表记录即恢复该文案。
+    """
+
+    key = models.CharField('文案 key', max_length=120, unique=True,
+                           help_text='被弃用的文案标识，如 nav.home')
+    reason = models.CharField('弃用原因', max_length=200, blank=True, default='')
+    retired_by = models.ForeignKey(
+        'blog.User', verbose_name='操作人', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='retired_site_messages')
+    created_at = models.DateTimeField('弃用时间', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '弃用文案'
+        verbose_name_plural = '弃用文案'
+        ordering = ('key',)
+
+    def __str__(self) -> str:  # pragma: no cover - 仅用于后台显示
+        return self.key

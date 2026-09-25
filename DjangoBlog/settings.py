@@ -90,6 +90,14 @@ TEMPLATES = [
                 'blog.context_processors.site_messages_ctx',       # Bug9: 注入全站文案命名空间 MSG / SITE_MSG_JS
                 'blog.middleware.mascot.waifu_enabled',             # Bug9: 注入看板娘开关 waifu_enabled
             ],
+            # 全局可用的自定义标签库：`libraries` 让模板**无需 {% load %}** 就能用这些过滤器。
+            # 为什么要全局：文案注册表里的文案大量带占位符，模板侧要写成
+            #   {{ MSG.a11y.notification_unread|format:count }}
+            # 若要求每个模板都先 {% load blog_extras %}，几十个模板逐一补 load 既啰嗦又易漏
+            # （漏了就是 TemplateSyntaxError → 整页 500，实测踩过）。注册为内置最稳妥。
+            'libraries': {
+                'blog_extras': 'blog.templatetags.blog_extras',
+            },
         },
     },
 ]

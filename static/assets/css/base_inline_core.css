@@ -20,8 +20,11 @@ a{color:var(--c-primary);text-decoration:none}a:hover{color:var(--c-accent)}img{
 .nav-link.active,.nav-link:hover{background:var(--c-primary-soft);color:var(--c-primary)}
 .nav-cta{background:linear-gradient(90deg,var(--c-pink),var(--c-purple));color:#fff!important}
 .nav-search{display:flex;flex:1;min-width:200px;max-width:420px}
-.nav-search input{flex:1;padding:7px 14px;border:1px solid var(--c-border);margin:0;border-radius:999px 0 0 999px;outline:none;background:var(--c-input-bg);color:var(--c-text)}
-.nav-search button{border:none;padding:7px 16px;margin:0;border-radius:0 999px 999px 0;width:auto;background:var(--c-primary);color:#fff;cursor:pointer}
+/* 胶囊搜索框：输入框四角全圆角，按钮仅右侧收口，二者拼接处不得出现直角。
+   用 `.nav-search input[type="search"]`（0-2-1）压过 ui_polish.css 里后加载的
+   `input[type="search"]`（0-1-1），否则输入框会退回 10px 圆角、拼接处露出棱角。 */
+.nav-search input[type="search"]{flex:1;padding:7px 16px;border:1px solid var(--c-border);margin:0;border-radius:999px;outline:none;background:var(--c-input-bg);color:var(--c-text)}
+.nav-search button{border:none;padding:7px 22px 7px 18px;margin:0;border-radius:0 999px 999px 0;width:auto;background:var(--c-primary);color:#fff;cursor:pointer}
 .nav-user{display:flex;align-items:center;gap:var(--space-2);margin-left:auto}
 .nav-link-btn{background:none;border:none;cursor:pointer;color:var(--c-text);padding:6px 12px;border-radius:999px;font-size:.92rem;width:auto}
 .nav-link-btn:hover{background:var(--c-primary-soft)}

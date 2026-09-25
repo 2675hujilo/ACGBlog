@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% load blog_extras %}
 {% block title %}
@@ -35,72 +35,72 @@
 {% endblock %}
 
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
-    <a href="{% url 'index' %}?itemprop=item"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}?itemprop=item"><span itemprop="name">{{ MSG.footer.nav_home }}</span><meta itemprop="position" content="1"></a>
     {% if q %}
     <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">搜索：{{ q }}</span><meta itemprop="position" content="2"></span>
     {% elif current_category %}
-    <span class="crumb-sep">›</span><a href="{% url 'categories' %}"><span itemprop="name">分类</span><meta itemprop="position" content="2"></a>
+    <span class="crumb-sep">›</span><a href="{% url 'categories' %}"><span itemprop="name">{{ MSG.footer.nav_categories }}</span><meta itemprop="position" content="2"></a>
     <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ current_category.name }}</span><meta itemprop="position" content="3"></span>
     {% elif current_tag %}
-    <span class="crumb-sep">›</span><a href="{% url 'tags' %}"><span itemprop="name">标签</span><meta itemprop="position" content="2"></a>
+    <span class="crumb-sep">›</span><a href="{% url 'tags' %}"><span itemprop="name">{{ MSG.footer.nav_tags }}</span><meta itemprop="position" content="2"></a>
     <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ current_tag.name }}</span><meta itemprop="position" content="3"></span>
     {% endif %}
 </nav>
 {% endblock %}
 
 {% block content %}
-<noscript><div class="noscript-banner noscript-banner--bordered" role="alert" >🌸 检测到浏览器已禁用 JavaScript，文章筛选 / 搜索 / 点赞等交互功能可能无法使用喵~</div></noscript>
+<noscript><div class="noscript-banner noscript-banner--bordered" role="alert" >{{ MSG.index.no_js }}</div></noscript>
 {% if q %}<noscript><div class="noscript-banner noscript-banner--search" role="alert">🔍 搜索高亮与筛选功能需要 JavaScript 支持。</div></noscript>{% endif %}
 {# ---------- 三栏网格：左sidebar + 中文章流 + 右热门文章 ---------- #}
-<div class="three-col-grid" aria-label="文章列表主区域">
+<div class="three-col-grid" aria-label="{{ MSG.index.main_aria }}">
     {# ---------- 左栏（规范顺序）：排序 → 内容类型 → 分类导航 → 标签云；粘性跟随滚动 ---------- #}
-    <aside class="col-left sidebar-sticky" role="complementary" aria-label="侧边栏">
+    <aside class="col-left sidebar-sticky" role="complementary" aria-label="{{ MSG.index.sidebar_aria }}">
         {# ① 排序：最新 / 热门，保留其余 GET 参数并重置页码 #}
         <div class="widget">
-            <div class="widget-title">🔀 排序</div>
+            <div class="widget-title">{{ MSG.index.sort }}</div>
             <div class="side-chips">
                 <a class="chip {% if sort != 'hot' %}chip--active{% endif %}"
-                   href="?{% for k, v in request.GET.items %}{% if k != 'sort' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}sort=latest">🆕 最新</a>
+                   href="?{% for k, v in request.GET.items %}{% if k != 'sort' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}sort=latest">{{ MSG.index.sort_new }}</a>
                 <a class="chip {% if sort == 'hot' %}chip--active{% endif %}"
-                   href="?{% for k, v in request.GET.items %}{% if k != 'sort' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}sort=hot">🔥 热门</a>
+                   href="?{% for k, v in request.GET.items %}{% if k != 'sort' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}sort=hot">{{ MSG.index.sort_hot }}</a>
             </div>
         </div>
         {# ② 内容类型：全部 / 文章 / 笔记 / 独立页面 #}
         <div class="widget">
-            <div class="widget-title">📚 内容类型</div>
+            <div class="widget-title">{{ MSG.index.kind }}</div>
             <div class="side-chips">
                 <a class="chip {% if not active_kind %}chip--active{% endif %}"
-                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}">🌈 全部</a>
+                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}">{{ MSG.index.kind_all }}</a>
                 <a class="chip {% if active_kind == 'article' %}chip--active{% endif %}"
-                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}kind=article">📰 文章</a>
+                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}kind=article">{{ MSG.index.kind_article }}</a>
                 <a class="chip {% if active_kind == 'note' %}chip--active{% endif %}"
-                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}kind=note">📝 笔记</a>
+                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}kind=note">{{ MSG.index.kind_note }}</a>
                 <a class="chip {% if active_kind == 'page' %}chip--active{% endif %}"
-                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}kind=page">📄 独立页面</a>
+                   href="?{% for k, v in request.GET.items %}{% if k != 'kind' and k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}kind=page">{{ MSG.index.kind_page }}</a>
             </div>
         </div>
         {# ③ 分类导航 #}
         <div class="widget">
-            <div class="widget-title">🗂 分类导航</div>
-            <ul class="cat-nav-list" role="tree" aria-label="分类导航">
+            <div class="widget-title">{{ MSG.index.cat_nav }}</div>
+            <ul class="cat-nav-list" role="tree" aria-label="{{ MSG.index.cat_nav_aria }}">
                 {% for c in nav_categories %}
                 <li>
                     <a href="{% url 'category_detail' c.pk %}">{{ c.icon|default:'📁' }} {{ c.name }}</a>
                     <span class="n">{{ c.n }}</span>
                 </li>
                 {% empty %}
-                <li class="muted">还没有分类喵</li>
+                <li class="muted">{{ MSG.index.cat_empty }}</li>
                 {% endfor %}
             </ul>
         </div>
         {# ④ 标签云（标签不可被拖拽，点击即跳转，见 bug22） #}
         <div class="widget tag-cloud" id="home-tag-cloud">
-            <div class="widget-title">☁️ 标签云</div>
+            <div class="widget-title">{{ MSG.index.tag_cloud }}</div>
             {% for t in cloud_tags %}
             <a class="chip tag-color-{% cycle '1' '2' '3' '4' '5' %}" href="{% url 'tag_detail' t.pk %}" draggable="false">{{ t.name }}<span class="count">{{ t.n }}</span></a>
             {% empty %}
-            <span class="muted">还没有标签喵</span>
+            <span class="muted">{{ MSG.index.tag_empty }}</span>
             {% endfor %}
         </div>
     </aside>
@@ -109,8 +109,8 @@
         {# 工具栏：根据当前上下文动态显示页面标题与文章总数；登录用户显示"写文章"按钮 #}
         <div class="list-toolbar">
             {# ===== Round5 A10: 分类快速切换标签 ===== #}
-            <div class="cat-quick-switch" role="navigation" aria-label="分类快速切换">
-                <a class="chip {% if not current_category %}chip--active{% endif %}" href="{% url 'index' %}?kind={{ active_kind|default:'' }}">全部</a>
+            <div class="cat-quick-switch" role="navigation" aria-label="{{ MSG.index.cat_quick_aria }}">
+                <a class="chip {% if not current_category %}chip--active{% endif %}" href="{% url 'index' %}?kind={{ active_kind|default:'' }}">{{ MSG.index.all }}</a>
                 {% for c in nav_categories|slice:":8" %}
                 <a class="chip {% if current_category and current_category.pk == c.pk %}chip--active{% endif %}" href="{% url 'category_detail' c.pk %}">{{ c.icon|default:'📁' }} {{ c.name }}</a>
                 {% endfor %}
@@ -127,13 +127,13 @@
                 <span class="tag-detail-stat-item">❤️ <span class="num">{{ tag_stat_likes }}</span> 个点赞</span>
                 <span class="tag-detail-stat-item">💬 <span class="num">{{ tag_stat_comments }}</span> 条评论</span>
                 {% if tag_stat_avg_rating > 0 %}
-                <span class="tag-detail-stat-item">⭐ <span class="num">{{ tag_stat_avg_rating }}</span> 平均分</span>
+                <span class="tag-detail-stat-item">⭐ <span class="num">{{ tag_stat_avg_rating }}</span> {{ MSG.index.avg_rating }}</span>
                 {% endif %}
             </div>
             {% endif %}
             {% if user.is_authenticated %}
             {# 第4轮迭代#100: 条件渲染——未登录用户不显示写文章按钮（{% if %} 包裹） #}
-            <a class="btn-primary" href="{% url 'article_new' %}{% if active_kind %}?kind={{ active_kind }}{% endif %}">✍ 写{{ active_kind|default:'文章' }}</a>
+            <a class="btn-primary" href="{% url 'article_new' %}{% if active_kind %}?kind={{ active_kind }}{% endif %}">✍ 写{% if active_kind %}{{ active_kind }}{% else %}文章{% endif %}</a>
             {% endif %}
         </div>
         {# 22. 骨架屏：页面加载时显示占位卡片，JS 就绪后渐隐 #}
@@ -170,21 +170,21 @@
             {# 30. 空状态插画：搜索无结果用 search-empty.svg，普通空列表用 empty-state.svg #}
             <div class="empty-state">
                 {% if q %}
-                <img src="{% static 'assets/images/search-empty.svg' %}" alt="没有找到相关内容" class="empty-illust">
-                <h3 class="empty-title">没有找到相关内容喵</h3>
-                <p class="empty-sub">换个关键词试试喵~ 或者看看这些热门文章吧</p>
-                <a class="btn-primary" href="{% url 'index' %}">✨ 看看全部文章</a>
+                <img src="{% static 'assets/images/search-empty.svg' %}" alt="{{ MSG.index.no_result_alt }}" class="empty-illust">
+                <h3 class="empty-title">{{ MSG.index.no_result }}</h3>
+                <p class="empty-sub">{{ MSG.index.no_result_hint }}</p>
+                <a class="btn-primary" href="{% url 'index' %}">{{ MSG.index.see_all }}</a>
                 {# Round5 D12: 无结果推荐热门文章 #}
-                <div class="empty-recommend" aria-label="热门推荐">
-                    <h4 class="muted" style="font-size:.85rem;margin:14px 0 6px;">🔥 热门推荐</h4>
+                <div class="empty-recommend" aria-label="{{ MSG.index.hot_aria }}">
+                    <h4 class="muted" style="font-size:.85rem;margin:14px 0 6px;">{{ MSG.index.hot }}</h4>
                     {% for hot in hot_articles|slice:":5" %}
                     <a class="chip" href="{{ hot.get_absolute_url }}">{{ hot.title|truncatechars:20 }}</a>
                     {% endfor %}
                 </div>
                 {% else %}
-                <img src="{% static 'assets/images/empty-state.svg' %}" alt="这里还什么都没有" class="empty-illust">
-                <h3 class="empty-title">这里还什么都没有喵</h3>
-                <p class="empty-sub">{% if user.is_authenticated %}<a href="{% url 'article_new' %}">来写第一篇吧</a>{% else %}登录后即可发布。{% endif %}</p>
+                <img src="{% static 'assets/images/empty-state.svg' %}" alt="{{ MSG.index.empty_alt }}" class="empty-illust">
+                <h3 class="empty-title">{{ MSG.index.empty }}</h3>
+                <p class="empty-sub">{% if user.is_authenticated %}<a href="{% url 'article_new' %}">{{ MSG.index.empty_write }}</a>{% else %}{{ MSG.index.empty_login }}{% endif %}</p>
                 {% endif %}
             </div>
         {% endfor %}
@@ -192,28 +192,28 @@
         {% include 'partials/_pagination.html' %}
     </div>
     {# ---------- 右栏（规范顺序）：热门搜索 → 热门文章；粘性跟随滚动 ---------- #}
-    <aside class="col-right sidebar-sticky" role="complementary" aria-label="右侧边栏">
+    <aside class="col-right sidebar-sticky" role="complementary" aria-label="{{ MSG.index.right_sidebar_aria }}">
         {# ① 热门搜索：点击即带关键词跳转搜索页 #}
         <div class="widget">
-            <div class="widget-title">🔍 热门搜索</div>
+            <div class="widget-title">{{ MSG.index.hot_search }}</div>
             <div class="hot-search-cloud" id="hot-search-cloud">
                 <a class="chip" href="{% url 'search' %}?q=Django">Django</a>
                 <a class="chip" href="{% url 'search' %}?q=Python">Python</a>
-                <a class="chip" href="{% url 'search' %}?q=二次元">二次元</a>
-                <a class="chip" href="{% url 'search' %}?q=教程">教程</a>
-                <a class="chip" href="{% url 'search' %}?q=前端">前端</a>
-                <a class="chip" href="{% url 'search' %}?q=萌系">萌系</a>
+                <a class="chip" href="{% url 'search' %}?q=二次元">{{ MSG.auto.二次元 }}</a>
+                <a class="chip" href="{% url 'search' %}?q=教程">{{ MSG.auto.教程 }}</a>
+                <a class="chip" href="{% url 'search' %}?q=前端">{{ MSG.auto.前端 }}</a>
+                <a class="chip" href="{% url 'search' %}?q=萌系">{{ MSG.auto.萌系 }}</a>
             </div>
         </div>
         {# Bug5：②热门文章（周/月/总榜切换），加 widget--hot-rank 关闭高卡片 backdrop-filter，规避 Chromium sticky+模糊合成层不绘制缺陷 #}
         <div class="widget widget--hot-rank">
-            <div class="widget-title">🔥 热门文章</div>
-            <div class="hot-rank-tabs" role="tablist" aria-label="热门榜时间范围">
-                <button type="button" class="btn-sm hot-rank-tab active" data-range="week" aria-label="本周热门">本周</button>
-                <button type="button" class="btn-sm hot-rank-tab" data-range="month" aria-label="本月热门">本月</button>
-                <button type="button" class="btn-sm hot-rank-tab" data-range="total" aria-label="总热门">总榜</button>
+            <div class="widget-title">{{ MSG.index.hot_articles }}</div>
+            <div class="hot-rank-tabs" role="tablist" aria-label="{{ MSG.index.hot_range_aria }}">
+                <button type="button" class="btn-sm hot-rank-tab active" data-range="week" aria-label="{{ MSG.index.week_aria }}">{{ MSG.index.week }}</button>
+                <button type="button" class="btn-sm hot-rank-tab" data-range="month" aria-label="{{ MSG.index.month_aria }}">{{ MSG.index.month }}</button>
+                <button type="button" class="btn-sm hot-rank-tab" data-range="total" aria-label="{{ MSG.index.all_time_aria }}">{{ MSG.index.all_time }}</button>
             </div>
-            <ol class="hot-list" aria-label="热门文章">
+            <ol class="hot-list" aria-label="{{ MSG.index.hot_articles_aria }}">
                 {% include 'partials/_hot_list.html' with hot_items=hot_week_items range_key='week' %}
             </ol>
         </div>

@@ -16,10 +16,30 @@
     /* 文本与背景色 */
     --c-text: #2b2340;        /* 正文主色：深紫灰 */
     --c-text-dim: #6b6480;    /* 次要文字：辅助说明、标签 */
+    --c-text-soft: #8a8299;   /* 更弱的文字：占位符、禁用态说明、时间戳 */
     --c-bg: #f4f2fb;          /* 页面底色：极浅紫白 */
+    --c-bg-soft: #faf9fe;     /* 浅一档的块底：表头、说明块、内嵌卡片 */
     --c-card: rgba(255, 255, 255, 0.72); /* 卡片半透明白底，配合 backdrop-filter 实现玻璃拟态 */
+    --c-card-bg: #ffffff;     /* 不透明卡片底：看板统计卡等需要实底的面板 */
     --c-border: rgba(160, 108, 213, 0.18); /* 边框色：低透明度紫色描边 */
     --c-danger: #e0557a;      /* 危险/错误操作色 */
+
+    /* 强调底与前景：粉/紫/蓝的柔色底 + 品牌色块上的文字色 */
+    --c-pink-soft: #ffe3ef;   /* 粉色柔底：粉色标签、提示块 */
+    --c-on-brand: #ffffff;    /* 品牌渐变底上的文字/图标色（勿在浅底上使用） */
+    /* 焦点环：键盘 :focus-visible 的统一可见轮廓（低透明度主色） */
+    --c-ring: rgba(160, 108, 213, 0.32);
+
+    /* 品牌渐变色（全站通用；此前只定义在看板页局部，导致其他页面引用失效）
+       注意：这两档紫色的**终点色比品牌紫更深**（#8b53c6 对白字对比度 5.1:1，
+       而原 #a06cd5 只有 3.1:1）——因为渐变常被用作按钮底，上面要承载白色文字，
+       必须满足 WCAG AA 4.5:1，否则就会出现「看不清内容」的可用性缺陷。 */
+    --grad-pink: linear-gradient(135deg, var(--c-pink), #e8557f);
+    --grad-purple: linear-gradient(135deg, #9a6ad8, #8b53c6);
+    --grad-blue: linear-gradient(135deg, #5f9df3, #4a86e0);
+    --grad-green: linear-gradient(135deg, #4cc38a, #35a874);
+    --grad-orange: linear-gradient(135deg, #f0a94a, #e08b34);
+    --grad-cyan: linear-gradient(135deg, #46c8c8, #2fa8a8);
 
     /* 间距刻度（4px 基准）：1=4 2=8 3=16 4=24 5=40 */
     --space-1: 4px;
@@ -28,11 +48,30 @@
     --space-4: 24px;
     --space-5: 40px;
 
+    /* 字号刻度：配合根字号缩放，供小组件统一引用 */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.82rem;
+
     /* 圆角与阴影 */
     --radius: 14px;           /* 常规卡片圆角 */
     --radius-sm: 8px;         /* 小元素圆角：按钮、输入框 */
+    --radius-md: 10px;        /* 中号圆角：内嵌块、小卡片 */
+    --radius-lg: 16px;        /* 大号圆角：面板、弹窗 */
     --shadow-card: 0 8px 28px rgba(120, 90, 200, 0.12);   /* 卡片默认投影 */
     --shadow-hover: 0 12px 34px rgba(120, 90, 200, 0.22); /* 悬停加深投影 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);           /* 轻投影：小卡片、输入框 */
+    /* 品牌色光晕：按钮/悬浮元素的彩色投影（替代灰色投影，强化萌系质感） */
+    --shadow-glow-pink: 0 8px 22px rgba(255, 143, 177, 0.42);
+    --shadow-glow-purple: 0 8px 22px rgba(160, 108, 213, 0.42);
+    --shadow-glow-blue: 0 8px 22px rgba(110, 168, 254, 0.42);
+
+    /* 阅读偏好：由「阅读设置」写入 data-* 后由 CSS 读取，提供默认值兜底 */
+    --read-font-scale: 1;      /* 正文字号倍率 */
+    --read-line-height: 1.8;   /* 正文行高 */
+
+    /* 点赞爆炸粒子位移：由 interaction.js 逐粒子 inline 覆写，此处仅为默认值 */
+    --dx: 0px;
+    --dy: -40px;
 
     /* 字体栈：正文优先使用系统中文字体 */
     --font-body: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
@@ -47,14 +86,25 @@
 :root[data-theme="dark"] {
     --c-text: #e9e4f6;
     --c-text-dim: #a99fc8;
+    --c-text-soft: #968cb4;
     --c-bg: #16131f;
+    --c-bg-soft: #1d1930;
     --c-card: rgba(46, 40, 66, .72);
+    --c-card-bg: #2b2540;
     --c-border: rgba(160, 108, 213, .30);
     --c-primary-soft: rgba(160, 108, 213, .16);
+    --c-pink-soft: rgba(255, 143, 177, .16);
+    /* 暗色下焦点环提高不透明度，保证在深底上仍清晰可见 */
+    --c-ring: rgba(177, 140, 255, 0.45);
     --c-surface: #2b2540;
     --c-input-bg: #2b2540;
     --shadow-card: 0 8px 28px rgba(0, 0, 0, .45);
     --shadow-hover: 0 12px 34px rgba(0, 0, 0, .55);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, .35);
+    /* 暗色下光晕降低亮度，避免过曝刺眼 */
+    --shadow-glow-pink: 0 8px 22px rgba(255, 143, 177, .28);
+    --shadow-glow-purple: 0 8px 22px rgba(160, 108, 213, .30);
+    --shadow-glow-blue: 0 8px 22px rgba(110, 168, 254, .28);
 }
 
 /* ---------- 全局重置与基础排版 ---------- */
@@ -109,12 +159,21 @@ img { max-width: 100%; }
 .nav-link.active, .nav-link:hover { background: var(--c-primary-soft); color: var(--c-primary); }
 .nav-cta { background: linear-gradient(90deg, var(--c-pink), var(--c-purple)); color: #fff !important; }  /* 高亮 CTA 按钮（写文章） */
 .nav-search { display: flex; flex: 1; min-width: 200px; max-width: 420px; }  /* 导航栏搜索框，弹性填充剩余空间 */
-.nav-search input {
-    flex: 1; padding: 7px 14px; border: 1px solid var(--c-border); margin: 0;
-    border-radius: 999px 0 0 999px; outline: none; background: var(--c-input-bg); color: var(--c-text);
+/* 搜索框整体为「胶囊」：输入框与按钮左右相邻拼成一个圆角容器，任何一处都不得出现直角。
+   踩坑记录：ui_polish.css 里的 `input[type="search"] { border-radius: 999px }` 与本文件
+   的 `.nav-search input` **特异性相同（0-1-1）**，而它后加载 → 本文件的声明会被覆盖，
+   实测输入框圆角变成 10px（`--radius-sm`），与按钮拼接处就露出棱角。
+   因此这里用 `.nav-search input[type="search"]`（0-2-1）提高特异性，避免依赖 !important。 */
+.nav-search input,
+.nav-search input[type="search"] {
+    flex: 1; padding: 7px 16px; border: 1px solid var(--c-border); margin: 0;
+    border-radius: 999px 999px 999px 999px; outline: none;
+    background: var(--c-input-bg); color: var(--c-text);
 }
+/* 按钮：右侧半圆收口；左侧与输入框齐平（0 圆角），二者无缝拼成一颗胶囊 */
 .nav-search button {
-    border: none; padding: 7px 16px; margin: 0; border-radius: 0 999px 999px 0; width: auto;
+    border: none; padding: 7px 22px 7px 18px; margin: 0;
+    border-radius: 0 999px 999px 0; width: auto;
     background: var(--c-primary); color: #fff; cursor: pointer;
 }
 .nav-user { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }  /* 右侧用户区，自动靠右 */

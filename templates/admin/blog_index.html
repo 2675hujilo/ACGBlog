@@ -1,5 +1,5 @@
 {% extends "admin/index.html" %}
-{% load i18n %}
+{% load i18n blog_extras %}
 {% load static %}
 {% comment %}
 自定义后台首页：在 Django 原生应用列表之上叠加运营仪表盘。
@@ -12,34 +12,34 @@
 {% endblock %}
 {% block content %}
 {# ===== a. 统计卡片行 ===== #}
-<div class="dash-grid" aria-label="站点核心统计">
+<div class="dash-grid" aria-label="{{ MSG.auto.站点核心统计 }}">
   <div class="dash-card">
     <div class="num">{{ dash_stats.total_articles }}</div>
-    <div class="lbl">📝 文章总数</div>
+    <div class="lbl">{{ MSG.auto.文章总数 }}</div>
     <div class="sub">已发布 {{ dash_stats.published_articles }} · 草稿 {{ dash_stats.draft_articles }}</div>
   </div>
   <div class="dash-card">
     <div class="num">{{ dash_stats.total_comments }}</div>
-    <div class="lbl">💬 评论总数</div>
+    <div class="lbl">{{ MSG.auto.评论总数 }}</div>
     <div class="sub">待审核 {{ dash_stats.pending_comments }}</div>
   </div>
   <div class="dash-card">
     <div class="num">{{ dash_stats.total_views }}</div>
-    <div class="lbl">👁 总阅读量</div>
+    <div class="lbl">{{ MSG.auto.总阅读量 }}</div>
   </div>
   <div class="dash-card">
     <div class="num">{{ dash_stats.total_users }}</div>
-    <div class="lbl">👤 用户总数</div>
+    <div class="lbl">{{ MSG.auto.用户总数 }}</div>
   </div>
   <div class="dash-card">
     <div class="num">{{ dash_stats.today_visits }}</div>
-    <div class="lbl">📈 今日访问</div>
+    <div class="lbl">{{ MSG.reading.stats_today }}</div>
   </div>
 </div>
 {# ===== b/c. 最近评论 + 热门文章 ===== #}
-<div class="dash-cols" aria-label="后台运营面板">
+<div class="dash-cols" aria-label="{{ MSG.auto.后台运营面板 }}">
   <div class="dash-panel">
-    <h3 id="dash-recent-comments" aria-label="最近评论">💬 最近评论 TOP10</h3>
+    <h3 id="dash-recent-comments" aria-label="{{ MSG.auto.最近评论 }}">{{ MSG.auto.最近评论_top10 }}</h3>
     <ul>
       {% for c in recent_comments %}
       <li>
@@ -52,7 +52,7 @@
     </ul>
   </div>
   <div class="dash-panel">
-    <h3 id="dash-hot-articles" aria-label="热门文章">🔥 热门文章 TOP5</h3>
+    <h3 id="dash-hot-articles" aria-label="{{ MSG.index.hot_articles }}">{{ MSG.auto.热门文章_top5 }}</h3>
     <ul>
       {% for a in hot_articles %}
       <li>
@@ -65,8 +65,8 @@
 </div>
 {# ===== d. 最近 7 天访问趋势（CSS 柱状图） ===== #}
 <div class="dash-panel" style="margin-bottom:20px;">
-  <h3>📈 最近 7 天访问量</h3>
-  <div class="trend-bars" role="img" aria-label="最近 7 天访问量柱状图">
+  <h3>{{ MSG.auto.最近_7_天访问量 }}</h3>
+  <div class="trend-bars" role="img" aria-label="{{ MSG.auto.最近_7_天访问量柱状图 }}">
     {% for t in trend_data %}
   <div class="trend-bar" role="img" aria-label="{{ t.date }} 访问 {{ t.count }} 次">
       <div class="c">{{ t.count }}</div>

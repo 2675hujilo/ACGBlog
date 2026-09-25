@@ -446,6 +446,52 @@ IP 合法性校验在 worker 与兜底消费两侧都做。
   `?waifu=off` 或 cookie `waifu_pref` 写入，`waifu-init-new.js` 判定为 off 时不初始化
   （不创建容器、不请求模型）；同时尊重「减少动态效果」偏好。
 
+### 6.8 设计令牌与「静默失效」防护 ★
+
+全站视觉由 CSS 自定义属性（Design Token）驱动，**唯一登记处是 `static/assets/css/base.css`
+的 `:root`**（暗色档在 `:root[data-theme="dark"]` 覆盖）。这是硬约定：
+
+| 类别 | 令牌 |
+| --- | --- |
+| 品牌色 | `--c-pink` / `--c-purple` / `--c-blue` / `--c-primary` / `--c-accent` |
+| 柔色底 | `--c-primary-soft` / `--c-pink-soft` |
+| 文字 | `--c-text` / `--c-text-dim` / `--c-text-soft` / `--c-on-brand` |
+| 背景 | `--c-bg` / `--c-bg-soft` / `--c-card` / `--c-card-bg` / `--c-surface` / `--c-input-bg` |
+| 描边 / 焦点 | `--c-border` / `--c-ring` |
+| 渐变 | `--grad-pink` / `--grad-purple` / `--grad-blue` / `--grad-green` / `--grad-orange` / `--grad-cyan` |
+| 间距 / 圆角 | `--space-1…5` / `--radius` / `--radius-sm` / `--radius-md` / `--radius-lg` |
+| 阴影 | `--shadow-card` / `--shadow-hover` / `--shadow-sm` / `--shadow-glow-{pink,purple,blue}` |
+| 字号 / 字体 | `--font-size-xs` / `--font-size-sm` / `--font-body` / `--font-mono` |
+| 阅读偏好 | `--read-font-scale` / `--read-line-height` |
+| 动效（JS 注入） | `--dx` / `--dy`（点赞粒子位移，`interaction.js` 逐粒子覆写） |
+
+> ⚠️ **为什么必须集中登记**：`background: var(--x)` 在 `--x` 不可用时**整条声明静默失效**，
+> 元素回退到上一个有效值；若同一规则里 `color:#fff` 仍生效，就会产出「白底白字」这种
+> 完全不可用的界面。项目**真实发生过**：`--grad-purple` 只定义在看板页的 `.console-wrap` 里，
+> 而顶部头像按钮展开态引用它 → 背景失效、白字压在浅色卡片上，用户看不清任何内容。
+>
+> 因此提供两个审计脚本（新增令牌或改样式后必跑）：
+>
+> ```powershell
+> python docs\bugfix_20260926_bug9\scripts\tools\audit_css_scope.py   # 未定义 / 跨作用域失效令牌
+> python docs\bugfix_20260926_bug9\scripts\tools\audit_css_vars.py    # 被引用但从未定义的令牌
+> ```
+>
+> 两者当前均为 **0 问题**（本轮共修掉 17 个未定义令牌 + 1 个跨作用域失效令牌）。
+
+### 6.9 可访问性约定（对比度）
+
+- **品牌底上的白字**：渐变常被用作按钮底并承载白色文字，因此
+  **渐变终点色必须保证白字对比度 ≥ 4.5:1（WCAG AA 正文）**。
+  若单纯加深会偏离品牌观感，采用「半透明深色蒙版 + 渐变」双层背景
+  （见 `.header-menu-btn.is-open`，实测 6.4:1）。
+- **焦点可见**：所有可交互元素使用 `:focus-visible` + `--c-ring` 描边环；
+  鼠标点击不显示（减少噪音），键盘导航必须可见。
+- **降动效**：`prefers-reduced-motion: reduce` 时取消位移 / 旋转动画。
+- **折叠可访问**：徽章未获得区用原生 `<details>`（键盘可操作、屏幕阅读器可识别），
+  不使用纯 JS 显隐。
+- **触屏**：`@media (hover: none)` 忽略 hover，改用 `:active` 反馈。
+
 ---
 
 ## 7. API 一览

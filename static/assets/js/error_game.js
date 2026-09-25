@@ -5,6 +5,10 @@
         var btn=document.getElementById('game-start-btn');
         var canvas=document.getElementById('game-canvas');
         var scoreEl=document.getElementById('game-score');
+        // 分数数字单独放在 #game-score-num 里，前面的「得分：」标签由模板从
+        // 文案注册表渲染（MSG.err.game_score）。**JS 里不要再拼中文前缀** ——
+        // 否则运营在「文案总表」改了文案，会被这里的硬编码覆盖（实测踩过）。
+        var scoreNumEl=document.getElementById('game-score-num')||scoreEl;
         var ctx=canvas.getContext('2d');
         var playing=false,score=0,playerX=140,petals=[],fallSpeed=2;
         btn.addEventListener('click',function(){
@@ -39,7 +43,7 @@
                 ctx.fillStyle='#ff8fb1';
                 ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
                 if(p.y>175&&p.y<195&&p.x>playerX-5&&p.x<playerX+45){
-                    score++;scoreEl.textContent='得分：'+score;petals.splice(i,1);
+                    score++;scoreNumEl.textContent=score;petals.splice(i,1);
                     if(score%10===0)fallSpeed+=0.5;
                 }else if(p.y>canvas.height){petals.splice(i,1);}
             }

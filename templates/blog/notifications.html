@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static blog_extras %}
 {% block title %}通知中心 · {{ site_name }}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
-    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
+<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span><meta itemprop="position" content="1"></a>
     <span class="crumb-sep">›</span>
-    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">通知中心</span><meta itemprop="position" content="2"></span>
+    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ MSG.toolbox.menu_notifications }}</span><meta itemprop="position" content="2"></span>
 </nav>
 {% endblock %}
 {% block content %}
 <div class="notif-center-head">
-    <h1 class="my-page-title">🔔 通知中心</h1>
-    <button type="button" class="btn-sm" id="notif-mark-all">✅ 全部已读</button>
+    <h1 class="my-page-title">{{ MSG.toolbox.menu_notifications }}</h1>
+    <button type="button" class="btn-sm" id="notif-mark-all">{{ MSG.notify.mark_all_read }}</button>
 </div>
-<div class="notif-filter-tabs" role="tablist" aria-label="通知筛选">
+<div class="notif-filter-tabs" role="tablist" aria-label="{{ MSG.auto.通知筛选 }}">
     <a class="notif-tab {% if not show_unread %}is-active{% endif %}" href="{% url 'notifications_page' %}">全部 {{ total_count }}</a>
     <a class="notif-tab {% if show_unread %}is-active{% endif %}" href="{% url 'notifications_page' %}?filter=unread">未读 {{ unread_count }}</a>
 </div>
@@ -39,8 +39,8 @@
 {% else %}
 <div class="empty-state my-empty">
     <div class="my-empty-emoji" aria-hidden="true">🔔</div>
-    <p>{% if show_unread %}没有未读通知啦，都处理完了喵~{% else %}还没有通知，去和大家互动起来吧~{% endif %}</p>
-    <a class="btn-primary" href="{% url 'index' %}">🏠 去首页逛逛</a>
+    <p>{% if show_unread %}{{ MSG.empty.notifications_unread }}{% else %}{{ MSG.empty.notifications }}{% endif %}</p>
+    <a class="btn-primary" href="{% url 'index' %}">{{ MSG.auto.去首页逛逛 }}</a>
 </div>
 {% endif %}
 {% endblock %}

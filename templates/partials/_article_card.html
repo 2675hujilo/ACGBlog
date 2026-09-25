@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 {% load blog_extras %}
 {% comment %}
   文章列表卡片（bug4 重排）：
@@ -14,7 +14,7 @@
          data-category="{% if article.category %}{{ article.category.name }}{% endif %}"
          data-tags="{% for t in article.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
     {# ========== 右上角统一角标区 ========== #}
-    <div class="card-corner-badges" aria-label="文章标记">
+    <div class="card-corner-badges" aria-label="{{ MSG.auto.文章标记 }}">
         {# Bug4：角标严格读取置顶/精华/热门标记字段（旧逻辑误按点赞>=100、浏览>=200 推断） #}
         {% if article.is_pinned %}<span class="corner-badge cb-pinned" title="置顶文章">📌 置顶</span>{% endif %}
         {% if article.is_featured %}<span class="corner-badge cb-featured" title="精华文章">⭐ 精华</span>{% endif %}
@@ -39,19 +39,19 @@
 
             {# 第三行：互动数据 #}
             <div class="article-card-stats">
-                <span class="stat-item" title="阅读量">
+                <span class="stat-item" title="{{ MSG.auto.阅读量 }}">
                     <img src="{% static 'assets/icons/eye.svg' %}" alt="" class="icon"> {{ article.views }}
                 </span>
-                <span class="stat-item" title="点赞数">
+                <span class="stat-item" title="{{ MSG.auto.点赞数_2 }}">
                     <img src="{% static 'assets/icons/heart.svg' %}" alt="" class="icon"> {{ article.likes }}
                 </span>
-                <span class="stat-item" title="收藏数">
+                <span class="stat-item" title="{{ MSG.auto.收藏数 }}">
                     <img src="{% static 'assets/icons/star.svg' %}" alt="" class="icon"> {{ article.favorites.count }}
                 </span>
-                <span class="stat-item" title="评论数">
+                <span class="stat-item" title="{{ MSG.auto.评论数_2 }}">
                     <img src="{% static 'assets/icons/comment.svg' %}" alt="" class="icon"> {{ article.comment_count }}
                 </span>
-                <span class="stat-item" title="阅读时长">
+                <span class="stat-item" title="{{ MSG.auto.阅读时长 }}">
                     <img src="{% static 'assets/icons/clock.svg' %}" alt="" class="icon"> {{ article.reading_time }}
                 </span>
                 {% if article.rating_count %}
@@ -66,7 +66,7 @@
                 <a class="author-link-inline" href="{% url 'user_profile' article.author.username %}" aria-label="作者 {{ article.author.nickname|default:article.author.username }} 的主页">
                     <span class="avatar-circle avatar-xs" data-username="{{ article.author.username }}">
                         {% if article.author.avatar %}
-                        <img src="{{ article.author.avatar.url }}" alt="作者头像" loading="lazy" width="40" height="40">
+                        <img src="{{ article.author.avatar.url }}" alt="{{ MSG.auto.作者头像 }}" loading="lazy" width="40" height="40">
                         {% else %}
                         <span class="avatar-initial">{{ article.author.nickname|default:article.author.username|slice:":1" }}</span>
                         {% endif %}
@@ -85,7 +85,7 @@
                     {% endfor %}
                 </span>
                 {% endif %}
-                <time class="footer-date" datetime="{{ article.updated_at|date:'c' }}" aria-label="更新时间">
+                <time class="footer-date" datetime="{{ article.updated_at|date:'c' }}" aria-label="{{ MSG.auto.更新时间 }}">
                     <img src="{% static 'assets/icons/calendar.svg' %}" alt="" class="icon"> {{ article.updated_at|date:"Y-m-d" }}
                 </time>
             </div>

@@ -195,6 +195,17 @@
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(10px);
 }
+/* 「扁平」变体：面板已被外层卡片（如设置页的 .settings-card）包裹时，
+   去掉自身的卡片外观，避免出现「卡片套卡片」的双层边框与阴影。
+   由 `_badge_panel.html` 依据上下文变量 badge_panel_flat 决定是否加此类。 */
+.badge-panel--flat {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+}
 /* 头部：标题与进度同一行，窄屏自动换行 */
 .badge-panel-head {
     display: flex; flex-wrap: wrap; align-items: center;

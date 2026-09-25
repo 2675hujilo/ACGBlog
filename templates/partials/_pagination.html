@@ -8,11 +8,11 @@
 {% endcomment %}
 {% if page_obj and page_obj.paginator.num_pages > 1 %}
 {% smart_page_range page_obj.number page_obj.paginator.num_pages 3 as pages %}
-<nav class="pagination no-refresh-pagination" aria-label="分页">
+<nav class="pagination no-refresh-pagination" aria-label="{{ MSG.auto.分页 }}">
     {% if page_obj.has_previous %}
-        <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"><img src="{% static 'assets/icons/prev-page.svg' %}" alt="" class="icon"> 上一页喵</a>
+        <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"><img src="{% static 'assets/icons/prev-page.svg' %}" alt="" class="icon"> {{ MSG.auto.上一页喵 }}</a>
     {% else %}
-        <span class="page-link disabled" aria-disabled="true"><img src="{% static 'assets/icons/prev-page.svg' %}" alt="" class="icon"> 上一页喵</span>
+        <span class="page-link disabled" aria-disabled="true"><img src="{% static 'assets/icons/prev-page.svg' %}" alt="" class="icon"> {{ MSG.auto.上一页喵 }}</span>
     {% endif %}
     {% for n in pages %}
         {% if n == 0 %}
@@ -24,9 +24,9 @@
         {% endif %}
     {% endfor %}
     {% if page_obj.has_next %}
-        <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">下一页喵 <img src="{% static 'assets/icons/next-page.svg' %}" alt="" class="icon"></a>
+        <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">{{ MSG.auto.下一页喵 }} <img src="{% static 'assets/icons/next-page.svg' %}" alt="" class="icon"></a>
     {% else %}
-        <span class="page-link disabled" aria-disabled="true">下一页喵 <img src="{% static 'assets/icons/next-page.svg' %}" alt="" class="icon"></span>
+        <span class="page-link disabled" aria-disabled="true">{{ MSG.auto.下一页喵 }} <img src="{% static 'assets/icons/next-page.svg' %}" alt="" class="icon"></span>
     {% endif %}
 </nav>
 {% endif %}

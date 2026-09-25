@@ -60,10 +60,31 @@
     transform: translateY(0) scale(.97);
 }
 .header-menu-btn.is-open {
-    background: var(--grad-purple);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 6px 18px rgba(160, 108, 213, .35);
+    /* 展开态（"按下"）：浅紫渐变底 + 深紫文字。
+
+       为什么不用「深紫底 + 白字」：白字在品牌紫上最多只能到 3.75:1（#a06cd5）,
+       要满足 WCAG AA 4.5:1 就必须把底色压深到接近 #8b53c6 —— 那正是用户反馈
+       「太深了、和其他不一致」的样子。**浅紫底 + 深紫字**则同时拿到三样：
+         · 浅：接近站点其他胶囊控件（.chip / .btn-sm）的明度，视觉统一；
+         · 清晰：实测 6.44:1（起点）~7.37:1（终点），远超 4.5:1；
+         · 明确：粉紫渐变仍在，一眼看出「这个按钮处于展开状态」。
+       对比度可用 scripts/tools/contrast_pick.py 复算。 */
+    background-color: #e3ccff;
+    background-image: linear-gradient(135deg, #ede0ff, #d8bdf8);
+    color: #5b2d91;
+    border-color: rgba(160, 108, 213, .55);
+    box-shadow: 0 6px 18px rgba(160, 108, 213, .28),
+                inset 0 0 0 1px rgba(255, 255, 255, .55);
+    text-shadow: none;
+}
+/* 展开态里的头像圆形描边：浅底上用主色描边，边界更清晰 */
+.header-menu-btn.is-open .um-avatar,
+.header-menu-btn.is-open .um-avatar-fallback {
+    box-shadow: 0 0 0 2px rgba(160, 108, 213, .45);
+}
+.header-menu-btn.is-open .um-avatar-fallback {
+    background: rgba(160, 108, 213, .18);
+    color: #4a2d7a;
 }
 .header-menu-btn .chev {
     font-size: 10px;
@@ -237,12 +258,16 @@
         flex: 1 1 90px;
         min-width: 72px;
     }
-    /* 搜索按钮在手机端只显示放大镜图标，节省横向空间 */
+    /* 搜索按钮在手机端只显示放大镜图标，节省横向空间。
+       注意：此时按钮是 38×34 的方形尺寸，若沿用桌面端的
+       `border-radius: 0 999px 999px 0`（左侧 0），就会变成一个左侧带直角的
+       「半胶囊」——所以这里必须把四角都设为圆形（999px），做成圆形图标按钮。 */
     .nav-search button[type="submit"] {
         flex: none;
         width: 38px;
         padding: 0;
         font-size: 0;
+        border-radius: 999px;
     }
     .nav-search button[type="submit"]::before {
         content: "🔍";

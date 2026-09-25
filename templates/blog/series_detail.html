@@ -3,9 +3,9 @@
 {% block title %}{{ series.title }} · 文章系列{% endblock %}
 {% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="面包屑" itemscope itemtype="https://schema.org/BreadcrumbList">
-    <a href="{% url 'index' %}"><span itemprop="name">🏠 首页</span><meta itemprop="position" content="1"></a>
-    <span class="crumb-sep">›</span><a href="{% url 'series_list' %}"><span itemprop="name">文章系列</span><meta itemprop="position" content="2"></a>
+<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span><meta itemprop="position" content="1"></a>
+    <span class="crumb-sep">›</span><a href="{% url 'series_list' %}"><span itemprop="name">{{ MSG.auto.文章系列 }}</span><meta itemprop="position" content="2"></a>
     <span class="crumb-sep">›</span><span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ series.title }}</span><meta itemprop="position" content="3"></span>
 </nav>
 {% endblock %}
@@ -17,13 +17,13 @@
 {% block content %}
 {# 67. 系列详情页：系列介绍 + 全部文章（按序号排序） #}
 <div class="series-detail-wrap">
-    <div class="series-detail-head" aria-label="系列介绍">
+    <div class="series-detail-head" aria-label="{{ MSG.auto.系列介绍 }}">
         <h1>📚 {{ series.title }}</h1>
-        <p class="muted">{{ series.description|default:'这个系列还没有介绍~' }}</p>
+        <p class="muted">{% if series.description %}{{ series.description }}{% else %}{{ MSG.empty.series_intro }}{% endif %}</p>
         <p class="muted">✍ {{ series.author.nickname|default:series.author.username }} · 共 {{ series_articles|length }} 篇 
         · 创建于 <time datetime="{{ series.created_at|date:'c' }}">{{ series.created_at|date:"Y-m-d" }}</time></p>
     </div>
-    <ol class="series-detail-articles" aria-label="系列文章列表">
+    <ol class="series-detail-articles" aria-label="{{ MSG.auto.系列文章列表 }}">
         {% for a in series_articles %}
         <li class="series-detail-item">
                         <span class="series-detail-idx">{{ a.series_order|default:forloop.counter }}</span>
@@ -31,7 +31,7 @@
             <span class="muted">👁 {{ a.views }} · {{ a.created_at|date:"Y-m-d" }}</span>
         </li>
         {% empty %}
-        <li class="muted" role="status">这个系列还没有已发布的文章呢~</li>
+        <li class="muted" role="status">{{ MSG.auto.这个系列还没有已发布的文章呢 }}</li>
         {% endfor %}
     </ol>
 </div>

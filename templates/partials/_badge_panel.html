@@ -1,3 +1,4 @@
+{% load blog_extras %}
 {% comment %}==================================================================
    partials/_badge_panel.html —— 个人中心「徽章 / 成就」可视化面板
    —————————————————————————————————
@@ -15,14 +16,16 @@
         并在 summary 上显示数量；一枚徽章都没有时默认展开，引导用户去看获取方式。
    文案：全部取自后端文案表 MSG.badge.*（Bug9 任务2），模板内不硬编码中文。
    =================================================================={% endcomment %}
-<section class="badge-panel" aria-labelledby="badge-panel-title"
+{# 数据来源：视图注入的 badge_panel #}
+<section class="badge-panel{% if badge_panel_flat %} badge-panel--flat{% endif %}"
+         aria-labelledby="badge-panel-title"
          data-obtained="{{ badge_panel.obtained_count }}" data-locked="{{ badge_panel.locked_count }}">
     <div class="badge-panel-head">
         <h2 class="profile-section-title" id="badge-panel-title">{{ MSG.badge.panel_title }}</h2>
         <div class="badge-panel-meta" role="status">
             {# 总进度：已获得 / 总数 + 进度条 + 百分比 #}
             <span class="badge-panel-count">
-                {{ MSG.badge.obtained_prefix }} <b>{{ badge_panel.obtained_count }}</b>/{{ badge_panel.total }} {{ MSG.badge.obtained_suffix }}
+                {{ MSG.badge.obtained_prefix }} <b>{{ badge_panel.obtained_count }}</b>/{{ badge_panel.total }}
             </span>
             <span class="badge-panel-bar" role="progressbar"
                   aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ badge_panel.rate }}"
@@ -67,7 +70,7 @@
         <summary class="badge-locked-summary">
             <span class="badge-locked-summary-icon" aria-hidden="true">🔒</span>
             <span class="badge-locked-summary-text">
-                {{ MSG.badge.expand_locked_prefix }}<b>{{ badge_panel.locked_count }}</b>{{ MSG.badge.expand_locked_suffix }}
+                {{ MSG.badge.expand_locked }}（<b>{{ badge_panel.locked_count }}</b>）
             </span>
             <span class="badge-locked-toggle" aria-hidden="true"></span>
         </summary>
@@ -80,7 +83,7 @@
                 <div class="badge-card-desc muted">{{ b.description }}</div>
                 {# 如何获得：明确写出获取条件（需求「并说明如何获得」） #}
                 <div class="badge-card-howto">
-                    <span class="badge-howto-label">🎯 如何获得</span>
+                    <span class="badge-howto-label">{{ MSG.badge.how_to_get }}</span>
                     <span class="badge-howto-text">{{ b.how_to }}</span>
                 </div>
                 {# 实时进度：当前值 / 目标值 + 进度条，让用户知道还差多少 #}

@@ -44,8 +44,10 @@ class Command(BaseCommand):
         parser.add_argument('--stub', action='store_true', help='只列出疑似无实现的视图')
         parser.add_argument('--list', action='store_true', help='列出全部已注册路由')
         parser.add_argument('--json', action='store_true', help='把完整结果写入 docs/ 便于归档')
-        parser.add_argument('--source', default='blog/views.py',
-                            help='要审计的视图源文件（默认 blog/views.py）')
+        parser.add_argument('--source', default=None,
+                            help='要审计的视图源码路径。默认自动探测：'
+                                 '优先 blog/views.py（单文件），'
+                                 '不存在则用 blog/views/（拆分后的包，会递归收集）。')
 
     # ------------------------------------------------------------------
     # 采集
@@ -71,31 +73,61 @@ class Command(BaseCommand):
         return routes
 
     def _collect_functions(self, source_path):
-        """用 AST 解析源文件，拿到全部顶层函数及其行号、函数体规模。"""
+        """用 AST 解析视图源码，拿到全部顶层函数及其行号、函数体规模。
+
+        自动兼容两种形态（视图层当前是单文件，但历史上尝试过拆分）：
+          · ``blog/views.py``  —— 单文件（当前形态）；
+          · ``blog/views/``    —— 包（递归收集包内所有 ``*.py``）。
+        找不到时报错并提示可用路径，避免只抛一个干巴巴的 FileNotFoundError。
+
+        为什么要兼容：拆分尝试期间把默认值改成了包路径，复原为单文件后
+        审计直接 ``FileNotFoundError: blog/views``（实测），必须自动探测。
+        """
+        if not source_path:
+            for candidate in ('blog/views.py', 'blog/views'):
+                if os.path.exists(os.path.join(settings.BASE_DIR, candidate)):
+                    source_path = candidate
+                    break
+            else:
+                raise FileNotFoundError(
+                    '未找到视图源码：blog/views.py 与 blog/views/ 都不存在')
+
         path = os.path.join(settings.BASE_DIR, source_path)
-        text = io.open(path, encoding='utf-8').read()
-        tree = ast.parse(text)
+        texts, sources = [], []
+        if os.path.isdir(path):
+            for name in sorted(os.listdir(path)):
+                if not name.endswith('.py'):
+                    continue
+                full = os.path.join(path, name)
+                texts.append(io.open(full, encoding='utf-8').read())
+                sources.append('%s/%s' % (source_path.replace('\\', '/'), name))
+        else:
+            texts.append(io.open(path, encoding='utf-8').read())
+            sources.append(source_path.replace('\\', '/'))
+
         funcs = {}
-        for node in tree.body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                funcs[node.name] = {
-                    'line': node.lineno,
-                    'end_line': getattr(node, 'end_lineno', node.lineno),
-                    'body_lines': getattr(node, 'end_lineno', node.lineno) - node.lineno,
-                    'is_stub': self._is_stub_body(node),
-                    'source': source_path,
-                }
-            # 类视图：把类本身也登记，便于与 URL 对应
-            elif isinstance(node, ast.ClassDef):
-                funcs[node.name] = {
-                    'line': node.lineno,
-                    'end_line': getattr(node, 'end_lineno', node.lineno),
-                    'body_lines': getattr(node, 'end_lineno', node.lineno) - node.lineno,
-                    'is_stub': False,
-                    'is_class': True,
-                    'source': source_path,
-                }
-        return funcs, text
+        for text, src in zip(texts, sources):
+            tree = ast.parse(text)
+            for node in tree.body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    funcs[node.name] = {
+                        'line': node.lineno,
+                        'end_line': getattr(node, 'end_lineno', node.lineno),
+                        'body_lines': getattr(node, 'end_lineno', node.lineno) - node.lineno,
+                        'is_stub': self._is_stub_body(node),
+                        'source': src,
+                    }
+                # 类视图：把类本身也登记，便于与 URL 对应
+                elif isinstance(node, ast.ClassDef):
+                    funcs[node.name] = {
+                        'line': node.lineno,
+                        'end_line': getattr(node, 'end_lineno', node.lineno),
+                        'body_lines': getattr(node, 'end_lineno', node.lineno) - node.lineno,
+                        'is_stub': False,
+                        'is_class': True,
+                        'source': src,
+                    }
+        return funcs, '\n'.join(texts)
 
     def _collect_call_sites(self, names):
         """扫描项目内全部 Python 文件，统计每个名字被引用（调用 / 传参）的次数。

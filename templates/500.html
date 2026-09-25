@@ -17,15 +17,15 @@
     <span class="spark">💫</span>
     <span class="spark">⚡</span>
     <span class="spark">✨</span>
-    <div class="card" role="group" aria-label="服务器错误提示">
-        <div class="illust" role="img" aria-label="服务器错误">😵‍💫💻⚡</div>
+    <div class="card" role="group" aria-label="{{ MSG.auto.服务器错误提示 }}">
+        <div class="illust" role="img" aria-label="{{ MSG.auto.服务器错误 }}">😵‍💫💻⚡</div>
         <h1>{{ MSG.err.500_heading }}</h1>
         <p class="sub" id="err-desc">{{ MSG.err.500_desc }}</p>
         <p class="sub">{{ MSG.err.500_hint }}</p>
         <div class="err-btn-group">
             {# 7. 返回上一页：调用 history.back() #}
-            <button type="button" class="btn-back" aria-label="返回上一页">{{ MSG.btn.back_prev }}</button>
-            <a class="btn-home" href="/" aria-label="返回首页">{{ MSG.btn.home }}</a>
+            <button type="button" class="btn-back" aria-label="{{ MSG.auto.返回上一页 }}">{{ MSG.btn.back_prev }}</button>
+            <a class="btn-home" href="/" aria-label="{{ MSG.auto.返回首页 }}">{{ MSG.btn.home }}</a>
         </div>
     </div>
 </body>
