@@ -43,7 +43,7 @@
             <span id="err-password2" class="field-error" role="alert" hidden>{% for f, m in field_errors %}{% if f == 'password2' %}{{ m }}{% endif %}{% endfor %}</span>
             <p class="form-success" id="reg-success" role="status" hidden>{{ MSG.auth.password_ok_hint }}</p>
             <button type="reset" class="btn-ghost" formnovalidate>{{ MSG.auth.clear_form }}</button>
-            <button type="submit" class="btn-primary" style="width:100%;margin-top:10px;" aria-label="{{ MSG.nav.register }}"
+            <button type="submit" class="btn-primary" aria-label="{{ MSG.nav.register }}"
                     formenctype="application/x-www-form-urlencoded" formaction="{% url 'register' %}">{{ MSG.nav.register }}</button>
         </form>
         <p class="auth-alt muted">{{ MSG.auth.have_account }}<a href="{% url 'login' %}">{{ MSG.auth.go_login }}</a></p>

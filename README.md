@@ -127,7 +127,7 @@
 │  URL Router（page 路由 + /api/ 路由）                                 │
 │        │                                                              │
 │        ▼                                                              │
-│  Views（blog/views.py：函数视图 + DRF 类视图）                        │
+│  Views（blog/views/ 包：15 个功能子模块 + DRF 类视图）              │
 │        │                                                              │
 │        ├──► Templates（42 个模板 + MSG 文案命名空间）                  │
 │        ├──► DRF Serializers（JSON）                                   │
@@ -152,7 +152,7 @@
 | 中间件 | 横切关注点：日志采集、站点信息、文案注入、看板娘开关、错误页 | `blog/middleware/*.py`（一个中间件一个文件） |
 | 上下文处理器 | 向所有模板注入公共数据（导航 / 侧栏 / 统计 / 文案 / 构建号） | `blog/context_processors.py` |
 | 领域模块 | 可复用的业务逻辑，供视图与任务共用 | `blog/scheduled_publishing.py`、`blog/access_log_service.py`、`blog/html_safety.py`、`blog/site_messages.py`、`blog/live2d.py` |
-| 视图 | 页面渲染与 API 响应 | `blog/views.py`（3683 → 约 5200 行，含审核 / 看板 / 回收站） |
+| 视图 | 页面渲染与 API 响应 | `blog/views/`（原 5700 行单文件按功能拆为 15 个子模块，`__init__` 全量再导出，含审核 / 看板 / 回收站） |
 | 异步任务 | 不阻塞请求的副作用 | `blog/tasks.py` |
 | 信号 | 模型状态变化的副作用（缓存失效 / 计数重算 / 徽章 / 通知） | `blog/signals.py` |
 
@@ -172,7 +172,23 @@ ACGBlog/
 │   └── wsgi.py / asgi.py
 ├── blog/                              # 唯一业务应用
 │   ├── models.py                      # 48 个模型（1432 → 约 1900 行）
-│   ├── views.py                       # 页面视图 + API + 审核 / 看板 / 回收站 / 功能开关注册表
+│   ├── views/                         # ★ 视图包（原 5700 行单文件按功能拆分；__init__ 全量再导出，兼容 blog.views.X）
+│   │   ├── common.py                  #   共享查询工具（_base_qs / _filter_articles）
+│   │   ├── articles.py                #   文章发布 / 编辑 / 删除 / 详情
+│   │   ├── comments.py                #   评论与楼中楼
+│   │   ├── auth.py                    #   登录 / 注册 / 登出
+│   │   ├── users.py                   #   用户中心 / 徽章
+│   │   ├── series.py                  #   系列创建
+│   │   ├── catalog.py                 #   分类 / 标签 / 归档 / 侧栏
+│   │   ├── search.py                  #   搜索
+│   │   ├── interactions.py            #   点赞 / 收藏 / 评分
+│   │   ├── api.py                     #   DRF 接口
+│   │   ├── console.py                 #   运营看板 / 站点设置
+│   │   ├── moderation.py              #   审核 / 推广审批
+│   │   ├── features.py                #   功能开关注册表
+│   │   ├── seo.py                     #   RSS / sitemap
+│   │   ├── errors.py                  #   错误视图
+│   │   └── __init__.py                #   全量再导出 204 个名字
 │   ├── urls.py                        # 应用路由（页面 + /api/）
 │   ├── serializers.py                 # DRF 序列化器
 │   ├── middleware/                    # 中间件包（一个中间件一个文件）
@@ -196,7 +212,7 @@ ACGBlog/
 │   ├── signals.py                     # 模型信号
 │   ├── admin.py                       # 自定义后台（13 个模型 + 定制 AdminSite）
 │   ├── features_live2d.py             # 【已删除】内容迁至 live2d.py
-│   ├── features_round5/               # 【已删除】内容迁至 views.py / urls.py
+│   ├── features_round5/               # 【已删除】内容迁至 views/features.py / urls.py
 │   ├── management/commands/           # 管理命令（见 9.1）
 │   ├── migrations/                    # 18 个迁移（最新 0018）
 │   └── templatetags/
@@ -760,7 +776,7 @@ robocopy E:\Az_Code_E\ACGBlog\media D:\backup\media /MIR
 ## 10. 扩展指南
 
 ### 10.1 新增页面 / 视图
-1. `blog/views.py` 增加视图（页面用 `render`，接口用 DRF）；
+1. 在 `blog/views/` 对应功能子模块增加视图（页面用 `render`，接口用 DRF）；跨模块共享的查询工具放 `common.py`；
 2. `blog/urls.py` 注册路由并命名（页面进 `urlpatterns`，接口进 `api_urlpatterns`）；
 3. `templates/blog/` 新增模板，`{% extends 'base.html' %}`；
 4. 需要导航入口则改 `base.html`；选中态用 `aria-current="page"`。
@@ -877,13 +893,29 @@ node ui_matrix.mjs edge
 
 详细产物见 `docs/bugfix_20260926_bug9/`（修改清单、验证报告、审计 JSON、192 帧截图）。
 
+### 11.4 本轮验收结果（views 包重构 + 全量 UI 视觉验收，2026-09-27）
+
+| 项目 | 结果 |
+| --- | --- |
+| `manage.py check` | 0 错误 0 警告 |
+| `import requests` / `diag --deps` | 无 `RequestsDependencyWarning`（urllib3 2.8.0 与 requests 2.32.3 兼容） |
+| `security_test` | **51/51**（含访问日志模块专项 12 项：防信息泄露 / 注入 / 兜底队列 / 响应时延） |
+| 视口矩阵 | **352 组合 0 横向溢出**（8 视口 × 亮/暗黑 × Chrome/Edge，含看板 / 编辑器） |
+| 三角色功能流程（Chrome） | 注册 6/6、登录 5/5、发布+定时 8/8、系列+分类 6/6、多级评论、推广申请+审核 12/12、游客路由 25/25、看板计数 16/16 |
+| Edge 关键流程抽测 | **9/9**（游客权限 / 异常路由 / 作者发布+评论 / 看板三项计数与 ORM 一致） |
+| 访问日志三层降级 | 层1 Celery 异步（积压 653→0、补录 650）；层2 Redis 兜底队列（5 条，`accesslog_queue --drain` 补录）；层3 全不可用同步入库（+3），日志不丢失 |
+| 按钮交互三态 | hover / focus / active / 选中态在亮+暗黑均有清晰反馈，字体与背景符合二次元萌系（19/19） |
+
+产物见 `docs/views_refactor/`（拆分脚本 / 报告 / legacy 归档）与 `docs/ui_test/`（测试库、场景脚本、`screenshots/` 截图集、运行日志）。
+
 ---
 
 ## 12. 工单变更历史
 
 | 工单 | 主要内容 | 归档目录 |
 | --- | --- | --- |
-| **Bug9（最新）** | 定时投稿可见性与状态流转修复；个人中心徽章成就面板；全站文案后端变量化（286 条注册表 + 三层接入）；路由与视图审计（`routes_audit`）；`feature` / `round` 文件全部合并归档；按钮交互三态；三用户全流程验收；README 重写 | `docs/bugfix_20260926_bug9/` |
+| **views 重构（最新）** | 5700 行单文件 `blog/views.py` 按功能拆为 `blog/views/` 包（15 子模块，AST 辅助切分 + `__init__` 全量再导出 204 名，完全兼容旧导入）；修复评论区 `content-visibility` 导致视口外不渲染；全站等分网格改 `minmax(0,1fr)` 防窄屏溢出；清理登录/注册/系列表单模板内联样式迁入 CSS；三角色全流程 + 352 组合视口矩阵 + 51 项安全测试全绿 | `docs/views_refactor/`、`docs/ui_test/` |
+| Bug9 | 定时投稿可见性与状态流转修复；个人中心徽章成就面板；全站文案后端变量化（286 条注册表 + 三层接入）；路由与视图审计（`routes_audit`）；`feature` / `round` 文件全部合并归档；按钮交互三态；三用户全流程验收；README 重写 | `docs/bugfix_20260926_bug9/` |
 | Bug8 | 注册页内联红字校验；推广「系统执行状态」；访问日志重构为三层降级（异步优先 + 兜底队列 + 熔断）；移动端底部操作条修复 | `docs/bugfix_20260925_bug8/` |
 | 工单 6 | 置顶 / 精华 / 热度权限与审核流（迁移 0016）；定时发文与访问日志两个真实缺陷修复 | `docs/bug1/`、`docs/bug11/`、`docs/bug12/` |
 | 工单 5 | 17 项 Bug + 健壮性增强（`html_safety.py`、无功能 stub 归档、BUILD_TOKEN 热更新等） | `docs/bugfix_ticket5/` |
@@ -900,7 +932,7 @@ node ui_matrix.mjs edge
 | `/api/features/` 下 1000 个 echo 占位桩（`features_*.py` × 10 + `features_urls.py`） | 仅回显请求体、无真实业务、前端零调用 | `docs/archived_feature_stubs/` |
 | round5 自动生成的 11,606 个占位路由 | 视图全为元数据回显 stub，拖慢 URL 解析 | `docs/archive/round5_stubs/` |
 | 第三方登录占位（GitHub / 微信 / 微博） | 无可用凭据、无真实 OAuth 流程 | `docs/archived_feature_stubs/social_login/` |
-| `features_round5/`（功能开关注册表原实现） | 已并入 `views.py` + `urls.py` | `docs/archived_feature_stubs/round5_features/` |
+| `features_round5/`（功能开关注册表原实现） | 已并入 `blog/views/features.py` + `urls.py` | `docs/archived_feature_stubs/round5_features/` |
 | `/test-404/` 调试路由 + `test_404_page` | 非业务功能；404 页由中间件统一渲染 | `docs/archived_feature_stubs/debug_routes/` |
 
 ---

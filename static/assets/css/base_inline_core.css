@@ -55,7 +55,10 @@ label{font-size:.9rem;color:var(--c-text-dim)}
 @media(max-width:1100px){.three-col-grid{grid-template-columns:1fr}.col-left,.col-right{position:static}}
 
 
-        .article-body,.comment-list{content-visibility:auto;contain-intrinsic-size:auto 600px;}
+        .article-body{content-visibility:auto;contain-intrinsic-size:auto 600px;}
+        /* 评论列表保持可见：保证页内查找(Ctrl+F)、屏幕阅读器、全页截图正常，
+           避免视口外评论被跳过渲染 */
+        .comment-list{content-visibility:visible;contain-intrinsic-size:auto 0;}
         .article-card{contain:layout;}
         #page-loader,.reading-progress{will-change:width;}
 @font-face{font-display:swap;}

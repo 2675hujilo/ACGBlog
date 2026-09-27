@@ -108,7 +108,7 @@ button, .btn-primary, .page-link, .nav-search button, .like-btn, .fav-btn {
 
 /* ---------- 31. Footer 四列布局 + 渐变分隔线 ---------- */
 .site-footer .footer-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-4); text-align: left; margin-bottom: var(--space-3);
 }
 .footer-col h4 {

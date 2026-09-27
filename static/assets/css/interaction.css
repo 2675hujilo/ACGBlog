@@ -215,7 +215,7 @@
 /* ---------- 移动端 ---------- */
 @media (max-width: 768px) {
     .comment-toolbar { flex-direction: column; align-items: stretch; }
-    .favorite-folder-grid { grid-template-columns: repeat(2, 1fr); }
+    .favorite-folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ---------- 打印隐藏 ---------- */

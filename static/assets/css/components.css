@@ -160,7 +160,7 @@
 /* 全站统计卡片网格 */
 .tag-stats-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
     margin-bottom: 20px;
 }
@@ -373,7 +373,7 @@
 /* 移动端适配 */
 @media (max-width: 980px) {
     .tag-stats-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
     .tag-rank-name {
         flex: 0 0 120px;
@@ -381,7 +381,7 @@
 }
 @media (max-width: 640px) {
     .tag-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .tag-stat-num {
         font-size: 1.2rem;

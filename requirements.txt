@@ -23,12 +23,13 @@ Pillow==10.3.0
 # ---- HTML 净化（评论 / 富文本白名单清洗）----
 bleach==6.4.0
 
-# ---- HTTP 客户端（传递依赖，锁定 chardet / urllib3 兼容版本以消除 RequestsDependencyWarning）----
-# requests 2.32.3 支持 urllib3 <3 与 chardet 3.0.2~5.2.0；此前环境里 urllib3 为 1.26.20，
-# 虽仍在兼容区间，但为避免不同机器解析出不一致的次要版本导致告警回归，这里显式锁定。
+# ---- HTTP 客户端（传递依赖，锁定兼容版本以消除 RequestsDependencyWarning）----
+# requests 2.32.3 要求 urllib3>=1.21.1,<3，编码检测默认使用 charset_normalizer（无需再装 chardet）。
+# 实测 urllib3 2.8.0（UI 自动化安装 selenium 时连带升级）与 requests 2.32.3 组合，
+# import requests 无任何 RequestsDependencyWarning；故 urllib3 用区间锁定以兼容两种环境。
 requests==2.32.3
-urllib3==2.2.3
-chardet==5.2.0
+urllib3>=2.2.3,<3
+charset_normalizer==3.4.1
 
 # ---- 第5轮新增：搜索拼音 / 文章导出 / 二维码 ----
 pypinyin==0.55.0

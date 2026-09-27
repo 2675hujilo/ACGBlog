@@ -12,7 +12,7 @@
 {# Bug24: 新建文章系列表单（登录用户），萌系风格，与写文章页控件统一 #}
 <div class="edit-wrap series-form-wrap">
     <h1>{{ MSG.auto.创建文章系列 }}</h1>
-    <p class="muted" style="margin:4px 0 18px;">{{ MSG.auto.把同主题的文章整理成一个系列_读者就能按顺序一口 }}</p>
+    <p class="muted">{{ MSG.auto.把同主题的文章整理成一个系列_读者就能按顺序一口 }}</p>
 
     {% if error %}
     <div class="form-error form-error--boxed" role="alert">
@@ -20,19 +20,19 @@
     </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" aria-label="{{ MSG.auto.创建系列表单 }}">
+    <form method="post" id="series-form" enctype="multipart/form-data" aria-label="{{ MSG.auto.创建系列表单 }}">
         {% csrf_token %}
         <label for="id_series_title">{{ MSG.auto.系列名称 }}</label>
         <input type="text" id="id_series_title" name="title" maxlength="80" required
                aria-label="{{ MSG.auto.系列名称_2 }}" value="{{ form_title|default:'' }}"
                placeholder="{{ MSG.auto.给系列起个名字吧_例如_django_入坑日记 }}">
 
-        <label for="id_series_desc" style="margin-top:16px;">{{ MSG.auto.系列简介_可选 }}</label>
+        <label for="id_series_desc">{{ MSG.auto.系列简介_可选 }}</label>
         <textarea id="id_series_desc" name="description" rows="4" maxlength="500"
                   aria-label="{{ MSG.auto.系列简介 }}" placeholder="{{ MSG.auto.简单介绍一下这个系列会写些什么吧 }}">{{ form_desc|default:'' }}</textarea>
 
         {# Bug2：系列封面复用全局萌系封面选择器——原生 file 框隐藏，由虚线标签触发 #}
-        <label for="id_series_cover" style="margin-top:16px;">{{ MSG.auto.系列封面_可选 }}</label>
+        <label for="id_series_cover">{{ MSG.auto.系列封面_可选 }}</label>
         <div class="cover-picker">
             <input type="file" id="id_series_cover" name="cover_image" accept="image/*" hidden aria-label="{{ MSG.auto.上传系列封面 }}">
             <label for="id_series_cover" class="cover-picker-label">
@@ -41,8 +41,8 @@
             </label>
         </div>
 
-        <div class="form-actions" style="display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;">
-            <button type="submit" class="btn-primary" style="border:0;cursor:pointer;">{{ MSG.auto.创建系列喵 }}</button>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">{{ MSG.auto.创建系列喵 }}</button>
             <a href="{% url 'series_list' %}" class="btn-ghost">{{ MSG.auto.返回系列列表 }}</a>
         </div>
     </form>

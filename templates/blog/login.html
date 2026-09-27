@@ -28,7 +28,7 @@
             <label for="id_login_password">{{ MSG.form.password }}</label>
             <input type="password" id="id_login_password" name="password" required
                    autocomplete="current-password" aria-label="{{ MSG.form.password_aria }}" autocapitalize="none" autocorrect="off">
-            <button type="submit" class="btn-primary" id="login-submit" style="width:100%;margin-top:10px;" aria-label="{{ MSG.form.submit_login }}">{{ MSG.nav.login }}</button>
+            <button type="submit" class="btn-primary" id="login-submit" aria-label="{{ MSG.form.submit_login }}">{{ MSG.nav.login }}</button>
         </form>
         <p class="auth-alt muted">{{ MSG.auth.no_account }}<a href="{% url 'register' %}">{{ MSG.nav.register }}</a></p>
         {# 工单6 第7项：原第三方登录（GitHub/微信/微博）为无功能占位，已移除 #}

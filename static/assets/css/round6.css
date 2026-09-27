@@ -258,7 +258,7 @@
 .footer-about-band .footer-about-text h4 { margin: 0 0 4px; font-size: 1rem; color: var(--c-text); }
 .footer-about-band .footer-about-text p { margin: 0; font-size: .85rem; color: var(--c-text-dim); }
 /* 中间三竖列：快速导航 / 友情链接 / 关注订阅 */
-.footer-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+.footer-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
 .footer-col-vertical {
     background: var(--c-card); backdrop-filter: blur(12px);
     border: 1px solid var(--c-border); border-radius: 18px;
@@ -281,7 +281,7 @@
     border-top: 1px dashed var(--c-border); font-size: .78rem; color: var(--c-text-dim); }
 .footer-apply-note a { color: var(--c-primary); }
 /* 网站统计横向带：工单14 改为 4 等分网格，胶囊等宽、数字对齐更整齐 */
-.footer-stats-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+.footer-stats-band { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;
     align-items: stretch; }
 .footer-stat-pill {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -375,7 +375,7 @@
 }
 @media (max-width: 540px) {
     .footer-col-vertical ul { columns: 1; }
-    .footer-stats-band { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .footer-stats-band { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .footer-stat-pill { padding: 8px 10px; }
 }
 

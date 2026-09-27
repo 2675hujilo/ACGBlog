@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static blog_extras %}
+{% block title %}{{ meta_title }}{% endblock %}
+{% block meta_extra %}
+{% include 'partials/_seo_meta.html' with noindex=1 %}
+{% endblock %}
+{% block extra_head %}
+{# 文案总表管理页专用样式（外置文件，遵循「模板不内联样式」约定） #}
+<link rel="stylesheet" href="{% static 'assets/css/site_messages.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb" aria-label="{{ MSG.adminmsg.breadcrumb }}">
+    {# 注意：首页的路由名是 index（`home` 只是 /home/ 这个别名路由的名字） #}
+    <a href="{% url 'index' %}">{{ MSG.adminmsg.home }}</a>
+    <span aria-hidden="true">›</span>
+    <a href="{% url 'staff_console' %}">{{ MSG.adminmsg.console }}</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">{{ MSG.adminmsg.title_page }}</span>
+</nav>
+
+<h1 class="msgs-title">{{ MSG.adminmsg.title }}
+    <span class="msgs-sub">共 {{ total_keys }} 条 · 已改 {{ total_changed }} 条 · 已接入 {{ total_wired }} 条 · 待接入 {{ total_dead }} 条</span>
+</h1>
+{% comment %}
+重要提示：注册表里有相当一部分 key 是「预留登记」，当前还{{ MSG.adminmsg.hint_strong }}它，
+改这些 key 不会产生可见变化。页面已在每行标注「未接入」并用灰色弱化，
+避免误以为改动失效。模块聚合区也显示该域的待接入数量。
+{% endcomment %}
+<p class="msgs-hint muted">
+    {{ MSG.adminmsg.hint_1 }}
+    {{ MSG.adminmsg.hint_2 }}
+    {{ MSG.adminmsg.hint_3 }}
+    <br>
+    <strong>{{ MSG.adminmsg.hint_label }}</strong>：<span class="msgs-chip msgs-chip--same">{{ MSG.adminmsg.chip_dead }}</span>
+    {{ MSG.adminmsg.hint_dead }}
+</p>
+
+{# ---------- 工具栏：搜索 + 域筛选 + 全部恢复默认 ---------- #}
+<form class="msgs-toolbar" method="get" action="{% url 'site_messages' %}" role="search">
+    <input type="search" name="q" value="{{ keyword }}" placeholder="{{ MSG.adminmsg.search_placeholder }}"
+           aria-label="{{ MSG.adminmsg.search_aria }}">
+    <select name="domain" aria-label="{{ MSG.adminmsg.domain_aria }}">
+        <option value="">全部域（{{ total_keys }} 条）</option>
+        {% for dom, title in domain_titles.items %}
+        <option value="{{ dom }}" {% if active_domain == dom %}selected{% endif %}>{{ title }}（{{ dom }}）</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn-sm">{{ MSG.adminmsg.filter }}</button>
+    {% if keyword or active_domain %}
+    <a class="btn-sm" href="{% url 'site_messages' %}">{{ MSG.adminmsg.clear_filter }}</a>
+    {% endif %}
+</form>
+
+<form method="post" id="msgs-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+
+    {# 保存条：滚动时保持可见，避免 286 项都要滚到底才能提交 #}
+    <div class="msgs-savebar">
+        <button type="submit" class="btn-primary">{{ MSG.adminmsg.save_all }}</button>
+        <span class="muted">当前显示 {{ shown_keys }} 条{% if total_changed %}，其中 {{ total_changed }} 条已被改过{% endif %}</span>
+    </div>
+
+    {% for block in domain_blocks %}
+    <details class="msgs-domain" {% if keyword or active_domain or block.changed %}open{% endif %}>
+        <summary class="msgs-domain-head">
+            <span class="msgs-domain-title">{{ block.title }}</span>
+            <code class="msgs-domain-code">{{ block.domain }}</code>
+            <span class="msgs-domain-count">{{ block.item_count }} 条</span>
+            {% if block.changed %}<span class="msgs-badge">已改 {{ block.changed }}</span>{% endif %}
+            {% if block.dead %}<span class="msgs-chip msgs-chip--same">{{ block.dead }} 条未接入</span>{% endif %}
+        </summary>
+
+        <div class="msgs-domain-body">
+            {% for item in block.items %}
+            <div class="msgs-row{% if item.changed %} is-changed{% endif %}{% if not item.wired %} is-dead{% endif %}"
+                 data-key="{{ item.key }}" data-original="{{ item.current }}">
+                <div class="msgs-row-head">
+                    <code class="msgs-key">{{ item.key }}</code>
+                    {% comment %}
+                    状态标记分两轴，互不混淆：
+                      · 覆盖轴（msgs-chip--on）：数据库里是否有覆盖记录
+                      · 编辑轴（msgs-chip--dirty）：本次输入是否与「进页面时的值」不同（前端实时算）
+                    服务端渲染时还没有编辑，故 dirty 标签默认隐藏，由 JS 在输入后切换。
+                    {% endcomment %}
+                    <span class="msgs-chip msgs-chip--on" {% if not item.changed %}hidden{% endif %}
+                          title="{% if item.updated_by %}最后修改：{{ item.updated_by|date:'Y-m-d H:i' }} {}{% endif %}">{{ MSG.adminmsg.chip_overridden }}</span>
+                    {% if item.changed and not item.differs %}
+                    <span class="msgs-chip msgs-chip--same" title="{{ MSG.adminmsg.chip_same_title }}">{{ MSG.adminmsg.chip_same }}</span>
+                    {% endif %}
+                    {% if not item.wired %}
+                    <span class="msgs-chip msgs-chip--same" title="{{ MSG.adminmsg.chip_dead_title }}">{{ MSG.adminmsg.chip_dead }}</span>
+                    {% endif %}
+                    <span class="msgs-chip msgs-chip--dirty" hidden>{{ MSG.adminmsg.chip_dirty }}</span>
+                </div>
+                {# 当前文案（可编辑）：列表内容默认取「覆盖值 > 代码默认值」 #}
+                <input class="msgs-input" type="text" name="{{ item.field }}" value="{{ item.current }}"
+                       aria-label="{{ item.key }} 文案" autocomplete="off" spellcheck="false">
+                {# 代码默认值：只读对照 + 单条恢复入口 #}
+                <div class="msgs-row-foot">
+                    <span class="msgs-default muted" title="{{ MSG.adminmsg.default_title }}">默认：{{ item.default }}</span>
+                    {% if item.changed %}
+                    {% comment %}
+                    恢复默认按钮用**命名提交按钮**放在同一个表单里，绝不另起 <form>：
+                    HTML 不允许表单嵌套，浏览器会忽略内层 <form> 但保留其隐藏字段，
+                    导致「保存全部改动」时把 action=reset 一起提交、误删覆盖（实测踩过）。
+                    命名按钮只会提交被点击的那一个，判定无歧义。
+                    {% endcomment %}
+                    <button type="submit" class="msgs-reset" name="reset_row" value="{{ item.key }}"
+                            title="{{ MSG.adminmsg.reset_title }}">{{ MSG.adminmsg.reset }}</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if block.changed %}
+            {# 整域恢复同样用命名提交按钮，避免表单嵌套 #}
+            <button type="submit" class="msgs-reset msgs-reset--domain"
+                    name="reset_domain" value="{{ block.domain }}">
+                {{ MSG.adminmsg.reset_domain }}
+            </button>
+            {% endif %}
+        </div>
+    </details>
+    {% empty %}
+    <p class="msgs-empty">{{ MSG.adminmsg.no_match }}</p>
+    {% endfor %}
+
+    <div class="msgs-savebar msgs-savebar--bottom">
+        <button type="submit" name="save_all" value="1" class="btn-primary">{{ MSG.adminmsg.save_all }}</button>
+        <a class="btn-sm" href="{% url 'site_settings' %}">{{ MSG.adminmsg.back_settings }}</a>
+    </div>
+</form>
+{% endblock %}
+{% block extra_js %}
+{# 交互脚本：全展开 / 全折叠、搜索过滤高亮、离开页面前提示未保存改动 #}
+<script defer src="{% static 'assets/js/site_messages_admin.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

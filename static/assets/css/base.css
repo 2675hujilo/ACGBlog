@@ -263,6 +263,12 @@ label { font-size: .9rem; color: var(--c-text-dim); }
     background: linear-gradient(90deg, var(--c-purple), var(--c-pink));
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }  /* 渐变文字效果 */
 .auth-alt { margin-top: 16px; text-align: center; font-size: .9rem; }  /* 底部"没有账号？去注册"等切换链接 */
+/* 认证卡片主提交按钮：整宽 + 继承全站圆润字体/统一圆角（原写在模板里的内联样式迁入此处）。
+   显式 font-family:inherit，避免个别浏览器把按钮字体回退成 Arial，保证二次元字体统一。 */
+.auth-card form button[type="submit"].btn-primary {
+    width: 100%; margin-top: 10px;
+    font-family: inherit; border-radius: var(--radius-input);
+}
 
 /* ---------- 响应式断点：≤860px 移动端导航换行重排 ---------- */
 @media (max-width: 860px) {
@@ -315,3 +321,12 @@ a:not(.nav-link):not([class*="chip"]):not(.page-link)
  :not(.article-card-title > a):hover {
     background-size: 100% 2px;
 }
+
+/* ---------- 系列创建表单（原写在模板里的内联样式统一迁入，作用域限定系列表单） ---------- */
+.series-form-wrap > .muted { margin: 4px 0 18px; }
+.series-form-wrap label[for="id_series_desc"],
+.series-form-wrap label[for="id_series_cover"] { display: block; margin-top: 16px; }
+.series-form-wrap .form-actions {
+    display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap;
+}
+.series-form-wrap .form-actions .btn-primary { border: 0; cursor: pointer; }

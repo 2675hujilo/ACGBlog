@@ -60,7 +60,7 @@
       .trend-chart{gap:2px;}
       .trend-x{font-size:.5rem;}
       .trend-col:nth-child(even) .trend-x{visibility:hidden;}
-      .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+      .stat-grid{grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px;}
       .console-panel{padding:14px;min-width:0;}.browser-tags span{word-break:break-word;}
       .console-head h1{font-size:1.25rem;}
     }
