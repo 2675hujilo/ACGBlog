@@ -4,19 +4,13 @@
 
 import json
 import logging
-import os
-import re
-import uuid
+
 from django.conf import settings
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
-)
+    HttpRequest, JsonResponse, )
 from django.views.decorators.http import require_POST
-from ..services.site_messages import msg
 
+from ..services.site_messages import msg
 
 logger = logging.getLogger('blog.views')
 

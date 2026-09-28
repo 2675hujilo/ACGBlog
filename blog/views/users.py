@@ -6,35 +6,29 @@ import json
 import logging
 import os
 import re
-import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
+
 import bleach
+from PIL import Image
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
-)
+    HttpRequest, HttpResponse,
+    JsonResponse, )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from PIL import Image
+
+from .common import _bad_request, _clamp_page_number, _clean_page_size, _json_ok, _paginate_qs, logger
 from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
+    Article, Badge, Comment, Favorite, FavoriteFolder, Notification,
+    User, UserBadge,
 )
 from ..services.site_messages import msg
-
-from .common import AVATAR_MAX_BYTES, _bad_request, _clamp_page_number, _clean_page_size, _json_ok, _paginate_qs, logger
-
 
 logger = logging.getLogger('blog.views')
 

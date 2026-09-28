@@ -13,14 +13,14 @@
 为保持向后兼容（settings 中仍以 ``blog.middleware.X`` 形式引用），
 本 ``__init__`` 统一再导出全部公开类。
 """
-# 再导出全部公开符号，保证 blog.middleware.X 旧引用方式继续可用
-from .slow_query import SlowQueryFilter
 from .access_log import AccessLogMiddleware
-from .online_status import OnlineStatusMiddleware
 from .cute_error_pages import CuteErrorPagesMiddleware
+from .mascot import MascotToggleMiddleware
+from .online_status import OnlineStatusMiddleware
 from .site_info import SiteInfoMiddleware
 from .site_messages import SiteMessagesMiddleware
-from .mascot import MascotToggleMiddleware
+# 再导出全部公开符号，保证 blog.middleware.X 旧引用方式继续可用
+from .slow_query import SlowQueryFilter
 
 __all__ = [
     'SlowQueryFilter',

@@ -28,8 +28,8 @@
 from django.core.management.base import BaseCommand
 
 from blog.services.access_log_service import (FALLBACK_KEY, drain_fallback,
-                                     fallback_length, reset_broker_circuit,
-                                     reset_circuit)
+                                              fallback_length, reset_broker_circuit,
+                                              reset_circuit)
 
 
 class Command(BaseCommand):

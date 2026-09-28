@@ -4,32 +4,25 @@
 
 import json
 import logging
-import os
 import re
-import uuid
-from typing import Any, Optional, Tuple
+from typing import Tuple
+
 import bleach
-from ..utils.html_safety import MoeCSSSanitizer
 from django.conf import settings
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.db.models.query import QuerySet
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
+    FileResponse, HttpRequest, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
     HttpResponseNotModified, HttpResponsePermanentRedirect,
     HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
 )
 from django.utils import timezone
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
-from ..services.site_messages import msg
 
+from ..models import (
+    Article, )
+from ..utils.html_safety import MoeCSSSanitizer
 
 logger = logging.getLogger('blog.views')
 

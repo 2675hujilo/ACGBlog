@@ -37,15 +37,6 @@ blog.models —— 模型包（由原单文件 ``blog/models.py`` 拆分而来�
 导入并加入 ``__all__``；③ 跨文件外键用字符串，避免循环导入。
 """
 
-# ---- 1. 用户（被依赖最多，最先加载）----
-from .user import User
-
-# ---- 2. 分类与标签（文章归属维度）----
-from .catalog import Category, Tag
-
-# ---- 3. 系列（文章连载聚合）----
-from .series import Series
-
 # ---- 4. 文章（核心主模型，依赖 User/Category/Tag/Series）----
 from .article import (
     Article,
@@ -55,14 +46,22 @@ from .article import (
     ShortLink,
     ScheduledPost,
 )
-
+# ---- 9. 徽章 / 成就 / 积分 ----
+from .badge import (
+    Badge,
+    PointLog,
+    UserAchievement,
+    UserBadge,
+    UserPoint,
+)
+# ---- 2. 分类与标签（文章归属维度）----
+from .catalog import Category, Tag
 # ---- 5. 评论（依赖 Article/User）----
 from .comment import (
     Comment,
     CommentReaction,
     CommentReport,
 )
-
 # ---- 6. 读者互动（依赖 Article/User）----
 from .interaction import (
     ArticleBookmark,
@@ -72,46 +71,33 @@ from .interaction import (
     ReadingList,
     UserNote,
 )
-
 # ---- 7. 日志（访问 / 修改 / 登录）----
 from .logs import (
     AccessLog,
     EditLog,
     LoginHistory,
 )
-
-# ---- 8. 通知 ----
-from .notification import Notification
-
-# ---- 9. 徽章 / 成就 / 积分 ----
-from .badge import (
-    Badge,
-    PointLog,
-    UserAchievement,
-    UserBadge,
-    UserPoint,
+# ---- 12. 全站文案覆盖 / 弃用文案 ----
+from .messages import (
+    SiteMessage,
+    SiteMessageRetired,
 )
-
-# ---- 10. 站点信息 / 公告 / 友情链接 ----
-from .site import (
-    FriendlyLink,
-    SiteInfo,
-    SiteNotice,
-)
-
 # ---- 11. 审核日志 / 设置 / 推广申请 ----
 from .moderation import (
     ModerationLog,
     ModerationSettings,
     PromotionRequest,
 )
-
-# ---- 12. 全站文案覆盖 / 弃用文案 ----
-from .messages import (
-    SiteMessage,
-    SiteMessageRetired,
+# ---- 8. 通知 ----
+from .notification import Notification
+# ---- 3. 系列（文章连载聚合）----
+from .series import Series
+# ---- 10. 站点信息 / 公告 / 友情链接 ----
+from .site import (
+    FriendlyLink,
+    SiteInfo,
+    SiteNotice,
 )
-
 # ---- 13. 社交关系 / 扩展资料 / 内容举报 ----
 from .social import (
     CategoryFollow,
@@ -123,7 +109,6 @@ from .social import (
     UserMute,
     UserProfile,
 )
-
 # ---- 14. 系统扩展（API 密钥 / Webhook / 设备 / 主题 / 导出 / 小部件 / 搜索历史）----
 from .system import (
     ExportJob,
@@ -134,6 +119,8 @@ from .system import (
     UserWidget,
     Webhook,
 )
+# ---- 1. 用户（被依赖最多，最先加载）----
+from .user import User
 
 # 对外公开的模型名单：
 # 1) 声明包的公共接口；2) 配合 ``from blog.models import *``；

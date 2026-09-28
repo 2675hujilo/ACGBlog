@@ -3,25 +3,17 @@
 """搜索域：搜索页、自动补全、热词与拼音支持。"""
 
 import logging
+
 from django.core.cache import cache
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
-)
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
+    HttpRequest, HttpResponse,
+    JsonResponse, )
 
 from .articles import index
-
 from .common import SEARCH_Q_MAX_LENGTH, _json_ok
-
+from ..models import (
+    Article, )
 
 logger = logging.getLogger('blog.views')
 

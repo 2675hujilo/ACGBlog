@@ -3,25 +3,18 @@
 """SEO：网站 JSON-LD、sitemap、RSS 与 robots.txt。"""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
+
 from django.conf import settings
-from django.db import DatabaseError, IntegrityError, OperationalError
+from django.db import DatabaseError
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
+    HttpRequest, HttpResponse,
 )
-from django.shortcuts import get_object_or_404, redirect, render
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
+from django.shortcuts import render
 
 from .common import _safe_jsonld, logger
-
+from ..models import (
+    Article, Category, Tag, )
 
 logger = logging.getLogger('blog.views')
 

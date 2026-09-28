@@ -4,37 +4,24 @@
 
 import json
 import logging
-import os
 import re
-import uuid
 from io import BytesIO
+
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
-from ..utils.cache_keys import (
-    DETAIL_TTL, MISSING_TTL, cache_get, cache_get_or_set,
-    cache_set, detail_keys, invalidate_article,
-)
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
-)
-from django.shortcuts import get_object_or_404, redirect, render
+    HttpRequest, HttpResponse,
+    HttpResponseRedirect, JsonResponse, )
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
-from ..services.site_messages import msg
 
 from .common import HOT_ARTICLES_KEY, _bad_request, _json_ok, logger
-
-from .users import check_and_award_badges
-
+from ..models import (
+    AccessLog, Article, Favorite, FavoriteFolder, Notification,
+    Rating, ShortLink,
+)
+from ..services.site_messages import msg
 
 logger = logging.getLogger('blog.views')
 

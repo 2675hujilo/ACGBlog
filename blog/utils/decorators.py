@@ -40,12 +40,12 @@ Django 自带的 ``staff_member_required`` 底层是 ``user_passes_test``，它�
 # 对 Django 的 URL 解析、调试与文档生成都很重要（否则所有视图都叫 _wrapped）。
 from functools import wraps
 
-# PermissionDenied：Django 的 403 异常。视图中 raise 它之后，
-# Django 会走 handler403，最终渲染 403.html，并把响应状态码设为 403。
-from django.core.exceptions import PermissionDenied
 # redirect_to_login：Django 提供的「跳登录页并携带 next 参数」工具，
 # 会自动对 next 做安全校验，避免开放重定向漏洞（不要自己拼 ?next=）。
 from django.contrib.auth.views import redirect_to_login
+# PermissionDenied：Django 的 403 异常。视图中 raise 它之后，
+# Django 会走 handler403，最终渲染 403.html，并把响应状态码设为 403。
+from django.core.exceptions import PermissionDenied
 
 #: 前台萌系登录页的路径。未登录用户访问员工页面时统一跳到这里，
 #: 而不是 Django Admin 自带的朴素登录页，保证整站视觉风格一致。

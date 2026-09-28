@@ -2,53 +2,38 @@
 
 """文章核心：首页列表、详情、发布、编辑、删除与随机文章。"""
 
-import json
 import logging
-import os
 import re
-import uuid
-from datetime import datetime, timedelta
-from typing import Any, Optional, Tuple
+from datetime import datetime
+from typing import Optional, Tuple
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.cache import cache
-from ..utils.cache_keys import (
-    DETAIL_TTL, MISSING_TTL, cache_get, cache_get_or_set,
-    cache_set, detail_keys, invalidate_article,
-)
 from django.core.paginator import Paginator
+from django.db import DatabaseError
 from django.db.models import Avg, Count, F, Min, Q, Sum
-from django.db import DatabaseError, IntegrityError, OperationalError
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
+    Http404, HttpRequest, HttpResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
-from ..services.site_messages import msg
 
 from .catalog import _sidebar
-
 from .comments import _build_comment_tree
-
-from .common import FOOTER_STATS_KEY, HOT_ARTICLES_KEY, SIDEBAR_CACHE_KEY, SIDEBAR_CACHE_TIMEOUT, TAG_CLOUD_KEY, _base_qs, _filter_articles, _safe_jsonld, logger, sanitize_html
-
+from .common import FOOTER_STATS_KEY, HOT_ARTICLES_KEY, SIDEBAR_CACHE_KEY, SIDEBAR_CACHE_TIMEOUT, TAG_CLOUD_KEY, \
+    _base_qs, _filter_articles, _safe_jsonld, logger, sanitize_html
 from .interactions import _hot_articles_for_range
-
 from .moderation import _promo_block_state
-
 from .seo import _build_website_jsonld
-
+from ..models import (
+    Article, Category, EditLog, Favorite, ModerationLog, ModerationSettings, Rating, Series, Tag, )
+from ..services.site_messages import msg
+from ..utils.cache_keys import (
+    DETAIL_TTL, MISSING_TTL, cache_get, cache_get_or_set,
+    cache_set, detail_keys, )
 
 logger = logging.getLogger('blog.views')
 

@@ -12,16 +12,13 @@
 测试结果输出：通过/失败 + 详细信息。
 所有测试均使用 Django 测试客户端，不影响真实数据。
 """
-import re
 import time
-from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.test import Client
-from django.utils import timezone
 
-from blog.models import Article, Category, Tag
+from blog.models import Article, Category
 
 User = get_user_model()
 

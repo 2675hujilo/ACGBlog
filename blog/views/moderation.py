@@ -6,36 +6,28 @@ import json
 import logging
 import os
 import re
-import uuid
+
 from django.conf import settings
 from django.contrib import messages
-from blog.utils.decorators import staff_required_moe
 from django.core.cache import cache
-from ..utils.cache_keys import (
-    DETAIL_TTL, MISSING_TTL, cache_get, cache_get_or_set,
-    cache_set, detail_keys, invalidate_article,
-)
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
-)
+    HttpRequest, HttpResponse,
+    JsonResponse, )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from rest_framework.decorators import action
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
-from ..services.site_messages import msg
 
+from blog.utils.decorators import staff_required_moe
 from .common import SIDEBAR_CACHE_KEY, logger
-
+from ..models import (
+    Article, Comment, CommentReport,
+    ModerationLog, Notification,
+    PromotionRequest, ModerationSettings, )
+from ..services.site_messages import msg
+from ..utils.cache_keys import (
+    invalidate_article,
+)
 
 logger = logging.getLogger('blog.views')
 

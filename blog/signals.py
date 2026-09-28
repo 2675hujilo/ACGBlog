@@ -10,14 +10,14 @@
 import logging
 import re
 
+from django.contrib.auth.hashers import identify_hasher, make_password
 from django.core.cache import cache
 from django.db.models.signals import (m2m_changed, post_delete, post_save,
-                                     pre_delete, pre_save)
+                                      pre_delete, pre_save)
 from django.dispatch import receiver
-from django.contrib.auth.hashers import identify_hasher, make_password
 
+from .models import Article, Comment, Notification
 from .utils.cache_keys import invalidate_article, purge_prevnext
-from .models import Article, Badge, Comment, Notification, UserBadge
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +170,6 @@ def _hash_article_password(sender, instance, **kwargs):
 
 
 # ============================ 第5轮 F8/F10: 通知与徽章信号 ============================
-from django.utils import timezone as _tz
 
 
 @receiver(post_save, sender=Comment)

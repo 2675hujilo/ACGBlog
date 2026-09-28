@@ -583,7 +583,6 @@ class Command(BaseCommand):
 
     def _recalc_rating(self, options):
         """按 Rating 表重算每篇文章的平均分与计数。"""
-        from blog.models import Rating
         for article in Article.objects.all():
             agg = article.ratings.aggregate(v=Avg('score'))
             article.rating_avg = round(agg['v'] or 0, 1)

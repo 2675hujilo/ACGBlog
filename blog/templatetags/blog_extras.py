@@ -17,9 +17,9 @@ from urllib.parse import unquote
 from django import template
 from django.conf import settings
 from django.core.cache import cache
+from django.utils import timezone
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from django.utils import timezone
 
 register = template.Library()
 

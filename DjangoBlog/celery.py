@@ -10,6 +10,7 @@ Celery 应用配置模块。
 被 ``DjangoBlog/__init__.py`` 在 Django 启动时导入，以完成 app 绑定。
 """
 import os
+
 from celery import Celery
 
 # 设置 Django 配置模块，保证 Celery 启动时能读取到项目的 settings

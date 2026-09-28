@@ -7,25 +7,25 @@
 4. ``FriendlyLinkAdmin`` 增强：启用状态彩色标签、可点击链接预览。
 """
 import csv
-from datetime import timedelta
 from collections import OrderedDict
+from datetime import timedelta
 
+from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin import TabularInline
 from django.contrib.admin import helpers
 from django.contrib.admin.decorators import register
 from django.contrib.auth.admin import UserAdmin
 from django.db.models import Avg, Count, F, Sum
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.html import format_html
-from django.db.models.functions import TruncDate
 
 from .models import (AccessLog, Article, Category, Comment, EditLog,
                      Favorite, FriendlyLink, Rating, Series, SiteInfo,
                      SiteMessage, SiteNotice, Tag, User)
-from django import forms
-from django.contrib.admin import TabularInline
 
 
 # ============================ 自定义 AdminSite（仪表盘） ============================

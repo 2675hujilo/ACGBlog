@@ -4,27 +4,20 @@
 
 import logging
 from itertools import groupby
+
 from django.conf import settings
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
+    HttpRequest, HttpResponse,
 )
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.cache import cache_page
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
 
 from .common import SIDEBAR_CACHE_KEY, SIDEBAR_CACHE_TIMEOUT, TAG_CLOUD_KEY, _base_qs, _filter_articles
-
+from ..models import (
+    Article, Category, Tag, )
 
 logger = logging.getLogger('blog.views')
 

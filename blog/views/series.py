@@ -3,27 +3,20 @@
 """文章系列：列表、详情与创建。"""
 
 import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
+    HttpRequest, HttpResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
-from ..services.site_messages import msg
 
 from .catalog import _sidebar
-
+from ..models import (
+    Article, Series, )
+from ..services.site_messages import msg
 
 logger = logging.getLogger('blog.views')
 

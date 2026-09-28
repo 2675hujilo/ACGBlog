@@ -7,35 +7,27 @@ import logging
 import os
 import re
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from PIL import Image
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
-from ..utils.cache_keys import (
-    DETAIL_TTL, MISSING_TTL, cache_get, cache_get_or_set,
-    cache_set, detail_keys, invalidate_article,
-)
 from django.db.models import Avg, Count, F, Min, Q, Sum
 from django.http import (
-    FileResponse, Http404, HttpRequest, HttpResponse,
-    HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseNotModified, HttpResponsePermanentRedirect,
-    HttpResponseRedirect, JsonResponse, StreamingHttpResponse,
-)
-from django.shortcuts import get_object_or_404, redirect, render
+    HttpRequest, JsonResponse, )
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
-from PIL import Image
-from ..models import (
-    AccessLog, Article, Badge, Category, Comment, CommentReport,
-    EditLog, Favorite, FavoriteFolder, ModerationLog, Notification,
-    PromotionRequest, ModerationSettings, Rating, Series, ShortLink,
-    SiteNotice, Tag, User, UserBadge,
-)
-from ..services.site_messages import msg
 
 from .common import _bad_request, _forbidden, _json_ok, logger, sanitize_comment
-
+from ..models import (
+    Article, Comment, CommentReport,
+    ModerationLog, ModerationSettings, )
+from ..services.site_messages import msg
+from ..utils.cache_keys import (
+    invalidate_article,
+)
 
 logger = logging.getLogger('blog.views')
 
