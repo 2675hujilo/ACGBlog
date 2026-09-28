@@ -39,11 +39,11 @@ def _message_getter(key, *args, **kwargs):
     之所以做成模块级函数而不是 lambda：便于在测试中断言 ``request.msg`` 可调用、
     也避免中间件里重复书写导入路径。
     """
-    from ..site_messages import msg
+    from ..services.site_messages import msg
     return msg(key, *args, **kwargs)
 
 
 def _namespace_getter(prefix):
     """``request.msg_ns`` 的实现：按域取出文案字典（如 ``request.msg_ns('auth')``）。"""
-    from ..site_messages import namespace
+    from ..services.site_messages import namespace
     return namespace(prefix)

@@ -3,569 +3,1960 @@
  * 主要元素：#waifu-stage 固定在右下角；#moe-tooltip 浅色气泡；.waifu-tool 悬停工具栏；
  * 并处理窄屏下的缩放与避让，避免遮挡正文。
  */
-﻿/* ============================================================
-   看板娘 Mascot 样式
-   二次元萌系风格，右下角悬浮，支持换肤/拖动/热区交互
+/* ============================================================
+   作用对象：﻿/* ============================================================ 看板娘 Mascot 样式 二次元萌系风格，右下角悬浮，支持换肤/拖动/热区交互 ==============
+   含义：该选择器命中元素的基础样式规则
    ============================================================ */
-
-/* 看板娘容器 */
-.mascot-container {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 99999;
-    background: rgba(255, 0, 0, 0.1);
-    width: 180px;
-    height: 220px;
-    cursor: grab;
-    user-select: none;
-    transition: transform 0.3s ease;
+﻿/* ============================================================ 看板娘 Mascot 样式 二次元萌系风格，右下角悬浮，支持换肤/拖动/热区交互 ============================================================ */ /* 看板娘容器 */ .mascot-container {
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 20px;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 20px;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 99999;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(255, 0, 0, 0.1);
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 180px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 220px;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: grab;
+	/* user-select：控制用户能否选中文本 */
+	/* 用途/效果：none 防止按钮、装饰文字被误选；all 便于整段复制 */
+	/* 注意点：过度禁止选择影响用户正常复制，正文不要禁用 */
+	user-select: none;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: transform 0.3s ease;
 }
-
+/* ============================================================
+   作用对象：.mascot-container:active
+   交互状态：鼠标按下未松开的瞬间状态，常用于轻微下沉/变暗模拟按压
+   ============================================================ */
 .mascot-container:active {
-    cursor: grabbing;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: grabbing;
 }
-
+/* ============================================================
+   作用对象：.mascot-container.minimized
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-container.minimized {
-    width: 60px;
-    height: 60px;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 60px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 60px;
 }
-
+/* ============================================================
+   作用对象：.mascot-container.minimized .mascot-image
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-container.minimized .mascot-image {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 60px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 60px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 50%;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
 }
-
-.mascot-container.minimized .mascot-bubble,
-.mascot-container.minimized .mascot-hitareas,
-.mascot-container.minimized .mascot-toolbar {
-    display: none;
+/* ============================================================
+   作用对象：.mascot-container.minimized .mascot-bubble, .mascot-container.minimized .mascot-hitareas, .mascot-container.minimized .m
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.mascot-container.minimized .mascot-bubble, .mascot-container.minimized .mascot-hitareas, .mascot-container.minimized .mascot-toolbar {
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: none;
 }
-
 /* 看板娘图片 */
+/* ============================================================
+   作用对象：.mascot-image
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-image {
-    width: 180px;
-    height: 220px;
-    object-fit: contain;
-    pointer-events: none;
-    filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.3));
-    transition: transform 0.2s ease, filter 0.3s ease;
-    animation: mascot-breathe 3s ease-in-out infinite;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 180px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 220px;
+	/* object-fit：决定替换元素（img/video）内容如何适配其盒子 */
+	/* 用途/效果：cover 填满裁剪、contain 完整留白，用于封面统一比例 */
+	/* 注意点：需元素本身有固定宽高；常与 object-position 配合控制裁剪焦点 */
+	object-fit: contain;
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
+	/* filter：设置图形滤镜效果 */
+	/* 用途/效果：blur 模糊、brightness 亮度、drop-shadow 形状阴影等 */
+	/* 注意点：作用于整个元素渲染结果；drop-shadow 会跟随透明轮廓，性能开销需注意 */
+	filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.3));
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: transform 0.2s ease, filter 0.3s ease;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: mascot-breathe 3s ease-in-out infinite;
 }
-
 /* 呼吸动画 */
+/* ===== @keyframes mascot-breathe：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes mascot-breathe {
-    0%, 100% { transform: scale(1) translateY(0); }
-    50% { transform: scale(1.02) translateY(-3px); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(1) translateY(0);
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(1.02) translateY(-3px);
+	}
 }
-
 /* 被点击时的弹跳 */
+/* ============================================================
+   作用对象：.mascot-image.bounce
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-image.bounce {
-    animation: mascot-bounce 0.4s ease;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: mascot-bounce 0.4s ease;
 }
-
+/* ===== @keyframes mascot-bounce：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes mascot-bounce {
-    0% { transform: scale(1); }
-    30% { transform: scale(0.92) translateY(5px); }
-    60% { transform: scale(1.05) translateY(-8px); }
-    100% { transform: scale(1); }
+	/* ============================================================
+	   作用对象：0%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(1);
+	}
+	/* ============================================================
+	   作用对象：30%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	30% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(0.92) translateY(5px);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(1.05) translateY(-8px);
+	}
+	/* ============================================================
+	   作用对象：100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(1);
+	}
 }
-
 /* 害羞动画 */
+/* ============================================================
+   作用对象：.mascot-image.shy
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-image.shy {
-    animation: mascot-shy 0.6s ease;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: mascot-shy 0.6s ease;
 }
-
+/* ===== @keyframes mascot-shy：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes mascot-shy {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-5deg) scale(0.97); }
-    75% { transform: rotate(5deg) scale(0.97); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：25%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	25% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-5deg) scale(0.97);
+	}
+	/* ============================================================
+	   作用对象：75%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	75% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(5deg) scale(0.97);
+	}
 }
-
 /* 生气动画 */
+/* ============================================================
+   作用对象：.mascot-image.angry
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-image.angry {
-    animation: mascot-angry 0.5s ease;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: mascot-angry 0.5s ease;
 }
-
+/* ===== @keyframes mascot-angry：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes mascot-angry {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-5px) rotate(-3deg); }
-    40% { transform: translateX(5px) rotate(3deg); }
-    60% { transform: translateX(-4px) rotate(-2deg); }
-    80% { transform: translateX(4px) rotate(2deg); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateX(0);
+	}
+	/* ============================================================
+	   作用对象：20%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	20% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateX(-5px) rotate(-3deg);
+	}
+	/* ============================================================
+	   作用对象：40%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	40% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateX(5px) rotate(3deg);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateX(-4px) rotate(-2deg);
+	}
+	/* ============================================================
+	   作用对象：80%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	80% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateX(4px) rotate(2deg);
+	}
 }
-
 /* 开心跳跃 */
+/* ============================================================
+   作用对象：.mascot-image.happy
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-image.happy {
-    animation: mascot-happy 0.6s ease;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: mascot-happy 0.6s ease;
 }
-
+/* ===== @keyframes mascot-happy：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes mascot-happy {
-    0%, 100% { transform: translateY(0) scale(1); }
-    30% { transform: translateY(-15px) scale(1.05); }
-    60% { transform: translateY(-5px) scale(1.02); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(0) scale(1);
+	}
+	/* ============================================================
+	   作用对象：30%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	30% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-15px) scale(1.05);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-5px) scale(1.02);
+	}
 }
-
 /* 对话框 */
+/* ============================================================
+   作用对象：.mascot-bubble
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-bubble {
-    position: absolute;
-    right: 100%;
-    bottom: 60%;
-    margin-right: 10px;
-    min-width: 120px;
-    max-width: 220px;
-    background: linear-gradient(135deg, #fff 0%, #fdf4ff 100%);
-    border: 2px solid #e9d5ff;
-    border-radius: 18px;
-    padding: 10px 14px;
-    font-size: 13px;
-    line-height: 1.5;
-    color: #6b21a8;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
-    opacity: 0;
-    transform: translateX(10px) scale(0.9);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
-    word-break: break-word;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 100%;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 60%;
+	/* margin-right：设置元素右外边距 */
+	/* 用途/效果：拉开与右侧元素的横向距离 */
+	/* 注意点：flex 布局中间距更推荐用 gap */
+	margin-right: 10px;
+	/* min-width：设置元素允许的最小宽度 */
+	/* 用途/效果：防止 flex/grid 子项被压缩得过窄，保证按钮、标签可点击与可读 */
+	/* 注意点：百分比最小宽度相对于包含块；flex 项常配合 flex-shrink 使用 */
+	min-width: 120px;
+	/* max-width：限制元素的最大宽度 */
+	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+	max-width: 220px;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, #fff 0%, #fdf4ff 100%);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 2px solid #e9d5ff;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 18px;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 10px 14px;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 13px;
+	/* line-height：设置行高（行盒高度） */
+	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
+	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
+	line-height: 1.5;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #6b21a8;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 0;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateX(10px) scale(0.9);
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
+	/* word-break：规定单词在何处断行 */
+	/* 用途/效果：break-all 允许长串/URL 在任意点换行，防止溢出 */
+	/* 注意点：break-all 会让西文单词被随意拆断，正文慎用 */
+	word-break: break-word;
 }
-
+/* ============================================================
+   作用对象：.mascot-bubble.show
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-bubble.show {
-    opacity: 1;
-    transform: translateX(0) scale(1);
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 1;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateX(0) scale(1);
 }
-
 /* 对话框小尾巴 */
+/* ============================================================
+   作用对象：.mascot-bubble::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 .mascot-bubble::after {
-    content: '';
-    position: absolute;
-    right: -8px;
-    bottom: 20px;
-    width: 0;
-    height: 0;
-    border-left: 10px solid #e9d5ff;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
+	/* content：为伪元素插入生成内容 */
+	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
+	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
+	content: '';
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: -8px;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 20px;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 0;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 0;
+	/* border-left：单独设置左边框 */
+	/* 用途/效果：引用块竖线、状态提示条左侧强调 */
+	/* 注意点：萌系提示条常用彩色左边框 */
+	border-left: 10px solid #e9d5ff;
+	/* border-top：单独设置上边框 */
+	/* 用途/效果：分隔线、标题强调线常用 */
+	/* 注意点：注意宽度样式颜色三要素齐全 */
+	border-top: 8px solid transparent;
+	/* border-bottom：单独设置下边框 */
+	/* 用途/效果：输入框下划线、列表分隔线主力 */
+	/* 注意点：常配合 hover 改变颜色做交互反馈 */
+	border-bottom: 8px solid transparent;
 }
-
+/* ============================================================
+   作用对象：.mascot-bubble::before
+   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
+   ============================================================ */
 .mascot-bubble::before {
-    content: '';
-    position: absolute;
-    right: -5px;
-    bottom: 22px;
-    width: 0;
-    height: 0;
-    border-left: 8px solid #fff;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    z-index: 1;
+	/* content：为伪元素插入生成内容 */
+	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
+	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
+	content: '';
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: -5px;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 22px;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 0;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 0;
+	/* border-left：单独设置左边框 */
+	/* 用途/效果：引用块竖线、状态提示条左侧强调 */
+	/* 注意点：萌系提示条常用彩色左边框 */
+	border-left: 8px solid #fff;
+	/* border-top：单独设置上边框 */
+	/* 用途/效果：分隔线、标题强调线常用 */
+	/* 注意点：注意宽度样式颜色三要素齐全 */
+	border-top: 6px solid transparent;
+	/* border-bottom：单独设置下边框 */
+	/* 用途/效果：输入框下划线、列表分隔线主力 */
+	/* 注意点：常配合 hover 改变颜色做交互反馈 */
+	border-bottom: 6px solid transparent;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 1;
 }
-
 /* 热区（透明覆盖层） */
+/* ============================================================
+   作用对象：.mascot-hitareas
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitareas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 0;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 0;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 100%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 100%;
 }
-
+/* ============================================================
+   作用对象：.mascot-hitarea
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitarea {
-    position: absolute;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: background 0.2s ease;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: pointer;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 50%;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: background 0.2s ease;
 }
-
+/* ============================================================
+   作用对象：.mascot-hitarea:hover
+   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
+   ============================================================ */
 .mascot-hitarea:hover {
-    background: rgba(255, 255, 255, 0.15);
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(255, 255, 255, 0.15);
 }
-
 /* 头部热区（头顶+猫耳） */
+/* ============================================================
+   作用对象：.mascot-hitarea.head
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitarea.head {
-    top: 5%;
-    left: 25%;
-    width: 50%;
-    height: 25%;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 5%;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 25%;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 50%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 25%;
 }
-
 /* 额头热区 */
+/* ============================================================
+   作用对象：.mascot-hitarea.forehead
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitarea.forehead {
-    top: 20%;
-    left: 35%;
-    width: 30%;
-    height: 12%;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 20%;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 35%;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 30%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 12%;
 }
-
 /* 肚子热区 */
+/* ============================================================
+   作用对象：.mascot-hitarea.belly
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitarea.belly {
-    top: 45%;
-    left: 30%;
-    width: 40%;
-    height: 25%;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 45%;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 30%;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 40%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 25%;
 }
-
 /* 腿部热区 */
+/* ============================================================
+   作用对象：.mascot-hitarea.legs
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitarea.legs {
-    top: 70%;
-    left: 30%;
-    width: 40%;
-    height: 20%;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 70%;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 30%;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 40%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 20%;
 }
-
 /* 脚部热区 */
+/* ============================================================
+   作用对象：.mascot-hitarea.feet
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-hitarea.feet {
-    top: 88%;
-    left: 25%;
-    width: 50%;
-    height: 12%;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 88%;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 25%;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 50%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 12%;
 }
-
 /* 工具栏（换肤/最小化按钮） */
+/* ============================================================
+   作用对象：.mascot-toolbar
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-toolbar {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    display: flex;
-    gap: 6px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: -10px;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: -10px;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: flex;
+	/* gap：设置 flex/grid 子项之间的间距 */
+	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
+	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
+	gap: 6px;
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 0;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: opacity 0.3s ease;
 }
-
+/* ============================================================
+   作用对象：.mascot-container:hover .mascot-toolbar
+   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
+   ============================================================ */
 .mascot-container:hover .mascot-toolbar {
-    opacity: 1;
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 1;
 }
-
+/* ============================================================
+   作用对象：.mascot-toolbar-btn
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-toolbar-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-    border: 2px solid #fff;
-    color: #fff;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 28px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 28px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 50%;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 2px solid #fff;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #fff;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 14px;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: flex;
+	/* align-items：控制子项沿交叉轴的对齐 */
+	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
+	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
+	align-items: center;
+	/* justify-content：控制子项沿主轴的对齐与间距分布 */
+	/* 用途/效果：flex-start/center/space-between/space-around 等 */
+	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
+	justify-content: center;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: pointer;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
+/* ============================================================
+   作用对象：.mascot-toolbar-btn:hover
+   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
+   ============================================================ */
 .mascot-toolbar-btn:hover {
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: scale(1.15);
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
 }
-
 /* 换肤面板 */
+/* ============================================================
+   作用对象：.mascot-skin-panel
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-panel {
-    position: absolute;
-    right: 100%;
-    top: 0;
-    margin-right: 12px;
-    background: linear-gradient(135deg, #fff 0%, #faf5ff 100%);
-    border: 2px solid #e9d5ff;
-    border-radius: 16px;
-    padding: 12px;
-    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.25);
-    opacity: 0;
-    transform: translateX(10px);
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    z-index: 9999;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 100%;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 0;
+	/* margin-right：设置元素右外边距 */
+	/* 用途/效果：拉开与右侧元素的横向距离 */
+	/* 注意点：flex 布局中间距更推荐用 gap */
+	margin-right: 12px;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, #fff 0%, #faf5ff 100%);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 2px solid #e9d5ff;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 16px;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 12px;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 8px 25px rgba(168, 85, 247, 0.25);
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 0;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateX(10px);
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 9999;
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-panel.show
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-panel.show {
-    opacity: 1;
-    transform: translateX(0);
-    pointer-events: auto;
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 1;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateX(0);
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: auto;
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-panel-title
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-panel-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #7c3aed;
-    margin-bottom: 8px;
-    text-align: center;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 13px;
+	/* font-weight：设置字重 */
+	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
+	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
+	font-weight: 600;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #7c3aed;
+	/* margin-bottom：设置元素下外边距 */
+	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
+	/* 注意点：可能与下一个元素的上外边距折叠 */
+	margin-bottom: 8px;
+	/* text-align：设置行内内容水平对齐 */
+	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
+	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
+	text-align: center;
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-list
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-list {
-    display: flex;
-    gap: 8px;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: flex;
+	/* gap：设置 flex/grid 子项之间的间距 */
+	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
+	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
+	gap: 8px;
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-item
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-item {
-    width: 50px;
-    height: 60px;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.2s ease, transform 0.2s ease;
-    background: #f3e8ff;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 50px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 60px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 10px;
+	/* overflow：规定内容超出盒框时如何处理 */
+	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
+	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
+	overflow: hidden;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: pointer;
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 2px solid transparent;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: border-color 0.2s ease, transform 0.2s ease;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #f3e8ff;
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-item:hover
+   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
+   ============================================================ */
 .mascot-skin-item:hover {
-    transform: translateY(-3px);
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateY(-3px);
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-item.active
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-item.active {
-    border-color: #a855f7;
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: #a855f7;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-item img
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 100%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 100%;
+	/* object-fit：决定替换元素（img/video）内容如何适配其盒子 */
+	/* 用途/效果：cover 填满裁剪、contain 完整留白，用于封面统一比例 */
+	/* 注意点：需元素本身有固定宽高；常与 object-position 配合控制裁剪焦点 */
+	object-fit: cover;
 }
-
+/* ============================================================
+   作用对象：.mascot-skin-name
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-skin-name {
-    font-size: 10px;
-    text-align: center;
-    color: #9333ea;
-    margin-top: 2px;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 10px;
+	/* text-align：设置行内内容水平对齐 */
+	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
+	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
+	text-align: center;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #9333ea;
+	/* margin-top：设置元素上外边距 */
+	/* 用途/效果：拉开与上方元素的纵向距离 */
+	/* 注意点：可能与相邻元素的上下外边距折叠 */
+	margin-top: 2px;
 }
-
 /* 深色模式适配 */
+/* ============================================================
+   作用对象：[data-theme="dark"] .mascot-bubble
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 [data-theme="dark"] .mascot-bubble {
-    background: linear-gradient(135deg, #1f1f2e 0%, #2d1f4e 100%);
-    border-color: #6b21a8;
-    color: #e9d5ff;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, #1f1f2e 0%, #2d1f4e 100%);
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: #6b21a8;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #e9d5ff;
 }
-
+/* ============================================================
+   作用对象：[data-theme="dark"] .mascot-bubble::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 [data-theme="dark"] .mascot-bubble::after {
-    border-left-color: #6b21a8;
+	/* border-left-color：设置左边框颜色 */
+	/* 用途/效果：单独调整左边框颜色 */
+	/* 注意点：需边框已存在 */
+	border-left-color: #6b21a8;
 }
-
+/* ============================================================
+   作用对象：[data-theme="dark"] .mascot-bubble::before
+   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
+   ============================================================ */
 [data-theme="dark"] .mascot-bubble::before {
-    border-left-color: #1f1f2e;
+	/* border-left-color：设置左边框颜色 */
+	/* 用途/效果：单独调整左边框颜色 */
+	/* 注意点：需边框已存在 */
+	border-left-color: #1f1f2e;
 }
-
+/* ============================================================
+   作用对象：[data-theme="dark"] .mascot-skin-panel
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 [data-theme="dark"] .mascot-skin-panel {
-    background: linear-gradient(135deg, #1f1f2e 0%, #2d1f4e 100%);
-    border-color: #6b21a8;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, #1f1f2e 0%, #2d1f4e 100%);
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: #6b21a8;
 }
-
+/* ============================================================
+   作用对象：[data-theme="dark"] .mascot-skin-panel-title
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 [data-theme="dark"] .mascot-skin-panel-title {
-    color: #c4b5fd;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #c4b5fd;
 }
-
+/* ============================================================
+   作用对象：[data-theme="dark"] .mascot-skin-item
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 [data-theme="dark"] .mascot-skin-item {
-    background: #3b2a5a;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #3b2a5a;
 }
-
 /* 移动端适配 */
+/* ===== @media (max-width: 768px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 768px) {
-    .mascot-container {
-        width: 120px;
-        height: 150px;
-        right: 10px;
-        bottom: 10px;
-    }
-    .mascot-image {
-        width: 120px;
-        height: 150px;
-    }
-    .mascot-bubble {
-        max-width: 160px;
-        font-size: 12px;
-        padding: 8px 10px;
-    }
-    .mascot-skin-item {
-        width: 40px;
-        height: 48px;
-    }
+	/* ============================================================
+	   作用对象：.mascot-container
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mascot-container {
+		/* width：设置元素内容区的宽度 */
+		/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+		/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+		width: 120px;
+		/* height：设置元素内容区的高度 */
+		/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+		/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+		height: 150px;
+		/* right：设置定位元素距右参考边的偏移 */
+		/* 用途/效果：控制元素相对右边缘的位置 */
+		/* 注意点：仅对非 static 定位元素生效；正值向左 */
+		right: 10px;
+		/* bottom：设置定位元素距下参考边的偏移 */
+		/* 用途/效果：固定底栏、悬浮按钮常用 */
+		/* 注意点：仅对非 static 定位元素生效；正值向上 */
+		bottom: 10px;
+	}
+	/* ============================================================
+	   作用对象：.mascot-image
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mascot-image {
+		/* width：设置元素内容区的宽度 */
+		/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+		/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+		width: 120px;
+		/* height：设置元素内容区的高度 */
+		/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+		/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+		height: 150px;
+	}
+	/* ============================================================
+	   作用对象：.mascot-bubble
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mascot-bubble {
+		/* max-width：限制元素的最大宽度 */
+		/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+		/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+		max-width: 160px;
+		/* font-size：设置字号 */
+		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+		font-size: 12px;
+		/* padding：设置元素四周内边距（内容与边框之间） */
+		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+		padding: 8px 10px;
+	}
+	/* ============================================================
+	   作用对象：.mascot-skin-item
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mascot-skin-item {
+		/* width：设置元素内容区的宽度 */
+		/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+		/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+		width: 40px;
+		/* height：设置元素内容区的高度 */
+		/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+		/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+		height: 48px;
+	}
 }
-
 /* 减少动效模式 */
+/* ===== @media (prefers-reduced-motion: reduce)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (prefers-reduced-motion: reduce) {
-    .mascot-image {
-        animation: none;
-    }
-    .mascot-container,
-    .mascot-bubble,
-    .mascot-skin-panel {
-        transition: none;
-    }
+	/* ============================================================
+	   作用对象：.mascot-image
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mascot-image {
+		/* animation：动画的简写 */
+		/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+		/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+		animation: none;
+	}
+	/* ============================================================
+	   作用对象：.mascot-container, .mascot-bubble, .mascot-skin-panel
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mascot-container, .mascot-bubble, .mascot-skin-panel {
+		/* transition：过渡的简写（属性 时长 缓动 延迟） */
+		/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+		/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+		transition: none;
+	}
 }
-
 /* ============================================================
    SVG 分体看板娘动画
    ============================================================ */
-
 /* 容器调整为SVG尺寸 */
+/* ============================================================
+   作用对象：.mascot-container
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-container {
-    width: 200px;
-    height: 260px;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 200px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 260px;
 }
+/* ============================================================
+   作用对象：.mascot-image
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-image {
-    width: 200px;
-    height: 260px;
-    animation: none; /* 分体后各部位独立动画 */
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 200px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 260px;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: none;
+	/* 分体后各部位独立动画 */
 }
-
 /* 整体呼吸（身体缩放） */
+/* ============================================================
+   作用对象：.mascot-body
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-body {
-    animation: body-breathe 3s ease-in-out infinite;
-    transform-origin: 100px 180px;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: body-breathe 3s ease-in-out infinite;
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: 100px 180px;
 }
+/* ===== @keyframes body-breathe：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes body-breathe {
-    0%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(1.03); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(1);
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(1.03);
+	}
 }
-
 /* 头部轻微浮动 */
+/* ============================================================
+   作用对象：.mascot-head
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-head {
-    animation: head-float 3.5s ease-in-out infinite;
-    transform-origin: 100px 100px;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: head-float 3.5s ease-in-out infinite;
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: 100px 100px;
 }
+/* ===== @keyframes head-float：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes head-float {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-2px) rotate(1deg); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(0) rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-2px) rotate(1deg);
+	}
 }
-
 /* 眨眼动画 */
+/* ============================================================
+   作用对象：.mascot-eye-left, .mascot-eye-right
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-eye-left, .mascot-eye-right {
-    animation: blink 4s ease-in-out infinite;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: blink 4s ease-in-out infinite;
 }
+/* ============================================================
+   作用对象：.mascot-eye-right
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-eye-right {
-    animation-delay: 0.1s;
+	/* animation-delay：设置动画延迟开始时间 */
+	/* 用途/效果：负值可让动画从中途状态开始，错开多个元素节奏 */
+	/* 注意点：多元素错峰更自然 */
+	animation-delay: 0.1s;
 }
+/* ===== @keyframes blink：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes blink {
-    0%, 45%, 55%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.1); }
+	/* ============================================================
+	   作用对象：0%, 45%, 55%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 45%, 55%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(1);
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(0.1);
+	}
 }
-
 /* 猫耳抖动 */
+/* ============================================================
+   作用对象：.mascot-ear-left
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-ear-left {
-    animation: ear-twitch-left 5s ease-in-out infinite;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: ear-twitch-left 5s ease-in-out infinite;
 }
+/* ============================================================
+   作用对象：.mascot-ear-right
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-ear-right {
-    animation: ear-twitch-right 5.5s ease-in-out infinite;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: ear-twitch-right 5.5s ease-in-out infinite;
 }
+/* ===== @keyframes ear-twitch-left：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes ear-twitch-left {
-    0%, 90%, 100% { transform: rotate(0deg); }
-    93% { transform: rotate(-8deg); }
-    96% { transform: rotate(3deg); }
+	/* ============================================================
+	   作用对象：0%, 90%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 90%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：93%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	93% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-8deg);
+	}
+	/* ============================================================
+	   作用对象：96%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	96% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(3deg);
+	}
 }
+/* ===== @keyframes ear-twitch-right：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes ear-twitch-right {
-    0%, 85%, 100% { transform: rotate(0deg); }
-    88% { transform: rotate(8deg); }
-    91% { transform: rotate(-3deg); }
+	/* ============================================================
+	   作用对象：0%, 85%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 85%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：88%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	88% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(8deg);
+	}
+	/* ============================================================
+	   作用对象：91%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	91% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-3deg);
+	}
 }
-
 /* 魔法棒发光闪烁 */
+/* ============================================================
+   作用对象：.mascot-wand
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-wand {
-    animation: wand-glow 2s ease-in-out infinite;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: wand-glow 2s ease-in-out infinite;
 }
+/* ===== @keyframes wand-glow：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes wand-glow {
-    0%, 100% { filter: drop-shadow(0 0 3px #fbd38d); }
-    50% { filter: drop-shadow(0 0 10px #fbd38d) drop-shadow(0 0 20px #f687b3); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* filter：设置图形滤镜效果 */
+		/* 用途/效果：blur 模糊、brightness 亮度、drop-shadow 形状阴影等 */
+		/* 注意点：作用于整个元素渲染结果；drop-shadow 会跟随透明轮廓，性能开销需注意 */
+		filter: drop-shadow(0 0 3px #fbd38d);
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* filter：设置图形滤镜效果 */
+		/* 用途/效果：blur 模糊、brightness 亮度、drop-shadow 形状阴影等 */
+		/* 注意点：作用于整个元素渲染结果；drop-shadow 会跟随透明轮廓，性能开销需注意 */
+		filter: drop-shadow(0 0 10px #fbd38d) drop-shadow(0 0 20px #f687b3);
+	}
 }
-
 /* 漂浮粒子 */
+/* ============================================================
+   作用对象：.mascot-sparkles
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-sparkles {
-    animation: sparkles-float 4s ease-in-out infinite;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: sparkles-float 4s ease-in-out infinite;
 }
+/* ===== @keyframes sparkles-float：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes sparkles-float {
-    0%, 100% { transform: translateY(0); opacity: 0.6; }
-    50% { transform: translateY(-5px); opacity: 1; }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(0);
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 0.6;
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-5px);
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 1;
+	}
 }
-
 /* 腿部轻微踏步 */
+/* ============================================================
+   作用对象：.mascot-legs
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-legs {
-    animation: legs-sway 4s ease-in-out infinite;
-    transform-origin: 100px 180px;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: legs-sway 4s ease-in-out infinite;
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: 100px 180px;
 }
+/* ===== @keyframes legs-sway：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes legs-sway {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-1deg); }
-    75% { transform: rotate(1deg); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：25%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	25% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-1deg);
+	}
+	/* ============================================================
+	   作用对象：75%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	75% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(1deg);
+	}
 }
-
 /* ===== 点击热区触发的动画 ===== */
-
 /* 摸头：头部上下点动 */
+/* ============================================================
+   作用对象：.mascot-head.pat-head
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-head.pat-head {
-    animation: pat-head 0.6s ease !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: pat-head 0.6s ease !important;
 }
+/* ===== @keyframes pat-head：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes pat-head {
-    0%, 100% { transform: translateY(0); }
-    30% { transform: translateY(5px) scale(0.97); }
-    60% { transform: translateY(-3px); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(0);
+	}
+	/* ============================================================
+	   作用对象：30%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	30% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(5px) scale(0.97);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-3px);
+	}
 }
-
 /* 摸额头：害羞低头 */
+/* ============================================================
+   作用对象：.mascot-head.shy-forehead
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-head.shy-forehead {
-    animation: shy-forehead 0.8s ease !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: shy-forehead 0.8s ease !important;
 }
+/* ===== @keyframes shy-forehead：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes shy-forehead {
-    0%, 100% { transform: rotate(0deg); }
-    40% { transform: rotate(-8deg) translateY(3px); }
-    60% { transform: rotate(-5deg); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：40%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	40% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-8deg) translateY(3px);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-5deg);
+	}
 }
-
 /* 摸肚子：身体弹跳 */
+/* ============================================================
+   作用对象：.mascot-body.tickle-belly
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-body.tickle-belly {
-    animation: tickle-belly 0.5s ease !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: tickle-belly 0.5s ease !important;
 }
+/* ===== @keyframes tickle-belly：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes tickle-belly {
-    0%, 100% { transform: scaleY(1); }
-    25% { transform: scaleY(0.9) scaleX(1.05); }
-    50% { transform: scaleY(1.05); }
-    75% { transform: scaleY(0.95); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(1);
+	}
+	/* ============================================================
+	   作用对象：25%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	25% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(0.9) scaleX(1.05);
+	}
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(1.05);
+	}
+	/* ============================================================
+	   作用对象：75%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	75% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scaleY(0.95);
+	}
 }
-
 /* 摸腿：腿部踢动 */
+/* ============================================================
+   作用对象：.mascot-legs.kick-legs
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-legs.kick-legs {
-    animation: kick-legs 0.6s ease !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: kick-legs 0.6s ease !important;
 }
+/* ===== @keyframes kick-legs：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes kick-legs {
-    0%, 100% { transform: rotate(0deg); }
-    30% { transform: rotate(-5deg) translateX(-3px); }
-    60% { transform: rotate(5deg) translateX(3px); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：30%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	30% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-5deg) translateX(-3px);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(5deg) translateX(3px);
+	}
 }
-
 /* 摸脚：脚部跳跃 */
+/* ============================================================
+   作用对象：.mascot-legs.jump-feet
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-legs.jump-feet {
-    animation: jump-feet 0.5s ease !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: jump-feet 0.5s ease !important;
 }
+/* ===== @keyframes jump-feet：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes jump-feet {
-    0%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-8px); }
-    70% { transform: translateY(-3px); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(0);
+	}
+	/* ============================================================
+	   作用对象：40%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	40% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-8px);
+	}
+	/* ============================================================
+	   作用对象：70%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	70% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translateY(-3px);
+	}
 }
-
 /* 挥手动画（右手臂） */
+/* ============================================================
+   作用对象：.mascot-arm-right.wave
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-arm-right.wave {
-    animation: wave-hand 0.8s ease !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: wave-hand 0.8s ease !important;
 }
+/* ===== @keyframes wave-hand：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes wave-hand {
-    0%, 100% { transform: rotate(0deg); }
-    20% { transform: rotate(-20deg); }
-    40% { transform: rotate(15deg); }
-    60% { transform: rotate(-15deg); }
-    80% { transform: rotate(10deg); }
+	/* ============================================================
+	   作用对象：0%, 100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0%, 100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(0deg);
+	}
+	/* ============================================================
+	   作用对象：20%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	20% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-20deg);
+	}
+	/* ============================================================
+	   作用对象：40%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	40% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(15deg);
+	}
+	/* ============================================================
+	   作用对象：60%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	60% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(-15deg);
+	}
+	/* ============================================================
+	   作用对象：80%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	80% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(10deg);
+	}
 }
-
 /* 对话框位置调整（在看板娘左上方） */
+/* ============================================================
+   作用对象：.mascot-bubble
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mascot-bubble {
-    right: 105%;
-    bottom: 55%;
-    max-width: 200px;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 105%;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 55%;
+	/* max-width：限制元素的最大宽度 */
+	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+	max-width: 200px;
 }
-
 /* 深色模式适配 */
+/* ============================================================
+   作用对象：:root[data-theme="dark"] .mascot-bubble
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 :root[data-theme="dark"] .mascot-bubble {
-    background: linear-gradient(135deg, #2d2540 0%, #3d2f55 100%);
-    border-color: #6b46c1;
-    color: #e9d8fd;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, #2d2540 0%, #3d2f55 100%);
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: #6b46c1;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #e9d8fd;
 }
+/* ============================================================
+   作用对象：:root[data-theme="dark"] .mascot-bubble::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 :root[data-theme="dark"] .mascot-bubble::after {
-    border-left-color: #6b46c1;
+	/* border-left-color：设置左边框颜色 */
+	/* 用途/效果：单独调整左边框颜色 */
+	/* 注意点：需边框已存在 */
+	border-left-color: #6b46c1;
 }
+/* ============================================================
+   作用对象：:root[data-theme="dark"] .mascot-bubble::before
+   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
+   ============================================================ */
 :root[data-theme="dark"] .mascot-bubble::before {
-    border-left-color: #2d2540;
+	/* border-left-color：设置左边框颜色 */
+	/* 用途/效果：单独调整左边框颜色 */
+	/* 注意点：需边框已存在 */
+	border-left-color: #2d2540;
 }

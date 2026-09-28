@@ -36,5 +36,5 @@ class BlogConfig(AppConfig):
         ``manage.py check`` 与运行日志中不出现 requests 依赖版本告警。
         """
         from . import signals  # noqa: F401  # 仅为注册信号副作用而导入
-        from .deprecation_filters import install_warning_filters
+        from .utils.deprecation_filters import install_warning_filters
         install_warning_filters()

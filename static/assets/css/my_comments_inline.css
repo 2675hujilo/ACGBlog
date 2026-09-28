@@ -1,5 +1,56 @@
-
-.my-comment-item { padding: 14px; border-bottom: 1px solid var(--c-border); }
-.my-comment-item .mc-title { font-weight: 600; margin-bottom: 4px; }
-.my-comment-item .mc-content { color: var(--c-text); margin: 6px 0; }
-.my-comment-item .mc-meta { font-size: .8rem; color: var(--c-text-dim); }
+/* ============================================================
+   作用对象：.my-comment-item
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.my-comment-item {
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 14px;
+	/* border-bottom：单独设置下边框 */
+	/* 用途/效果：输入框下划线、列表分隔线主力 */
+	/* 注意点：常配合 hover 改变颜色做交互反馈 */
+	border-bottom: 1px solid var(--c-border);
+}
+/* ============================================================
+   作用对象：.my-comment-item .mc-title
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.my-comment-item .mc-title {
+	/* font-weight：设置字重 */
+	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
+	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
+	font-weight: 600;
+	/* margin-bottom：设置元素下外边距 */
+	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
+	/* 注意点：可能与下一个元素的上外边距折叠 */
+	margin-bottom: 4px;
+}
+/* ============================================================
+   作用对象：.my-comment-item .mc-content
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.my-comment-item .mc-content {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text);
+	/* margin：设置元素四周的外边距 */
+	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
+	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
+	margin: 6px 0;
+}
+/* ============================================================
+   作用对象：.my-comment-item .mc-meta
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.my-comment-item .mc-meta {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: .8rem;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text-dim);
+}

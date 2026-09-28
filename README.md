@@ -1,11 +1,17 @@
-# 🌸 萌语博客 · MoeBlog
+# 🌸 萌语博客 · MoeBlog（ACGBlog）
 
-> 一个粉紫蓝萌系的二次元个人博客 / 内容社区。
-> **Django 5.2 · DRF · MySQL 8 · Celery/Redis · WhiteNoise · Live2D · PWA**
+> 一个粉紫蓝萌系的二次元个人博客 / 轻内容社区。
+> **Django 5.2 · DRF · MySQL 8 · Celery / Redis · WhiteNoise · Live2D · PWA**
 
 柔和圆润、清新通透，自带看板娘、樱花花瓣、明暗双主题与一堆体验彩蛋；
 内置完整的 **投稿 → 审核 → 发布 → 软删除 → 回收站** 运营闭环，
-以及一个**全局永久强制**的访问日志中间件（三层降级投递，保证日志不丢且不阻塞请求）。
+以及一个 **全局永久强制** 的访问日志中间件（三层降级投递，保证日志不丢且不阻塞请求）。
+
+> 本 README 已按「最新重构」重写：
+> - 原单文件 `blog/models.py`（约 2000 行）拆为 **`blog/models/` 包（15 文件 / 51 模型）**；
+> - blog 根散落的业务服务归入 **`blog/services/`**、纯工具归入 **`blog/utils/`**；
+> - 各文件设置常量统一收拢到 **`DjangoBlog/settings.py`**（带来源与含义注释）；
+> - 新增三段式权限装饰器 `staff_required_moe`，修复非员工访问看板无提示的问题。
 
 ---
 
@@ -13,100 +19,110 @@
 
 1. [项目定位与设计语言](#1-项目定位与设计语言)
 2. [功能总览](#2-功能总览)
-3. [技术栈与架构](#3-技术栈与架构)
+3. [技术栈与系统架构](#3-技术栈与系统架构)
 4. [目录结构](#4-目录结构)
-5. [数据结构（48 个模型）](#5-数据结构48-个模型)
+5. [数据模型（models 包 · 51 个模型）](#5-数据模型models-包--51-个模型)
 6. [核心实现细节](#6-核心实现细节)
-7. [API 一览](#7-api-一览)
+7. [路由与 API 一览](#7-路由与-api-一览)
 8. [环境要求与部署](#8-环境要求与部署)
-9. [运维手册](#9-运维手册)
-10. [扩展指南](#10-扩展指南)
-11. [测试与验收](#11-测试与验收)
-12. [工单变更历史](#12-工单变更历史)
+9. [运维手册（Celery / Redis / 兜底队列）](#9-运维手册celery--redis--兜底队列)
+10. [测试与验收](#10-测试与验收)
+11. [扩展开发指南](#11-扩展开发指南)
+12. [安全约定](#12-安全约定)
+13. [工单变更历史](#13-工单变更历史)
+14. [常见问题 FAQ](#14-常见问题-faq)
 
 ---
 
 ## 1. 项目定位与设计语言
 
-**定位**：二次元轻量萌系个人博客 / 内容社区，单应用（`blog`）承载全部业务。
+**定位**：二次元轻量萌系个人博客 / 内容社区，单 Django app（`blog`）承载全部业务。
 
 | 维度 | 约定 |
 | --- | --- |
 | 主色 | 粉 `#ff8fb1`、紫 `#a06cd5`、蓝 `#6ea8fe`，点缀樱花粉 |
-| 形态 | 大圆角（卡片 18px、胶囊 999px）、柔和投影、半透明玻璃拟态 |
+| 形态 | 大圆角（卡片约 18px、胶囊 999px）、柔和投影、半透明玻璃拟态 |
 | 质感 | 清新通透、留白充足、渐变克制 |
-| 文案 | 全站中文 + 语气词「喵~」；**全部集中在后端文案注册表**（见 6.4） |
+| 文案 | 全站中文 + 语气词「喵~」；集中在后端文案注册表（见 [6.4](#64-文案系统site_messages)） |
 | 动效 | 樱花飘落、入场淡入、卡片悬浮、按钮回弹、看板娘互动 |
-| 主题 | 明 / 暗双主题（含 AMOLED 纯黑档），一键切换并持久化 |
-| 响应式 | 三栏（桌面）→ 单栏（移动），覆盖 360~1920 共 8 档视口 |
+| 主题 | 明 / 暗双主题，一键切换并持久化（前端 `data-theme`） |
+| 响应式 | 移动 / 平板 / 桌面自适应，覆盖 360–1920 常见视口 |
 | 无障碍 | 跳过导航链接、`aria-*` 语义、`:focus-visible` 焦点环、`prefers-reduced-motion` 降动效 |
 
 设计令牌（Design Token）统一用 CSS 自定义属性维护，明暗主题分别在 `:root` 与
 `:root[data-theme="dark"]` 下定义；全站组件只引用变量、不写死颜色。
+
+### 1.1 三类用户角色
+
+| 角色 | 典型能力 |
+| --- | --- |
+| 游客（未登录） | 浏览、搜索、查看评论；访问看板等权限路由被引导登录 |
+| 文章作者（普通注册用户） | 发布 / 编辑自己的文章、评论、申请置顶 / 精华、收藏、关注 |
+| 管理员（`is_staff` / 超级用户） | 看板、站点设置、文案总表、审核队列、分类创建、审批推广申请 |
 
 ---
 
 ## 2. 功能总览
 
 ### 内容与阅读
-- 文章列表（最新 / 热门）、置顶 / 精华 / 热门徽章、NEW / HOT 角标
-- 文章详情：目录 TOC（可拖动 / 可导出 Markdown）、阅读进度条、字数与预计阅读时长、上一篇 / 下一篇
-- 专注阅读模式、阅读设置（字号 / 行距 / 配色）、TTS 朗读、阅读进度记忆
-- 导出能力：全文复制、Markdown、PDF、打印；分享卡片 + 二维码 + 短链
-- 封面图智能布局（封面 → 正文首图 → 无图文字填充），预览图固定在卡片侧
-- 分类、标签（标签云可拖动 + 索引 + 排行榜）、系列（连载 + 序号）、归档
-- 文章访问密码（哈希存储）、文章评分（1~5 星）
+- 文章 / 笔记 / 独立页面三种类型；草稿 / 待审 / 已发布状态。
+- 文章列表（最新 / 热门）、置顶 / 精华 / 热门徽章、NEW / HOT 角标。
+- 详情：目录 TOC（可拖动 / 导出 Markdown）、阅读进度、字数与预计时长、上一 / 下一篇。
+- 专注阅读、阅读设置（字号 / 行距 / 配色）、TTS、阅读进度记忆。
+- 导出：全文复制、Markdown、PDF、打印；分享卡片 + 二维码 + 短链。
+- 封面智能布局（封面 → 正文首图 → 无图文字填充）。
+- 分类、标签（标签云可拖动 + 索引 + 排行榜）、系列（连载 + 序号）、归档。
+- 文章访问密码（哈希存储）、文章评分（1~5 星）。
+- **定时发布**：预约未来时间，Celery beat 或 Web 兜底扫描自动流转上线。
 
 ### 互动社区
-- 多级评论（楼中楼：仅第一层缩进、后续层级不重复右移）、评论点赞 / 表情回应
-- 评论可在设定时限内撤回（软删除）；评论举报与处理
-- 文章点赞 / 踩、收藏（收藏夹分组）、关注（用户 / 分类 / 标签）、黑名单与静音
-- @提及、回复通知、站内通知中心（铃铛下拉 + 独立页面）、评论摘要邮件（Celery 异步）
-- 徽章 / 成就（**个人中心可视化面板**：已获得置顶、未获得折叠可展开、含获取方式与实时进度）
-- 积分体系、用户主页、个性签名、用户笔记、阅读历史、登录历史、API Key
+- 多级评论（楼中楼）、评论点赞 / 表情回应、图片评论、折叠、举报。
+- 评论可在设定时限内撤回（软删除）。
+- 文章点赞 / 踩、收藏（收藏夹分组）、关注（用户 / 分类 / 标签）、黑名单与静音。
+- @提及、回复通知、站内通知中心、评论摘要邮件（Celery 异步）。
+- 徽章 / 成就（个人中心可视化面板：已获得置顶、未获得折叠可展开、含获取方式与进度）。
+- 积分体系、用户主页、个性签名、用户笔记、阅读历史、登录历史、API Key。
 
 ### 运营与治理
-- **投稿审核闭环**：普通作者投稿进入「待审核」，管理员通过 / 驳回（驳回退回草稿并通知作者）
-- **定时投稿**：预约未来时间 → 到点按审核开关流转为「待审核」或「已发布」；
-  作者 / 管理员可预览定时内容（不 404），其他人与游客不可见
-- **推广申请（置顶 / 精华 / 热门）**：作者发起申请 → 管理员审批 →
-  **审批结论与「系统执行状态」分离记录**（名额已满时明确显示「未执行·已达上限」并通知作者）
-- **软删除 + 回收站**：文章 / 评论删除先进回收站，可恢复或彻底删除
-- **审核日志 `ModerationLog`**：提交 / 通过 / 驳回 / 软删 / 恢复 / 彻底删除全程留痕
-- 运营看板：实时统计、14 天访问趋势、热门文章 Top、分类分布、待办计数
-- **站点设置（`SiteInfo` 单例）**：站名 / Logo / 副标题 / SEO 描述关键词 / 页脚文案在线编辑
-- 一键刷新静态压缩与缓存（管理命令 + 看板按钮 + API）
-- **访问日志中间件**（全局永久强制模块）：异步优先 → Redis 兜底队列 → 极端同步
+- **投稿审核闭环**：待审 → 通过 / 驳回（驳回退回草稿并通知作者）。
+- **推广申请（置顶 / 精华 / 热门）**：作者发起 → 管理员审批 →
+  审批结论与「系统执行状态」分离记录（名额满时明确显示「未执行·已达上限」）。
+- **软删除 + 回收站**：文章 / 评论删除先进回收站，可恢复或彻底删除。
+- **审核日志 `ModerationLog`**：提交 / 通过 / 驳回 / 软删 / 恢复 / 彻底删除全程留痕。
+- 运营看板：实时统计、访问趋势、热门文章 Top、分类分布、待办计数。
+- **站点设置（`SiteInfo` 单例）**：站名 / Logo / 副标题 / SEO / 页脚在线编辑。
+- 一键刷新静态压缩与缓存（管理命令 + 看板按钮 + API）。
+- **访问日志中间件**（全局永久强制模块）：异步优先 → Redis 兜底队列 → 极端同步。
 
 ### 前端体验
-- Live2D 看板娘：多套模型 / 服装、对话气泡、工具栏、猜拳小游戏；
-  支持 `?waifu=off` 关闭，并尊重系统「减少动态效果」偏好
-- 樱花花瓣、粒子背景、Konami 彩蛋、404「接樱花」小游戏
-- 全站统一 `moeToast` 轻提示与 `moeConfirm` 确认弹窗（**零原生 alert / confirm**）
-- PWA：manifest、Service Worker、可安装、可离线
-- 静态资源自动压缩（CSS/JS minify、去注释）、构建号破缓存、`.gz` 预压缩（WhiteNoise 直发）
-- 全站按钮交互骨架（hover 上浮 + 渐变描边 / active 下沉缩放 / 选中粉紫渐变白字 /
-  禁用降饱和 / 键盘焦点环 / 触屏与降动效适配）
+- Live2D 看板娘：多模型 / 服装、对话气泡、工具栏、猜拳小游戏；
+  支持 `?waifu=off` 关闭，并尊重「减少动态效果」偏好。
+- 樱花花瓣、粒子背景、Konami 彩蛋、404「接樱花」小游戏。
+- 全站统一 `moeToast` 轻提示与 `moeConfirm` 确认弹窗（**零原生 alert / confirm**）。
+- PWA：manifest、Service Worker、可安装、可离线。
+- 静态资源自动压缩（CSS/JS minify）、构建号破缓存、`.gz` 预压缩（WhiteNoise 直发）。
+- 按钮交互骨架（hover 上浮 + 渐变描边 / active 下沉缩放 / 选中渐变白字 /
+  禁用降饱和 / 键盘焦点环 / 触屏与降动效适配）。
 
 ---
 
-## 3. 技术栈与架构
+## 3. 技术栈与系统架构
 
 ### 3.1 技术选型
 
 | 层 | 技术 | 版本 | 说明 |
 | --- | --- | --- | --- |
 | Web 框架 | Django | 5.2.17 | 单 app（`blog`）承载全部业务 |
-| API | djangorestframework | 3.15.2 | 通知 / 评论 / 点赞 / 功能开关等 JSON API |
-| 数据库 | mysqlclient + MySQL 8 | 2.2.7 | 库名 `Blog_new`，字符集 `utf8mb4`，严格模式 `STRICT_TRANS_TABLES` |
+| API | djangorestframework | 3.15.2 | 通知 / 评论 / 点赞 / 分类等 JSON API |
+| 数据库 | mysqlclient + MySQL 8 | 2.2.7 | 默认库 `acgblog`，字符集 `utf8mb4`，建议严格模式 |
 | 异步任务 | Celery + Redis | 5.3.1 / 5.2.1 | broker `redis://127.0.0.1:6379/0` |
 | 缓存 | Django LocMemCache | 内置 | 默认 300s；**进程内**，多进程部署需换 Redis 缓存后端 |
 | 静态托管 | WhiteNoise | 6.12.0 | 生产压缩（Manifest）+ 长期缓存 |
 | 图片处理 | Pillow | 10.3.0 | 封面 / 头像裁剪 / 校验 |
-| HTML 净化 | bleach | 6.4.0 | 富文本与评论白名单清洗（配合 `html_safety.py`） |
+| HTML 净化 | bleach | 6.4.0 | 富文本与评论白名单清洗（配合 `utils/html_safety.py`） |
 | 搜索 / 导出 | pypinyin / html2text / qrcode / xhtml2pdf | — | 拼音搜索、MD / PDF 导出、二维码 |
-| 富文本 | CKEditor 4（本地静态） | — | 无需 pip 安装 |
-| 看板娘 | Live2D（本地静态） | — | `static/assets/live2d` |
+| 富文本 | CKEditor 4（本地静态 `static/ckeditor`） | — | 无需 pip 安装 |
+| 看板娘 | Live2D（本地静态 `static/assets/live2d`） | — | 第三方运行时 |
 
 ### 3.2 请求链路与分层
 
@@ -124,18 +140,17 @@
 │    OnlineStatus → SiteInfo → SiteMessages → MascotToggle →            │
 │    CuteErrorPages★（★ = 本项目自研）                                   │
 │                                                                       │
-│  URL Router（page 路由 + /api/ 路由）                                 │
+│  URL Router（页面路由 + /api/ 路由）                                  │
 │        │                                                              │
 │        ▼                                                              │
 │  Views（blog/views/ 包：15 个功能子模块 + DRF 类视图）              │
 │        │                                                              │
-│        ├──► Templates（42 个模板 + MSG 文案命名空间）                  │
-│        ├──► DRF Serializers（JSON）                                   │
-│        └──► 领域模块：scheduled_publishing / live2d / html_safety /   │
-│                       site_messages / cache_keys                      │
+│        ├──► Templates（40+ 模板 + MSG 文案命名空间）                  │
+│        ├──► Services（blog/services：访问日志 / 定时发布 / 文案）     │
+│        └──► Utils（blog/utils：权限装饰器 / HTML 安全 / 缓存键）      │
 └───────┬──────────────────────┬───────────────────────┬───────────────┘
         ▼                      ▼                       ▼
-   MySQL 8 (48 张表)      LocMem Cache           Static / Media 磁盘
+   MySQL 8 (51 模型)      LocMem Cache           Static / Media 磁盘
         ▲                  （分片 TTL）                  ▲
         │                                                 │
 ┌───────┴──────────────────────┐              WhiteNoise（生产托管 + .gz）
@@ -145,16 +160,18 @@
 └──────────────────────────────┘
 ```
 
-**分层约定**
+### 3.3 分层约定
 
 | 层 | 职责 | 位置 |
 | --- | --- | --- |
 | 中间件 | 横切关注点：日志采集、站点信息、文案注入、看板娘开关、错误页 | `blog/middleware/*.py`（一个中间件一个文件） |
 | 上下文处理器 | 向所有模板注入公共数据（导航 / 侧栏 / 统计 / 文案 / 构建号） | `blog/context_processors.py` |
-| 领域模块 | 可复用的业务逻辑，供视图与任务共用 | `blog/scheduled_publishing.py`、`blog/access_log_service.py`、`blog/html_safety.py`、`blog/site_messages.py`、`blog/live2d.py` |
-| 视图 | 页面渲染与 API 响应 | `blog/views/`（原 5700 行单文件按功能拆为 15 个子模块，`__init__` 全量再导出，含审核 / 看板 / 回收站） |
+| 服务层 | 可复用业务逻辑，供视图与任务共用 | `blog/services/*.py` |
+| 工具层 | 与业务无关的纯工具（装饰器、安全、缓存键、告警过滤） | `blog/utils/*.py` |
+| 视图 | 页面渲染与 API 响应 | `blog/views/`（按功能拆 15 子模块，`__init__` 再导出） |
+| 模型 | 数据结构与 ORM | `blog/models/`（15 文件包，`__init__` 统一导出） |
 | 异步任务 | 不阻塞请求的副作用 | `blog/tasks.py` |
-| 信号 | 模型状态变化的副作用（缓存失效 / 计数重算 / 徽章 / 通知） | `blog/signals.py` |
+| 信号 | 模型状态变化的副作用（缓存失效 / 计数 / 徽章 / 通知 / 审核） | `blog/signals.py` |
 
 ---
 
@@ -166,173 +183,127 @@ ACGBlog/
 ├── requirements.txt                   # 精确锁定的依赖
 ├── README.md                          # 本文档
 ├── DjangoBlog/                        # 项目配置包
-│   ├── settings.py                    # 全局设置（安全 / DB / 缓存 / 静态 / Celery / 日志）
+│   ├── settings.py                    # 全局设置 + 重构收拢的功能开关/运行参数（带来源注释）
 │   ├── urls.py                        # 根路由（挂载 blog.urls）
 │   ├── celery.py                      # Celery 应用
 │   └── wsgi.py / asgi.py
 ├── blog/                              # 唯一业务应用
-│   ├── models.py                      # 48 个模型（1432 → 约 1900 行）
-│   ├── views/                         # ★ 视图包（原 5700 行单文件按功能拆分；__init__ 全量再导出，兼容 blog.views.X）
-│   │   ├── common.py                  #   共享查询工具（_base_qs / _filter_articles）
-│   │   ├── articles.py                #   文章发布 / 编辑 / 删除 / 详情
-│   │   ├── comments.py                #   评论与楼中楼
-│   │   ├── auth.py                    #   登录 / 注册 / 登出
-│   │   ├── users.py                   #   用户中心 / 徽章
-│   │   ├── series.py                  #   系列创建
-│   │   ├── catalog.py                 #   分类 / 标签 / 归档 / 侧栏
-│   │   ├── search.py                  #   搜索
-│   │   ├── interactions.py            #   点赞 / 收藏 / 评分
-│   │   ├── api.py                     #   DRF 接口
-│   │   ├── console.py                 #   运营看板 / 站点设置
-│   │   ├── moderation.py              #   审核 / 推广审批
-│   │   ├── features.py                #   功能开关注册表
-│   │   ├── seo.py                     #   RSS / sitemap
-│   │   ├── errors.py                  #   错误视图
-│   │   └── __init__.py                #   全量再导出 204 个名字
+│   ├── models/                        # ★ 模型包（原单文件 models.py 拆为 15 文件）
+│   │   ├── __init__.py                #   统一导出全部模型 + __all__（外部 from blog.models import X）
+│   │   ├── user.py  catalog.py  series.py
+│   │   ├── article.py  comment.py  interaction.py
+│   │   ├── logs.py  notification.py  badge.py
+│   │   ├── site.py  moderation.py  messages.py
+│   │   ├── social.py  system.py
+│   ├── views/                         # ★ 视图包（按功能拆 15 子模块，__init__ 再导出）
+│   │   ├── common.py articles.py comments.py auth.py users.py
+│   │   ├── series.py catalog.py search.py interactions.py
+│   │   ├── api.py console.py moderation.py
+│   │   ├── features.py seo.py errors.py
+│   ├── middleware/                    # ★ 中间件包（一个中间件一个文件）
+│   │   ├── access_log.py              #   ★ 访问日志（全局永久强制，三层降级）
+│   │   ├── site_messages.py site_info.py mascot.py
+│   │   ├── cute_error_pages.py online_status.py
+│   │   ├── slow_query.py              #   慢 SQL 日志 filter
+│   │   └── __init__.py
+│   ├── services/                      # ★ 业务服务层
+│   │   ├── access_log_service.py      #   访问日志三级降级投递
+│   │   ├── scheduled_publishing.py    #   定时文章处理（process / maybe_sweep）
+│   │   ├── site_messages.py           #   文案大字典 MESSAGES + msg()
+│   │   └── __init__.py
+│   ├── utils/                         # ★ 纯工具层
+│   │   ├── decorators.py              #   staff_required_moe 三段式权限装饰器
+│   │   ├── html_safety.py             #   HTML/CSS 安全净化
+│   │   ├── cache_keys.py              #   缓存键口径
+│   │   ├── deprecation_filters.py     #   弃用/版本告警过滤
+│   │   └── __init__.py
 │   ├── urls.py                        # 应用路由（页面 + /api/）
 │   ├── serializers.py                 # DRF 序列化器
-│   ├── middleware/                    # 中间件包（一个中间件一个文件）
-│   │   ├── access_log.py              #   ★ 访问日志（全局永久强制模块，三层降级）
-│   │   ├── site_messages.py           #   文案注入（request.msg）
-│   │   ├── site_info.py               #   站点信息单例
-│   │   ├── mascot.py                  #   看板娘开关（?waifu=on/off）
-│   │   ├── cute_error_pages.py        #   萌系错误页 400/403/404/500
-│   │   ├── online_status.py           #   在线状态
-│   │   ├── slow_query.py              #   慢 SQL 日志过滤器
-│   │   └── __init__.py                #   统一再导出（兼容 blog.middleware.X 写法）
-│   ├── context_processors.py          # 导航 / 侧栏 / 页脚统计 / 偏好 / 文案 / 构建号
-│   ├── site_messages.py               # ★ 全站文案注册表（286 条 / 19 域）
-│   ├── scheduled_publishing.py        # ★ 定时投稿状态流转（任务 + 请求侧兜底扫描）
-│   ├── access_log_service.py          # ★ 访问日志投递通道（Redis 兜底队列 + 熔断）
-│   ├── cache_keys.py                  # 缓存 key 集中管理（带版本前缀）
-│   ├── html_safety.py                 # 共享 HTML/CSS 净化（MoeCSSSanitizer）
-│   ├── live2d.py                      # 看板娘端点 /api/live2d/
-│   ├── deprecation_filters.py         # 消除 requests 依赖版本告警
+│   ├── context_processors.py          # 导航 / 侧栏 / 统计 / 文案 / 构建号
+│   ├── live2d.py                      # 看板娘 API（/api/live2d/）
 │   ├── tasks.py                       # Celery 任务
-│   ├── signals.py                     # 模型信号
-│   ├── admin.py                       # 自定义后台（13 个模型 + 定制 AdminSite）
-│   ├── features_live2d.py             # 【已删除】内容迁至 live2d.py
-│   ├── features_round5/               # 【已删除】内容迁至 views/features.py / urls.py
+│   ├── signals.py                     # 模型信号（审核 / 状态流转）
+│   ├── admin.py                       # 自定义后台
+│   ├── apps.py  tests.py
+│   ├── cache_version.txt              # 缓存版本号
 │   ├── management/commands/           # 管理命令（见 9.1）
-│   ├── migrations/                    # 18 个迁移（最新 0018）
-│   └── templatetags/
-│       ├── blog_extras.py             # is_new / time_ago / time_until / highlight /
-│       │                              #   lazy_images / smart_page_range / body_first_image /
-│       │                              #   file_url / portable_media
-│       └── search_extras.py
-├── templates/                         # 42 个模板
-│   ├── base.html                      # 全站骨架（导航 / 弹窗 / 文案包 / 看板娘开关 / SW）
-│   ├── 400.html 403.html 404.html 500.html   # 萌系错误页（文案取自 MSG）
-│   ├── rss.xml / sitemap.xml          # 订阅与站点地图
-│   ├── partials/                      # 可复用片段
-│   │   ├── _article_card.html         #   文章卡片
-│   │   ├── _comment_item.html         #   评论项（含楼中楼）
-│   │   ├── _badge_panel.html          #   徽章 / 成就面板
-│   │   ├── _auth_bg.html              #   认证页共享背景
-│   │   ├── _hot_list.html             #   热门列表
-│   │   ├── _pagination.html           #   分页器
-│   │   └── _seo_meta.html             #   SEO meta
-│   └── blog/                          # 27 个页面模板
-│       ├── index.html detail.html edit.html password_gate.html
-│       ├── categories.html tags.html archive.html
-│       ├── series_list.html series_detail.html series_form.html
-│       ├── login.html register.html
-│       ├── user_profile.html user_settings.html
-│       ├── console.html moderation.html site_settings.html status.html
-│       ├── notifications.html favorites.html my_collection.html my_articles.html
-│       ├── my_comments.html liked_articles.html reading_history.html reading_history_page.html
-│       └── api_docs.html
-├── static/assets/
-│   ├── css/                           # 33 个源样式（编译产物 .min.css + .gz）
-│   │   ├── ui_polish.css              #   页面增强 + 按钮交互骨架（最大，约 95KB）
-│   │   ├── round6.css                 #   Round6 交互（含推广 / 审核状态样式）
-│   │   ├── components.css             #   通用组件
-│   │   ├── blog.css                   #   文章 / 列表布局
-│   │   ├── base.css                   #   设计令牌与基础元素
-│   │   ├── profile.css                #   个人中心（含徽章面板）
-│   │   ├── moderation_inline.css      #   审核页
-│   │   ├── error400/403/404/500.css   #   错误页（自包含，不依赖 base）
-│   │   └── …
-│   ├── js/                            # 52 个源脚本（44 个顶层 + 8 个 features/，编译产物 .min.js + .gz）│   │   ├── common.js                  #   ★ 核心：moeToast / moeConfirm / 通用工具
-│   │   ├── moe-messages.js            #   ★ 文案访问层（window.SITE_MSG / moeMsg）
-│   │   ├── auth_inline.js             #   ★ 认证表单免刷新 + 内联红字校验
-│   │   ├── round6.js                  #   FAB 菜单 / 榜单切换 / 推广按钮三态
-│   │   ├── comments.js / like.js / features.js / toc.js
-│   │   ├── features/                  #   分域脚本（effects / interaction / reading /
-│   │   │                              #     profile / search / tools / settings_prefs）
-│   │   └── …
-│   ├── icons/ images/ img/            # 图标与占位插图
-│   ├── live2d/                        # 看板娘：引擎、模型、服装、初始化脚本
-│   ├── ckeditor/                      # 本地富文本编辑器
-│   └── .build_token                   # 构建号（模板 ?v={{ BUILD_TOKEN }} 破缓存）
+│   ├── templatetags/                  # blog_extras / search_extras
+│   └── migrations/                    # 迁移（自动生成，不手改）
+├── templates/                         # 模板
+│   ├── base.html                      # 全站骨架（导航 / 弹窗 / 文案包 / SW）
+│   ├── 400.html 403.html 404.html 500.html   # 萌系错误页（自包含）
+│   ├── _article_card.html _comment_item.html _badge_panel.html
+│   ├── _auth_bg.html _hot_list.html _pagination.html _seo_meta.html
+│   └── （index/detail/edit/categories/tags/archive/series_*/login/register/
+│         user_profile/console/moderation/site_settings/status/
+│         notifications/favorites/my_*/api_docs 等页面）
+├── static/
+│   ├── sw.js                          # Service Worker（PWA）
+│   ├── manifest.json
+│   ├── ckeditor/                      # 第三方编辑器（本地，不要求注释）
+│   └── assets/
+│       ├── css/                       # 34 个源样式（产物 .min.css + .gz）
+│       ├── js/                        # 53 个源脚本（产物 .min.js + .gz）
+│       ├── icons/ images/ img/        # 图标与占位插图
+│       └── live2d/                    # 第三方看板娘运行时
 ├── staticfiles/                       # collectstatic 产物（生产）
 ├── media/                             # 用户上传（avatars / covers / uploads）
-└── docs/                              # 全部文档与验收产物（临时文件统一放这里）
-    ├── bugfix_20260926_bug9/          # 最新工单：修改清单 / 验证报告 / 脚本 / 截图
-    ├── bugfix_20260925_bug8/          # 上一工单
-    ├── bugfix_ticket5/ · bug1/ · bug11/ · bug12/  # 历史工单
-    ├── archived_feature_stubs/        # 已归档的无功能占位实现
-    ├── qa_profiles/ qa_screenshots/   # 历史浏览器验收 profile 与截图
-    └── reference/                     # 参考实现
+└── docs/                              # 全部文档、临时工具、备份与验收产物
+    ├── refactor_tools/                # 重构工具（注释审计 / 三类注释增强器）
+    ├── refactor_backup/               # 重构前权威备份（models.py.bak 等）
+    ├── ui_screenshots/                # 浏览器实测截图集（chrome / edge）
+    └── （历史工单 bugfix_* 目录）
 ```
+
+> 临时 / 备份文件统一放 `docs/` 下子目录，禁止随意放置。
 
 ---
 
-## 5. 数据结构（48 个模型）
+## 5. 数据模型（models 包 · 51 个模型）
 
-全部模型位于 `blog/models.py`，自定义用户模型 `AUTH_USER_MODEL = 'blog.User'`。
-按业务域分组如下（括号内为数据库表名）：
+`blog/models/__init__.py` **统一导出全部模型与 `__all__`**，外部一律
+`from blog.models import Article`，调用方无需感知拆分。跨文件外键用字符串
+（`'User'` / `'Article'`），表名、字段、choices 保持不变，**不产生新迁移**。
 
-### 5.1 内容核心
+自定义用户模型：`AUTH_USER_MODEL = 'blog.User'`。
 
-| 模型 | 表 | 关键字段与说明 |
-| --- | --- | --- |
-| `Article` | `blog_article` | 28 字段。`title` / `content`(富文本) / `excerpt_field` / `kind`(article/note/page) / `status`(draft/pending/published) / `published_at`(定时) / `is_pinned`·`is_featured`·`is_hot` / `views`·`likes`·`dislikes`·`comment_count`·`share_count` / `cover_image` / `password`(访问密码哈希) / `series`+`series_order` / `is_deleted`+`deleted_at`(软删除)；索引 `idx_art_status_ct`、`idx_art_feat_ct`、`idx_art_hot_ct` |
-| `Category` | `blog_category` | 名称 / 图标 / 描述 / 排序 |
-| `Tag` | `blog_tag` | 标签名（唯一） |
-| `Series` | `blog_series` | 系列标题 / 封面 / 简介 / 作者 |
-| `Comment` | `blog_comment` | 13 字段。`parent_comment`(楼中楼) / `is_approved`(审核) / `is_deleted`+`deleted_at`(撤回/软删) / `reported` / `likes` / `image` / `floor`(楼层) |
-| `EditLog` | `blog_edit_log` | 修改记录 + `content_snapshot`（版本对比） |
-| `Rating` | `blog_rating` | 1~5 星，`unique_together(user, article)` |
-| `ShortLink` | `blog_short_link` | 分享短链 |
-| `ArticleShare` | `blog_article_share` | 分享渠道计数 |
+| 文件 | 模型 |
+| --- | --- |
+| `user.py` | `User` |
+| `catalog.py` | `Category`、`Tag` |
+| `series.py` | `Series` |
+| `article.py` | `ArticleQuerySet`、`Article`、`ArticleHistory`、`ArticleShare`、`ScheduledPost`、`ShortLink` |
+| `comment.py` | `Comment`、`CommentReaction`、`CommentReport` |
+| `interaction.py` | `FavoriteFolder`、`Favorite`、`Rating`、`ArticleBookmark`、`ReadingList`、`UserNote` |
+| `logs.py` | `AccessLog`、`EditLog`、`LoginHistory` |
+| `notification.py` | `Notification` |
+| `badge.py` | `Badge`、`UserBadge`、`UserPoint`、`PointLog`、`UserAchievement` |
+| `site.py` | `SiteInfo`、`SiteNotice`、`FriendlyLink` |
+| `moderation.py` | `ModerationLog`、`ModerationSettings`、`PromotionRequest` |
+| `messages.py` | `SiteMessage`、`SiteMessageRetired` |
+| `social.py` | `UserFollow`、`UserProfile`、`UserActivity`、`UserBlock`、`UserMute`、`CategoryFollow`、`TagFollow`、`ContentReport` |
+| `system.py` | `UserAPIKey`、`Webhook`、`UserDevice`、`ThemePreset`、`SearchHistory`、`ExportJob`、`UserWidget` |
 
-### 5.2 互动与用户成长
+### 5.1 关键模型约定
 
-| 模型 | 表 | 说明 |
-| --- | --- | --- |
-| `User` | `blog_user` | 29 字段。继承 `AbstractUser`；`nickname` / `avatar` / `introduction` / `last_active` / 偏好字段等 |
-| `UserProfile` | `blog_user_profile` | 扩展资料 |
-| `Favorite` / `FavoriteFolder` | `blog_favorite` / `blog_favorite_folder` | 收藏与收藏夹分组 |
-| `ArticleBookmark` / `ArticleHistory` | — | 书签与阅读历史 |
-| `ReadingList` | `blog_reading_list` | 阅读清单 |
-| `Notification` | `blog_notification` | 站内通知（类型 / 已读 / 关联 URL） |
-| `Badge` / `UserBadge` | `blog_badge` / `blog_user_badge` | 徽章定义（`condition_type` × `condition_value`）与获得记录 |
-| `UserAchievement` / `UserPoint` / `PointLog` | — | 成就 / 积分余额 / 积分流水 |
-| `UserFollow` / `CategoryFollow` / `TagFollow` | — | 关注关系 |
-| `UserBlock` / `UserMute` | — | 黑名单 / 静音 |
-| `UserNote` | `blog_user_note` | 用户笔记 |
-| `UserActivity` | `blog_user_activity` | 行为流水 |
-| `UserDevice` / `LoginHistory` | — | 设备与登录历史 |
-| `UserAPIKey` / `Webhook` | — | 开放接口凭据与回调 |
-| `UserWidget` / `ThemePreset` | — | 个人主页组件与主题预设 |
-| `CommentReaction` | `blog_comment_reaction` | 评论表情回应 |
-| `SearchHistory` | `blog_search_history` | 搜索历史 |
-| `ExportJob` | `blog_export_job` | 导出任务 |
+- **Article**（表 `blog_article`）：手动摘要字段是 **`excerpt_field`**（`excerpt` 是 `@property`）；
+  含 `title / content / kind`(article/note/page) ` / status`(draft/pending/published) ` /
+  published_at / is_pinned / is_featured / is_hot / views / likes / dislikes /
+  comment_count / cover_image / password / series + series_order / is_deleted + deleted_at / rating_avg`。
+- **Comment**（表 `blog_comment`）：`parent_comment`（`related_name='replies'`）、
+  `is_approved / is_deleted + deleted_at / reported / likes / image / floor / is_folded`。
+- **AccessLog**（表 `blog_access_log`）：IP 字段是 **`ip_address`**（`GenericIPAddressField`）；
+  含 `username / session_key / path / full_url / method / status_code / duration_ms /
+  referer / user_agent / browser / os / view_func / created_at`；
+  索引 `created_at / ip_address / path`。
+- **PromotionRequest**（表 `blog_promotion_request`）：`kind`(pin/feature/hot)、
+  `status`(pending/approved/rejected)、`execution_status`(not_run/success/skipped/failed)、
+  `execution_note / executed_at / handled_by / handled_at`。
+- **ModerationSettings**（单例 pk=1）：`.load()`；`require_article_review /
+  require_comment_review / comment_recall_minutes / max_pinned`；读取走缓存。
+- **SiteInfo**（单例）：站名 / Logo emoji / 副标题 / SEO 描述与关键词 / 页脚 / ICP。
 
-### 5.3 运营与治理
-
-| 模型 | 表 | 说明 |
-| --- | --- | --- |
-| `ModerationLog` | `blog_moderation_log` | 审核动作留痕（SUBMIT / APPROVE / REJECT / SOFT_DELETE / RESTORE / HARD_DELETE / PIN / UNPIN / FEATURE / UNFEATURE / HOT / UNHOT） |
-| `ModerationSettings` | `blog_moderation_settings` | **单例(pk=1)**：`require_article_review` / `require_comment_review` / `comment_recall_minutes` / `max_pinned`；读取走缓存 |
-| `PromotionRequest` | `blog_promotion_request` | 推广申请：`kind`(pin/feature/hot) / `status`(pending/approved/rejected) / **`execution_status`**(not_run/success/skipped/failed) / `execution_note` / `executed_at` / `handled_by` / `handled_at` |
-| `CommentReport` / `ContentReport` | — | 举报 |
-| `ScheduledPost` | `blog_scheduled_post` | 定时发布辅助记录 |
-| `SiteInfo` | `blog_site_info` | **单例**：站名 / Logo emoji / 副标题 / SEO 描述与关键词 / 页脚关于 / ICP / 版权方 |
-| `SiteNotice` | `blog_site_notice` | 全站公告（可关闭，cookie 记忆） |
-| `FriendlyLink` | `blog_friendly_link` | 友情链接 |
-| `AccessLog` | `blog_access_log` | 18 字段：IP / 用户 / 会话 / 路径 / 完整 URL / 方法 / 状态码 / 耗时 / 来源 / UA / 浏览器 / 系统 / 视图名；索引在 `(created_at)`、`(path)`、`(user)` 上 |
+> 核对任何字段，以代码与 `docs/refactor_backup/models.py.bak` 为权威。
 
 ---
 
@@ -340,8 +311,10 @@ ACGBlog/
 
 ### 6.1 访问日志中间件（全局永久强制模块）★
 
-> **本模块不可删除、不可破坏。** 实现：`blog/middleware/access_log.py`（采集）、
-> `blog/access_log_service.py`（投递通道）、`blog/tasks.py::save_access_log`（worker 落库）、
+> **不可删除、不可破坏。** 实现：
+> `blog/middleware/access_log.py`（采集）、
+> `blog/services/access_log_service.py`（投递通道 + 熔断）、
+> `blog/tasks.py::save_access_log`（worker 落库）、
 > `blog/management/commands/accesslog_queue.py`（兜底队列运维）。
 
 **三层降级投递策略**
@@ -355,191 +328,168 @@ ACGBlog/
    ├─ 层2 Broker 故障（delay() 抛错）：RPUSH acgblog:access_log:fallback
    │        仍不写库；Broker 恢复后批量消费：
    │          python manage.py accesslog_queue --drain
-   │        （Celery beat 每 5 分钟自动跑 flush_access_log_queue 兜底补齐）
+   │        （Celery beat 周期自动跑 flush_access_log_queue 兜底补齐）
    │
    └─ 层3 极端降级（Redis 也写不进去）：同步 AccessLog.objects.create()
-            仅此一层允许同步入库，并打 ERROR 告警；保证日志一条不丢
+            仅此一层允许同步入库并打 ERROR，保证日志一条不丢
 ```
 
-**性能约束（关键设计）**
+**性能 / 调参（在 settings.py，注释注明用途）**
 
 | 参数 | 默认 | 作用 |
 | --- | --- | --- |
+| `ACCESS_LOG_ENABLED` | `1` | 总开关（强制模块，仅极端压测临时关闭） |
 | `ACCESS_LOG_REDIS_TIMEOUT` | 0.35s | 单次 Redis 操作 socket 超时 |
 | `ACCESS_LOG_REDIS_COOLDOWN` | 20.0s | Redis 失败后的熔断窗口（避免每请求白等超时） |
-| `ACCESS_LOG_BROKER_COOLDOWN` | 15.0s | **Broker 熔断窗口**：投递失败后直接走兜底队列，不再尝试连 broker |
+| `ACCESS_LOG_BROKER_COOLDOWN` | 15.0s | Broker 熔断窗口：投递失败后直接走兜底队列 |
 | `ACCESS_LOG_FALLBACK_KEY` | `acgblog:access_log:fallback` | 兜底队列键名 |
-| `ACCESS_LOG_FALLBACK_MAX_LEN` | 20000 | 兜底队列长度上限（`LTRIM` 保留最新） |
-| `ACCESS_LOG_FALLBACK_REDIS_URL` | 同 broker | **兜底队列专用地址，建议独立实例 / db** |
+| `ACCESS_LOG_FALLBACK_MAX_LEN` | 20000 | 队列长度上限（`LTRIM` 保留最新） |
+| `ACCESS_LOG_FALLBACK_REDIS_URL` | 同 broker | 兜底队列专用地址，建议独立实例 / db |
 | `ACCESS_LOG_DRAIN_BATCH` | 500 | 批量消费单批条数 |
-| `ACCESS_LOG_ENABLED` | `1` | 总开关（强制模块，仅极端压测时临时关闭） |
 | `CELERY_TASK_PUBLISH_RETRY` | `False` | 发布任务不重试，快速失败交给兜底队列 |
-| `CELERY_BROKER_TRANSPORT_OPTIONS` | 0.4s | broker 连接 / 读写超时，超时不重试 |
+| `CELERY_BROKER_TRANSPORT_OPTIONS` | 0.4s | broker 连接 / 读写超时 |
 
-> 实测：broker 宕机时单请求耗时从 **6218ms 降到 45ms**（未熔断 vs 熔断后），
-> 且该期间数据库零写入、日志全部进入兜底队列。
+> 设计目标：broker 宕机并熔断后，单请求耗时保持毫秒级，且故障期间数据库零写入。
 
 `_is_asset()` 直接剔除 `/static/`、`/media/`、`favicon`、`robots.txt`，避免污染 PV/UV；
 IP 合法性校验在 worker 与兜底消费两侧都做。
 
-### 6.2 定时投稿状态机
+### 6.2 内容审核与 Django 信号
+
+- 文章发布 / 编辑、评论新增**不可破坏信号**（内容审核、文章状态流转），也不能干扰访问日志采集。
+- 写操作走 `save()/create()`，由信号决定是否进入待审、如何流转；勿绕过信号直接改状态。
+- 缓存失效、计数重算、徽章 / 通知触发也统一在 `blog/signals.py`。
+
+### 6.3 定时发布状态机
 
 ```
 作者填写未来发布时间 → 保存为 draft（published_at = 预约时间）
         │  Celery beat 每分钟 check_scheduled_articles
-        │  或  请求侧兜底扫描 maybe_sweep_due_articles()（缓存锁 + 30s 最小间隔）
+        │  或  请求侧兜底扫描 maybe_sweep_due_articles()（缓存锁 + 最小间隔）
         ├─ 关闭「普通作者新文章需审核」→ published（直接发布）
         └─ 开启审核              → pending（待审核 + 写 ModerationLog）
-                   │ 管理员通过（moderate_article）
+                   │ 管理员通过
                    └─ published（published_at 对齐实际通过时刻）
 
-可见性（_base_qs）：作者 / 管理员预览 → 可见定时内容并显示状态条；
-                   其他登录用户 / 游客 → 定时未到点、草稿、待审核一律 404
+可见性：作者 / 管理员可预览定时内容并显示状态条；
+       其他登录用户 / 游客对未到点、草稿、待审核一律 404。
 ```
 
-- 流转逻辑收敛在 `blog/scheduled_publishing.py::process_due_articles()`，任务与兜底共用；
+- 流转逻辑在 `blog/services/scheduled_publishing.py::process_due_articles()`，任务与兜底共用；
 - 逐条 `save()` 而非 bulk `update()`，保证 `post_save` 信号（缓存失效 / 搜索 / 徽章）照常触发；
-- 即使部署环境**没启动 Celery beat**，到点文章最迟 30 秒内也会被请求侧扫描器流转。
+- 即使未启动 Celery beat，到点文章也会被请求侧扫描器在间隔内流转；
+- 间隔与每轮上限：`SCHEDULED_SWEEP_INTERVAL` / `SCHEDULED_MAX_PER_ROUND`（settings）。
 
-### 6.3 推广申请：审批结论与系统执行分离 ★
+### 6.4 文案系统 `site_messages`
 
-| 审批 `status` | 系统执行 `execution_status` | 审核页展示 | 作者通知 |
-| --- | --- | --- | --- |
-| 通过 | `success` | ✅ 审批通过 + ✅ 系统已执行 | 「你的X申请已通过」 |
-| 通过（名额已满 / 未落地） | `skipped` | ✅ 审批通过 + ⏸ 未执行·已达上限 + 执行说明 | 「已通过（暂未生效）」+ 原因 |
-| 通过（写库异常） | `failed` | ✅ 审批通过 + ⚠️ 执行失败 | 「已通过（暂未生效）」 |
-| 驳回 | `not_run` | 🚫 已驳回 + ⏳ 未执行 | 「你的X申请未通过」 |
+- 代码默认大字典 `MESSAGES`（位于 `blog/services/site_messages.py`），键名 `<域>.<语义>`。
+- 取值函数 `msg(key, *args, **kwargs)` 优先级：**数据库覆盖 > 代码默认**；
+  缺键返回 `⟪key⟫` 并 warning（**绝不因文案缺失导致 500**）；占位符用 `str.format`。
+- 数据库覆盖整表缓存（key `v1:site_messages:overrides`，TTL 300s），
+  靠 `MAX(updated_at)` 时间戳（节流 `SITE_MSG_DB_POLL_SECONDS=1.0`）实现 LocMemCache 跨进程失效。
 
-- 待审阶段即显示「通过前预判」（名额是否充足）；
-- 审核页顶部有「🛠 系统执行状态」总览条（三类计数 + 当前置顶 n/m）；
-- 详情页申请按钮三态：`applied`（已经置顶，禁用）/ `pending`（审核中，禁用）/ `open`（可申请）；
-  提交后前端立即切「审核中」，并调用 `GET /api/article/<pk>/promotion-status/` 与服务端对齐。
+| 层 | 用法 |
+| --- | --- |
+| 视图 | `msg('auth.login_failed')`、`msg('promo.limit_warn', 5, 5)`、`request.msg(...)` |
+| 模板 | `{{ MSG.err.404_heading }}`、`{{ MSG.btn.back_home }}` |
+| 前端 | `window.moeMsg('network_error')`、`window.SITE_MSG.network_error` |
 
-### 6.4 全站文案注册表 ★
+- 文案总表页 `/console/site-messages/` 可搜索、按域分组、编辑保存。
 
-**唯一登记处**：`blog/site_messages.py::MESSAGES`（**286 条 / 19 域**，键名 `<域>.<语义>`）。
+### 6.5 权限反馈装饰器 `staff_required_moe` ★
 
-| 层 | 用法 | 实现 |
+Django 自带 `staff_member_required(login_url='/login/')` 底层 `user_passes_test` 对
+「已登录但非员工」也重定向登录页，登录页又把已登录者弹回首页，导致作者点看板
+莫名回首页、无提示。`blog/utils/decorators.py` 的 `staff_required_moe` 三段式：
+
+1. 已登录 + active + is_staff → 放行；
+2. 未登录 → `redirect_to_login` 跳 `/login/`，带安全 `next`；
+3. 已登录非员工 → `raise PermissionDenied`，渲染萌系 `403.html`。
+
+> 看板 / 站点设置 / 文案总表等员工页统一使用该装饰器。
+
+### 6.6 推广申请：审批结论与系统执行分离
+
+| 审批 `status` | 系统执行 `execution_status` | 展示 / 通知 |
 | --- | --- | --- |
-| 视图 | `msg('auth.login_failed')`、`msg('promo.limit_warn', 5, 5)`、`request.msg(...)` | `site_messages.msg()`；`SiteMessagesMiddleware` 注入 `request.msg` |
-| 模板 | `{{ MSG.err.404_heading }}`、`{{ MSG.btn.back_home }}` | `context_processors.site_messages_ctx` 注入 `MSG`（按域分组 + 全路径） |
-| 前端 | `window.moeMsg('network_error')`、`window.SITE_MSG.network_error` | `base.html` 内嵌 `json_script` 文案包 → `moe-messages.js`；离线可 `moeMsgRefresh()` 走 `/api/site-messages/` |
+| 通过 | `success` | ✅ 通过 + ✅ 已执行 |
+| 通过（名额满 / 未落地） | `skipped` | ✅ 通过 + ⏸ 未执行·已达上限 |
+| 通过（写库异常） | `failed` | ✅ 通过 + ⚠️ 执行失败 |
+| 驳回 | `not_run` | 🚫 已驳回 + ⏳ 未执行 |
 
-- 缺 key 时返回 `⟪key⟫` 占位并打 warning，**绝不因文案缺失导致 500**；
-- 域分布：auth 39 / err 35 / promo 25 / nav 22 / empty 17 / article 15 / comment 15 /
-  moderation 15 / interact 15 / badge 15 / btn 14 / js 13 / 其余（brand / form / search /
-  user / notify / live2d / misc）。
+- 详情页申请按钮三态：`applied`（已置顶，禁用）/ `pending`（审核中，禁用）/ `open`（可申请）。
 
-### 6.5 缓存与失效
+### 6.7 缓存与失效
 
-- 缓存键集中在 `blog/cache_keys.py`，统一带版本前缀（`v{ver}:...`），bump 版本即全局失效；
-- 详情页片段缓存：`article` / `comment_tree` / `related` / `related_weighted` / `prevnext` /
-  `missing`(404 墓碑，防穿透)；**只缓存「所有用户可见且一致」的数据**，
-  登录态相关的点赞 / 收藏 / 评分 / 可编辑按钮实时判定；
-- 失效由信号统一驱动：`Article` / `Comment` 的 `post_save` / `post_delete` 全部收敛到
-  `invalidate_article(pk)`；新建 / 删除文章额外 `purge_prevnext()`；
-- 分级 TTL：`CACHE_TTL_SHORT=60` / `MEDIUM=300` / `LONG=3600`。
+- 缓存键集中在 `blog/utils/cache_keys.py`，统一带版本前缀（`v{ver}:...`），bump 即全局失效；
+- 详情页片段缓存（article / comment_tree / related / prevnext / 404 墓碑防穿透）；
+  **只缓存「所有用户可见且一致」的数据**，登录态相关的点赞 / 收藏 / 可编辑按钮实时判定；
+- 失效由信号统一驱动：`Article` / `Comment` 的 save / delete 收敛到 `invalidate_article(pk)`；
+- 分级 TTL：短 60 / 中 300 / 长 3600。
 
-### 6.6 内容安全
+### 6.8 内容安全
 
 - 富文本入库前 `sanitize_html()`（bleach 白名单）；评论 `sanitize_comment()` 仅保留行内标签；
-- `blog/html_safety.py` 提供共享 `MoeCSSSanitizer`（bleach CSS 白名单），
-  消除 `NoCssSanitizerWarning`；
-- 模板侧统一 `|escape` / `escapejs`；JSON-LD 通过 `_safe_jsonld()` 转义 `<` `>`；
+- `blog/utils/html_safety.py` 提供共享 CSS 净化（白名单）；
+- 模板统一 `|escape` / `escapejs`；JSON-LD 转义 `<` `>`；
 - 头像上传用 Pillow 校验真实图片 + 扩展名白名单 + 大小上限（2MB）。
 
-### 6.7 前端主题与交互
+### 6.9 前端主题与按钮交互
 
 - `theme.js` + `base.html` 首帧内联脚本：`<html data-theme="dark">` 防闪烁；
-  用户未手动选择时跟随系统 `prefers-color-scheme`；
-- 全站统一 `moeToast(msg, type)` / `moeConfirm({...})`，并支持声明式
-  `<form data-confirm="...">` 委托拦截（**零原生 alert/confirm**）；
-- 按钮交互骨架：hover 上浮 1px + 渐变描边 + 柔和投影；
-  active 下沉 1px + `scale(.98)`；选中粉紫蓝渐变实心白字 + 内发光（`!important` 兜底历史样式）；
-  禁用降饱和 + `not-allowed`；`:focus-visible` 焦点环；
-  `prefers-reduced-motion` 取消位移；`@media (hover: none)` 触屏用 `:active` 替代 hover；
-- 看板娘：`<html data-waifu="on|off">` 由 `MascotToggleMiddleware` 依据
-  `?waifu=off` 或 cookie `waifu_pref` 写入，`waifu-init-new.js` 判定为 off 时不初始化
-  （不创建容器、不请求模型）；同时尊重「减少动态效果」偏好。
+  用户未手动选择时跟随系统 `prefers-color-scheme`。
+- 按钮交互骨架：hover 上浮 + 渐变描边 + 柔和投影；active 下沉 + `scale(.98)`；
+  选中渐变实心白字 + 内发光；禁用降饱和 + `not-allowed`；`:focus-visible` 焦点环；
+  `prefers-reduced-motion` 取消位移；`@media (hover:none)` 触屏用 `:active` 替代 hover。
+- 看板娘：`?waifu=off` 或 cookie `waifu_pref` 关闭，初始化脚本判定为 off 时不创建容器、不请求模型。
 
-### 6.8 设计令牌与「静默失效」防护 ★
-
-全站视觉由 CSS 自定义属性（Design Token）驱动，**唯一登记处是 `static/assets/css/base.css`
-的 `:root`**（暗色档在 `:root[data-theme="dark"]` 覆盖）。这是硬约定：
-
-| 类别 | 令牌 |
-| --- | --- |
-| 品牌色 | `--c-pink` / `--c-purple` / `--c-blue` / `--c-primary` / `--c-accent` |
-| 柔色底 | `--c-primary-soft` / `--c-pink-soft` |
-| 文字 | `--c-text` / `--c-text-dim` / `--c-text-soft` / `--c-on-brand` |
-| 背景 | `--c-bg` / `--c-bg-soft` / `--c-card` / `--c-card-bg` / `--c-surface` / `--c-input-bg` |
-| 描边 / 焦点 | `--c-border` / `--c-ring` |
-| 渐变 | `--grad-pink` / `--grad-purple` / `--grad-blue` / `--grad-green` / `--grad-orange` / `--grad-cyan` |
-| 间距 / 圆角 | `--space-1…5` / `--radius` / `--radius-sm` / `--radius-md` / `--radius-lg` |
-| 阴影 | `--shadow-card` / `--shadow-hover` / `--shadow-sm` / `--shadow-glow-{pink,purple,blue}` |
-| 字号 / 字体 | `--font-size-xs` / `--font-size-sm` / `--font-body` / `--font-mono` |
-| 阅读偏好 | `--read-font-scale` / `--read-line-height` |
-| 动效（JS 注入） | `--dx` / `--dy`（点赞粒子位移，`interaction.js` 逐粒子覆写） |
-
-> ⚠️ **为什么必须集中登记**：`background: var(--x)` 在 `--x` 不可用时**整条声明静默失效**，
-> 元素回退到上一个有效值；若同一规则里 `color:#fff` 仍生效，就会产出「白底白字」这种
-> 完全不可用的界面。项目**真实发生过**：`--grad-purple` 只定义在看板页的 `.console-wrap` 里，
-> 而顶部头像按钮展开态引用它 → 背景失效、白字压在浅色卡片上，用户看不清任何内容。
->
-> 因此提供两个审计脚本（新增令牌或改样式后必跑）：
->
-> ```powershell
-> python docs\bugfix_20260926_bug9\scripts\tools\audit_css_scope.py   # 未定义 / 跨作用域失效令牌
-> python docs\bugfix_20260926_bug9\scripts\tools\audit_css_vars.py    # 被引用但从未定义的令牌
-> ```
->
-> 两者当前均为 **0 问题**（本轮共修掉 17 个未定义令牌 + 1 个跨作用域失效令牌）。
-
-### 6.9 可访问性约定（对比度）
-
-- **品牌底上的白字**：渐变常被用作按钮底并承载白色文字，因此
-  **渐变终点色必须保证白字对比度 ≥ 4.5:1（WCAG AA 正文）**。
-  若单纯加深会偏离品牌观感，采用「半透明深色蒙版 + 渐变」双层背景
-  （见 `.header-menu-btn.is-open`，实测 6.4:1）。
-- **焦点可见**：所有可交互元素使用 `:focus-visible` + `--c-ring` 描边环；
-  鼠标点击不显示（减少噪音），键盘导航必须可见。
-- **降动效**：`prefers-reduced-motion: reduce` 时取消位移 / 旋转动画。
-- **折叠可访问**：徽章未获得区用原生 `<details>`（键盘可操作、屏幕阅读器可识别），
-  不使用纯 JS 显隐。
-- **触屏**：`@media (hover: none)` 忽略 hover，改用 `:active` 反馈。
+> ⚠️ **CSS 变量「静默失效」防护**：`background:var(--x)` 在 `--x` 未定义时整条声明静默失效，
+> 可能产出「白底白字」不可用界面。故所有颜色 / 圆角 / 阴影 / 渐变令牌集中在 `base.css :root`
+> （暗色在 `[data-theme="dark"]`），新增或改样式后用审计脚本核对未定义 / 跨作用域令牌。
 
 ---
 
-## 7. API 一览
+## 7. 路由与 API 一览
 
-**全站共 186 条路由**：89 条 admin、49 条 `/api/`、11 条 `/console/` 运营路由，其余为前台页面路由。
+### 7.1 前台页面（节选）
 
-### 7.1 约定
+| 路径 | 说明 |
+| --- | --- |
+| `/` | 首页（?sort=hot 热门 / 默认最新） |
+| `/register/` `/login/` `/logout/` | 注册 / 登录 / 登出 |
+| `/new/` `/edit/<pk>/` `/my-articles/` | 发文 / 编辑 / 我的文章 |
+| 文章详情（`detail.html`） | 含 TOC、评论、推广按钮 |
+| `/series/` `/series/new/` `/series/<pk>/` | 系列列表 / 创建 / 详情 |
+| `/categories/` `/category/<pk>/` | 分类总览 / 分类文章 |
+| `/tags/` `/search/` `/archive/` | 标签 / 搜索 / 归档 |
+| `/notifications/` `/favorites/` | 通知 / 收藏 |
+| `/random/` `/status/` | 随机文章 / 状态页 |
+| `/console/` | 看板（仅员工；非员工 403，游客登录） |
+| `/console/site-settings/` `/console/site-messages/` `/console/moderation/` | 站点设置 / 文案总表 / 审核队列 |
+
+### 7.2 API（节选）
+
+| 路径 | 方法 / 权限 |
+| --- | --- |
+| `/api/categories/` | GET 公开；POST 需 staff（否则 403） |
+| `/api/categories/<pk>/` | GET / PUT / DELETE（写需 staff） |
+| `/api/articles/` `/api/comments/` | 文章 / 评论相关 |
+| `/api/site-messages/` | 文案包 |
+| `/api/refresh-assets/` | 资源刷新（需权限） |
+| `/api/live2d/...` | 看板娘：models / get / switch / game |
+| `/api/notifications/` | 通知列表 / 已读 |
+
+### 7.3 约定
 
 | 项 | 约定 |
 | --- | --- |
-| 前缀 | `/api/`（版本边界，后续可加 `/api/v2/`） |
+| 前缀 | `/api/`（后续可加 `/api/v2/`） |
 | 认证 | Session（浏览器）+ Basic（调试 / 客户端） |
-| 权限 | 默认 `IsAuthenticatedOrReadOnly`；写操作按视图显式校验 |
-| 分页 | `PageNumberPagination`，`PAGE_SIZE = 10` |
-| 时间格式 | `%Y-%m-%d %H:%M:%S` |
-| 错误信封 | `{'ok': False, 'code': 4xx/5xx, 'message': '…'}`（错误页中间件统一生成） |
+| 权限 | 默认 `IsAuthenticatedOrReadOnly`，写操作按视图显式校验 |
+| 分页 | `PageNumberPagination`，`PAGE_SIZE=10` |
+| 错误信封 | `{'ok':False,'code':…,'message':…}`（错误页中间件统一生成） |
 
-### 7.2 端点分组（节选）
-
-| 分组 | 代表端点 |
-| --- | --- |
-| 文章 | `/api/article/<pk>/like/`、`/comment/`、`/share/`、`/promotion-request/`、`/promotion-status/`、`/toggle-promotion/` |
-| 分类 / 标签 | `/api/categories/`、`/api/categories/<pk>/`、`/api/tags/`、`/api/tags/<pk>/` |
-| 通知 | `/api/notifications/`（列表 / 单条已读 / 全部已读） |
-| 用户 | `/api/user/preferences/`、`/api/user/badges/`、`/api/online_users/` |
-| 看板娘 | `/api/live2d/models/`、`/get/`、`/model/<model>/<skin>.json`、`/switch_model/`、`/rand_model/`、`/switch_skin/`、`/rand_skin/`、`/game/` |
-| 功能开关 | `GET /api/round5/features/`、`POST /api/round5/features/<feature_id>/toggle/`（staff） |
-| 站点 | `GET /api/site-messages/`（文案包）、`POST /api/refresh-assets/`（staff） |
-| 搜索 | 搜索建议（支持拼音） |
-
-> 完整路由清单可用 `python manage.py routes_audit --list` 打印，
-> 或看机器可读报告 `docs/bugfix_20260926_bug9/routes_inventory.json`。
+> 完整路由清单可用 `python manage.py routes_audit --list` 打印。
 
 ---
 
@@ -549,78 +499,65 @@ IP 合法性校验在 worker 与兜底消费两侧都做。
 
 | 项 | 要求 |
 | --- | --- |
-| 操作系统 | Windows 10/11（开发）/ Linux（生产）均可 |
-| Python | 3.10+（开发环境为 3.10） |
-| MySQL | 8.x，字符集 `utf8mb4`，建议开启 `STRICT_TRANS_TABLES` |
-| Redis | 6/7（访问日志异步投递、兜底队列、Celery broker 必需；未启动时中间件自动降级不丢日志） |
+| Python | 3.10+（本机解释器 `D:\Python\python.exe`） |
+| MySQL | 8.x，字符集 `utf8mb4`，建议严格模式（默认库 `acgblog`） |
+| Redis | 6/7（Celery broker、访问日志异步 / 兜底；未启动时中间件自动降级不丢日志） |
 | 浏览器 | Chrome / Edge（含移动端） |
 
-> **开发环境路径约定**（本机）：Python 解释器 `D:\Python\python.exe`，项目 `E:\Az_Code_E\ACGBlog`。
-
-### 8.2 本地开发
+### 8.2 本地开发（Windows / 本机）
 
 ```powershell
 # 1) 安装依赖
 D:\Python\python.exe -m pip install -r requirements.txt
 
-# 2) 创建数据库（MySQL 8）
-mysql -u root -p -e "CREATE DATABASE Blog_new CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# 2) 建库
+mysql -u root -p -e "CREATE DATABASE acgblog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 3) 可选：用环境变量覆盖默认连接参数（默认值见 settings.py）
-$env:DJANGO_DEBUG='1'
-$env:DJANGO_MYSQL_DATABASE='Blog_new'
-$env:DJANGO_MYSQL_USER='root'
-$env:DJANGO_MYSQL_PASSWORD='你的密码'
-$env:DJANGO_MYSQL_HOST='127.0.0.1'
-$env:DJANGO_MYSQL_PORT='3306'
-
-# 4) 迁移 + 打包静态 + 建超级用户
+# 3) 迁移 + 压缩静态 + 超级用户
 D:\Python\python.exe manage.py migrate
-D:\Python\python.exe manage.py refresh_assets      # 压缩 CSS/JS、写构建号、清缓存
+D:\Python\python.exe manage.py refresh_assets
 D:\Python\python.exe manage.py createsuperuser
 
-# 5) 启动（三个终端）
+# 4) 启动（多终端）
 redis-server
-D:\Python\python.exe manage.py runserver 127.0.0.1:8033
+D:\Python\python.exe manage.py runserver 127.0.0.1:8765
 D:\Python\python.exe -m celery -A DjangoBlog worker --pool=solo -l info
-# 可选：定时任务调度（定时投稿流转 / 兜底队列补齐 / 日志清理）
-D:\Python\python.exe -m celery -A DjangoBlog beat -l info
+D:\Python\python.exe -m celery -A DjangoBlog beat -l info   # 可选
 ```
 
-访问 `http://127.0.0.1:8033/`；后台 `/admin/`，运营看板 `/console/`，内容审核 `/console/moderation/`。
+本机 runserver（独立进程、不自动重载，改代码后需手动重启）：
+
+```powershell
+Start-Process -FilePath 'D:\Python\python.exe' `
+  -ArgumentList 'manage.py','runserver','127.0.0.1:8765','--noreload' `
+  -WorkingDirectory 'E:\Az_Code_E\ACGBlog' -WindowStyle Hidden
+```
 
 ### 8.3 环境变量清单
 
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
 | `DJANGO_SECRET_KEY` | 内置开发值 | **生产必须覆盖**为强随机串 |
-| `DJANGO_DEBUG` | `1` | 生产置 `0`（同时启用 Service Worker 与 WhiteNoise 压缩存储） |
-| `DJANGO_ENV` | `development` | 环境标识 |
-| `DJANGO_MYSQL_*` | 见 settings | 数据库连接（database / user / password / host / port） |
-| `CELERY_BROKER_URL` | `redis://127.0.0.1:6379/0` | Celery broker |
+| `DJANGO_DEBUG` | `1` | 生产置 `0` |
+| `DJANGO_ENV` | development | 环境标识 |
+| `DJANGO_MYSQL_*` | 见 settings | database / user / password / host / port |
+| `CELERY_BROKER_URL` | redis://127.0.0.1:6379/0 | Celery broker |
 | `CELERY_RESULT_BACKEND` | 同上 | 任务结果后端 |
-| `ACCESS_LOG_FALLBACK_REDIS_URL` | 同 broker | **兜底队列专用 Redis，建议独立实例 / db** |
-| `ACCESS_LOG_ENABLED` | `1` | 访问日志总开关（强制模块，不建议关闭） |
+| `ACCESS_LOG_FALLBACK_REDIS_URL` | 同 broker | 兜底队列专用 Redis，建议隔离 |
+| `ACCESS_LOG_ENABLED` | `1` | 访问日志总开关（不建议关） |
 
 ### 8.4 生产部署
 
-```powershell
-$env:DJANGO_DEBUG='0'
-$env:DJANGO_SECRET_KEY='<强随机长串>'
-$env:DJANGO_MYSQL_PASSWORD='<生产密码>'
-$env:ALLOWED_HOSTS='your-domain.com'    # 建议把 settings 里的 ['*'] 改为具体域名
-
-D:\Python\python.exe manage.py migrate
-D:\Python\python.exe manage.py collectstatic --noinput
-D:\Python\python.exe manage.py refresh_assets --collect
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py refresh_assets
 ```
 
 **Gunicorn + Nginx 示例**
 
 ```bash
-# 应用进程（2~4 worker，按 CPU 核数）
 gunicorn DjangoBlog.wsgi:application --bind 127.0.0.1:8000 --workers 3 --timeout 60
-# Celery（Linux 可用默认 prefork 池）
 celery -A DjangoBlog worker -l info
 celery -A DjangoBlog beat -l info
 ```
@@ -629,312 +566,216 @@ celery -A DjangoBlog beat -l info
 server {
     listen 443 ssl;
     server_name your-domain.com;
-    # ssl_certificate / ssl_certificate_key ...
-
-    client_max_body_size 25m;              # 与 DATA_UPLOAD_MAX_MEMORY_SIZE 对齐
+    client_max_body_size 25m;
 
     location /static/ { alias /srv/acgblog/staticfiles/; expires 30d; add_header Cache-Control "public, immutable"; }
-    location /media/  { alias /srv/acgblog/media/;      expires 7d;  }
+    location /media/  { alias /srv/acgblog/media/; expires 7d; }
 
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;   # 访问日志取真实 IP
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  # 访问日志取真实 IP
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-生产检查清单：
-`DEBUG=0` · 强随机 `SECRET_KEY` · `ALLOWED_HOSTS` 收紧 · TLS + 安全响应头 ·
-MySQL 与 `media/` 定期备份 · Redis 持久化（AOF/RDB） · Celery worker 与 beat 常驻 ·
-`ACCESS_LOG_FALLBACK_REDIS_URL` 与 broker 隔离。
+生产检查清单：`DEBUG=0` · 强随机 `SECRET_KEY` · `ALLOWED_HOSTS` 收紧 · TLS + 安全响应头 ·
+MySQL 与 `media/` 备份 · Redis 持久化 · Celery worker / beat 常驻 · 兜底队列 Redis 隔离。
 
 ---
 
-## 9. 运维手册
+## 9. 运维手册（Celery / Redis / 兜底队列）
 
 ### 9.1 管理命令
 
 | 命令 | 作用 |
 | --- | --- |
-| `python manage.py refresh_assets` | 重压缩 CSS/JS、生成 `.gz`、写构建号、清缓存。`--only a.css,b.js` 只重压指定源文件；`--collect` 同时 collectstatic；`--no-css/--no-js/--no-cache/--no-gz` 跳过对应步骤；`--token-only` 只更新版本号 |
-| `python manage.py accesslog_queue` | **访问日志兜底队列运维**：无参数=查看积压；`--drain` 批量入库；`--dry-run` 只统计；`--reset-circuit` 清 Redis/Broker 熔断；`--purge --yes` 清空队列（危险） |
-| `python manage.py routes_audit` | **路由与视图审计**：`--list` 列全部路由；`--dead` 列未挂路由函数（区分工具函数与零引用死代码）；`--stub` 列占位视图；`--json` 导出报告 |
-| `python manage.py messages_audit` | **文案收敛审计**：统计注册表规模；`--py/--tpl/--js` 分域列出未收编的硬编码中文；`--json` 导出报告 |
-| `python manage.py security_test` | 安全自检（51 项）；`--category xss/sql/html/auth/boundary/accesslog` 只跑指定类别 |
-| `python manage.py diag` | 综合诊断：`--all` 全跑；`--config` / `--deps`（含 requests 告警核验）/ `--permissions` / `--security` / `--db` / `--cache` / `--celery` / `--static` / `--templates` / `--urls` / `--models` / `--middleware` / `--views` / `--commands` / `--templatetags` / `--cache-stats` / `--cache-keys [前缀]` / `--static-size`（含体积预算超限标注）/ `--slow-queries` / `--db-stats` / `--n-plus-one` |
-| `python manage.py data_maintain` | 数据维护：重建计数、清理临时数据、一致性修复 |
-| `python manage.py cache_bump` | 缓存版本号管理（bump 后详情页缓存整体失效） |
-| `python manage.py seed_demo_stats` | 演示用访问日志回填（本地看板趋势演示） |
-| `python manage.py collectstatic` | 收集静态文件（生产） |
-| `python manage.py migrate` | 应用 / 回滚迁移 |
+| `refresh_assets` | 重压缩 CSS/JS、生成 `.gz`、写构建号、清缓存。`--only a,b` 只压指定；`--collect` 同时 collectstatic；`--token-only` 只更新版本号 |
+| `accesslog_queue` | **访问日志兜底队列运维**：无参数=查看积压；`--drain` 批量入库；`--dry-run` 只统计；`--reset-circuit` 清熔断；`--purge --yes` 清空（危险） |
+| `routes_audit` | 路由 / 视图审计：`--list` 全列；`--dead` 零引用死代码；`--stub` 占位视图；`--json` 导出 |
+| `messages_audit` | 文案收敛审计：规模统计、未收编硬编码中文 |
+| `security_test` | 安全自检（约 40~51 项）；`--category xss/sql/auth/accesslog` 分类 |
+| `diag` | 综合诊断：配置 / 依赖 / 权限 / DB / 缓存 / Celery / 静态 / 慢查询 / N+1 等 |
+| `data_maintain` | 数据维护：重建计数、清理临时数据、一致性修复 |
+| `cache_bump` | 缓存版本号 bump（详情片段整体失效） |
+| `seed_demo_stats` | 演示访问日志回填 |
 
 ### 9.2 Redis 与 Celery 启停
 
 ```powershell
-# —— 启动顺序：Redis → MySQL → Web → Worker → Beat ——
-redis-server                                        # 或作为 Windows 服务常驻
-D:\Python\python.exe manage.py runserver 127.0.0.1:8033
-D:\Python\python.exe -m celery -A DjangoBlog worker --pool=solo -l info   # Windows 必须 solo 池
+# 启动顺序：Redis → MySQL → Web → Worker → Beat
+redis-server
+D:\Python\python.exe manage.py runserver 127.0.0.1:8765
+D:\Python\python.exe -m celery -A DjangoBlog worker --pool=solo -l info   # Windows 必须 solo
 D:\Python\python.exe -m celery -A DjangoBlog beat -l info
 
-# —— 验证 worker 在线 ——
+# 验证 worker
 D:\Python\python.exe -m celery -A DjangoBlog inspect ping
-D:\Python\python.exe -m celery -A DjangoBlog inspect active
-
-# —— 停止：直接 Ctrl+C；或强制结束对应进程 ——
-Get-Process python | Where-Object { $_.CommandLine -like '*celery*' } | Stop-Process -Force
+# 停止：Ctrl+C 或结束对应进程
 ```
 
-**Beat 定时任务清单**（`settings.CELERY_BEAT_SCHEDULE`）
+**Beat 定时任务（`settings.CELERY_BEAT_SCHEDULE`）**
 
 | 任务 | 频率 | 作用 |
 | --- | --- | --- |
-| `check_scheduled_articles` | 每分钟 | 定时投稿到点流转（待审核 / 已发布） |
-| `flush_access_log_queue` | 每 5 分钟 | 访问日志兜底队列批量补齐 |
-| `flush_buffered_views` | 每 5 分钟 | 阅读量缓冲批量落库 |
-| `send_comment_digest` | 每 15 分钟 | 评论通知摘要邮件（每作者一封） |
-| `update_article_views` | 每小时 | 阅读量统计 |
-| `clean_old_logs` | 每天 03:00 | 清理 90 天前访问日志 |
+| `check_scheduled_articles` | 每分钟 | 定时投稿到点流转 |
+| `flush_access_log_queue` | 周期 | 兜底队列批量补齐 |
+| `flush_buffered_views` | 每 5 分钟 | 阅读量缓冲落库 |
+| `send_comment_digest` | 每 15 分钟 | 评论通知摘要邮件 |
+| `clean_old_logs` | 每天 03:00 | 清理过期访问日志 |
 
-### 9.3 访问日志降级演练（建议每季度一次）
+### 9.3 访问日志降级演练（建议每季度）
 
 ```powershell
-# 1) 制造 broker 故障：停掉 Redis，或临时改错 CELERY_BROKER_URL 后启动 Web
-#    观察日志出现：
-#    「[accesslog] Celery broker 投递失败（…），进入 15.0s 熔断窗口，后续请求直接走 Redis 兜底队列」
-# 2) 查看兜底队列积压（Redis 可用时）
+# 1) 制造 broker 故障（停 Redis 或改错 broker），观察熔断日志
+# 2) 查看兜底队列积压
 python manage.py accesslog_queue
-# 3) 恢复 broker 后批量补录（beat 在线时也会每 5 分钟自动补齐）
+# 3) 恢复 broker 后批量补录（beat 在线也会自动补齐）
 python manage.py accesslog_queue --drain
-# 4) 若 Redis 也被清空过导致熔断状态残留
+# 4) 清残留熔断
 python manage.py accesslog_queue --reset-circuit
+# 队列长度（应为 0）
+redis-cli LLEN acgblog:access_log:fallback
 ```
 
-判定标准：①请求耗时仍为毫秒级；②故障期间数据库零写入（层 2）；③恢复后探测日志 100% 入库。
+判定：①请求耗时毫秒级；②故障期 DB 零写入（层 2）；③恢复后日志 100% 入库。
 
 ### 9.4 日常巡检
 
 | 频率 | 项目 |
 | --- | --- |
-| 每日 | 看板 `/console/`：待审核 / 待处理举报 / 回收站计数；访问趋势是否连续；`server*.log` 中是否有 `[accesslog]` ERROR（层 3 降级告警） |
-| 每日 | `python manage.py accesslog_queue`（积压应为 0） |
-| 每周 | `python manage.py check`、`python manage.py diag --all`、`python manage.py routes_audit`、`python manage.py messages_audit` |
-| 每周 | `python manage.py security_test`（应 51/51） |
-| 每月 | 磁盘（`media/` 体积）、MySQL 慢查询、Redis 内存、静态文件体积（`diag --static-size`） |
-| 发布前 | `check` + `security_test` + `refresh_assets` + 浏览器验收（见第 11 章） |
+| 每日 | 看板待办计数、访问趋势连续性；`accesslog_queue` 积压应为 0；日志中有无层 3 ERROR |
+| 每周 | `check`、`diag --all`、`routes_audit`、`messages_audit`、`security_test` |
+| 每月 | 磁盘 / `media` 体积、慢查询、Redis 内存、静态体积 |
+| 发布前 | `check` + `security_test` + `refresh_assets` + 浏览器验收 |
 
-### 9.5 内容运营
-
-| 场景 | 操作入口 |
-| --- | --- |
-| 审核投稿 | `/console/moderation/?tab=articles` → 通过发布 / 驳回退回（支持按时间 / 分类 / 标签排序，分页参数 `page`） |
-| 处理举报 | `/console/moderation/?tab=reports&rpage=N` → 保留 / 隐藏评论（隐藏前自动备份到 `docs/moderation_backup/`，文件名带时间戳 + 类型 + 主键） |
-| 审批推广申请 | `/console/moderation/?tab=promotions` → 通过（含系统执行状态）/ 驳回 |
-| 查看审核历史 | `/console/moderation/?tab=history` → `ModerationLog` 全量留痕（提交 / 通过 / 驳回 / 软删 / 恢复 / 彻底删除 / 置顶精华热度变更） |
-| 全局审核设置 | 同页「审核全局设置」：文章审核开关、评论审核开关、评论可撤回时长、置顶上限（`max_pinned`） |
-| 回收站 | `/console/moderation/?tab=trash` → 恢复 / 彻底删除（分页参数 `tpage`） |
-| 站点信息 | `/console/site-settings/`（站名 / Logo / 副标题 / SEO / 页脚文案，含实时预览） |
-| 一键刷新静态缓存 | 看板顶部「♻️ 刷新静态缓存」（等价于 `refresh_assets`） |
-
-### 9.6 备份与恢复
+### 9.5 备份与恢复
 
 ```powershell
-# 数据库
-mysqldump --single-transaction --default-character-set=utf8mb4 Blog_new > blog_20260926.sql
-# 上传文件
-robocopy E:\Az_Code_E\ACGBlog\media D:\backup\media /MIR
+mysqldump --single-transaction --default-character-set=utf8mb4 acgblog > blog_YYYYMMDD.sql
+# media 备份：robocopy ... /MIR
 # 恢复：建库 → 导入 SQL → 回灌 media → migrate → refresh_assets
 ```
 
-### 9.7 故障排查速查
+### 9.6 故障排查速查
 
 | 现象 | 排查方向 |
 | --- | --- |
-| 页面 500 | `docs/bugfix_*/server.out.log` 或运行终端 traceback；`manage.py check`；`diag --db` |
-| 访问日志缺失 | `accesslog_queue` 是否积压；worker 是否在线（`celery inspect ping`）；日志中是否有层 3 告警 |
-| 首页数据不更新 | LocMemCache 为进程内缓存，多进程下各自持有；`manage.py cache_bump` 或换 Redis 缓存后端 |
-| 定时文章没自动发布 | beat 是否运行；`scheduled_publishing.process_due_articles()` 手动触发验证；文章 `published_at` 是否为空 |
-| 静态资源没更新 | 是否执行 `refresh_assets`；浏览器是否硬刷新（构建号在 `.build_token`） |
-| 修改文案不生效 | 文案在 `site_messages.py`，改完需重启 Web 进程（模块级常量） |
-| 模板出现多余文字 | 检查是否有**跨行** `{# #}` 注释（`scripts/check_template_comments.py`） |
-| requests 版本告警 | `manage.py diag --deps` 核验；requirements 锁定 + `deprecation_filters` 双保险 |
-
-### 9.8 开发调试端点（仅 DEBUG 挂载）
-
-| 端点 | 作用 |
-| --- | --- |
-| `GET /__debug_cache/` | 查看 **runserver 进程内** LocMemCache 快照（key / TTL / 片段命中统计）；本机或超级用户可用 |
-| `GET /__dev_sync_state/` | 把外部脚本改过的数据库设置同步到服务进程（读桥接文件 → 清本进程缓存），供自动化验收消除「进程内缓存」导致的状态不一致；仅 DEBUG + 本机 |
-| 详情页 `?debug_cache=1` | 页面底部输出各片段缓存状态；响应头 `X-Cache: HIT/MISS` |
-| 详情页 `?waifu=off` | 关闭看板娘（写入 cookie），便于布局测量 |
+| 页面 500 | 终端 traceback / runserver 日志；`manage.py check`；`diag --db` |
+| 访问日志缺失 | 兜底队列积压；worker 是否在线（`inspect ping`）；有无层 3 告警 |
+| 首页数据不更新 | LocMemCache 进程内，多进程各自持有；`cache_bump` 或换 Redis 缓存 |
+| 定时文章没发布 | beat 是否运行；`process_due_articles()` 手动验证；`published_at` |
+| 静态资源没更新 | 是否 `refresh_assets`；浏览器硬刷新（构建号） |
+| 改文案不生效 | 文案在 `services/site_messages.py`，重启 Web（模块常量） |
+| requests 版本告警 | `diag --deps`；requirements 锁定 + deprecation_filters |
 
 ---
 
-## 10. 扩展指南
+## 10. 测试与验收
 
-### 10.1 新增页面 / 视图
-1. 在 `blog/views/` 对应功能子模块增加视图（页面用 `render`，接口用 DRF）；跨模块共享的查询工具放 `common.py`；
-2. `blog/urls.py` 注册路由并命名（页面进 `urlpatterns`，接口进 `api_urlpatterns`）；
-3. `templates/blog/` 新增模板，`{% extends 'base.html' %}`；
-4. 需要导航入口则改 `base.html`；选中态用 `aria-current="page"`。
-
-### 10.2 新增模型 / 字段
-1. `blog/models.py` 增加模型或字段，在 `blog/admin.py` 注册（自定义站点 `blog_admin_site`）；
-2. `python manage.py makemigrations blog` → `migrate`；
-3. 对外暴露补 `serializers.py` 与视图；
-4. **纯新增字段向后兼容可直接迭代；改动既有字段 / 表关系前先评审影响面**；
-5. 若涉及缓存，记得在 `cache_keys.py` 补 key 并在信号中失效。
-
-### 10.3 新增中间件
-1. `blog/middleware/` 新建独立文件（一个中间件一个文件），写清「为什么需要它」；
-2. 在 `blog/middleware/__init__.py` 再导出；
-3. 在 `settings.MIDDLEWARE` 按「先请求后响应」的顺序插入；涉及模板变量时补上下文处理器。
-4. ⚠️ **访问日志中间件是全局永久强制模块，不可删除、不可破坏。**
-
-### 10.4 新增异步任务
-1. `blog/tasks.py` 用 `@shared_task` 定义（返回值给运维看，异常要兜底）；
-2. 需要定时则在 `settings.CELERY_BEAT_SCHEDULE` 注册；
-3. 注意任务必须在 Windows solo 池下也能跑（避免依赖 fork 语义）。
-
-### 10.5 新增功能开关
-```python
-from blog.views import Round5FeatureRegistry
-
-@Round5FeatureRegistry.register('reading', 'focus_mode', '专注阅读模式')
-def focus_mode_view(request):
-    ...
-```
-- 查询：`GET /api/round5/features/`（列表 + 按域统计）；切换：`POST /api/round5/features/<id>/toggle/`（staff）；
-- 运行时覆盖存 `settings.ROUND5_FEATURES`（进程内，重启回默认）；需持久化可落 `SiteInfo`。
-
-### 10.6 新增徽章 / 成就
-1. `Badge` 表配置：`icon`、`condition_type`（`articles`/`comments`/`likes`/`views`/`days`）、
-   `condition_value`、`description`（将直接作为面板上的「如何获得」文案）；
-2. 触发点调用 `check_and_award_badges(user)`；
-3. 个人中心面板由 `_build_badge_panel()` 自动汇总，进度口径与发徽章一致；
-   新增条件类型时需同步扩展 `_BADGE_UNITS` / `_BADGE_HOW_TO`。
-
-### 10.7 新增文案（提示词）
-1. 在 `blog/site_messages.py` 的 `MESSAGES` 按 `<域>.<语义>` 登记（保持萌系口吻）；
-2. 视图用 `msg('域.键', 参数…)`，模板用 `{{ MSG.域.键 }}`，前端用 `window.moeMsg('键')`；
-3. 跑 `python manage.py messages_audit` 校验，**禁止在代码里新写中文字面量提示**。
-
-### 10.8 新增前端样式 / 脚本
-- 样式放 `static/assets/css/`（通用组件 `components.css`，页面增强 `ui_polish.css`），
-  只引用 CSS 变量以自动适配明暗主题；按钮交互沿用 6.7 的骨架类；
-- 脚本放 `static/assets/js/`（通用逻辑进 `common.js`，页面级用 `<页面>_inline.js`），
-  加 UTF-8 中文注释；
-- 富文本样式改 `editor-content.css`（前台正文与编辑器共用）；
-- 完成后执行 `refresh_assets --only <改动文件>`（会同步生成 `.min` 与 `.gz`）并硬刷新；
-- **不要在模板里内联写样式 / 脚本**，除非确实无法外移。
-
-### 10.9 新增主题
-在 `:root[data-theme="..."]` 增加令牌集合，并在主题切换器中登记；
-`theme.js` 会持久化到 `localStorage.theme`。
-
----
-
-## 11. 测试与验收
-
-### 11.1 硬性指标（每次交付必须全绿）
+### 10.1 硬性指标（每次交付全绿）
 
 | 项目 | 命令 | 期望 |
 | --- | --- | --- |
 | 系统检查 | `python manage.py check` | 0 错误 0 警告 |
-| 依赖告警 | `python manage.py diag --deps` | 无 `RequestsDependencyWarning` |
-| 安全测试 | `python manage.py security_test` | 51/51 通过 |
-| 路由审计 | `python manage.py routes_audit` | 0 占位视图、0 零引用死代码 |
-| 文案审计 | `python manage.py messages_audit` | 核心用户可见文案 100% 收编 |
-| 访问日志 | `python manage.py accesslog_queue` | 积压 0；三层降级演练全部通过 |
-| 浏览器矩阵 | 见 11.2 | 8 视口 × 亮暗 × 6 页面，问题 0 项 |
+| 依赖告警 | `diag --deps` | 无 RequestsDependencyWarning |
+| 安全测试 | `security_test` | 全部通过（含访问日志模块） |
+| 路由 / 文案审计 | `routes_audit` / `messages_audit` | 0 占位 / 核心文案 100% 收编 |
+| 访问日志 | `accesslog_queue` | 积压 0；三层降级演练通过 |
+| 浏览器矩阵 | 见 10.2 | 多视口 × 亮暗，问题 0 |
 
-### 11.2 浏览器验收矩阵
+### 10.2 浏览器 UI 视觉验收
 
-| 维度 | 取值 |
-| --- | --- |
-| 浏览器 | Chrome + Edge |
-| 视口（8 档） | 1920×1080、1536×864、1366×768、1280×720、1024×768、768×1024、430×932、390×844 |
-| 主题 | light / dark |
-| 页面 | 首页、文章详情、内容审核、注册页、登录页、404 页 |
-| 每帧断言 | 横向滚动 ≤2px、元素越界 0、文字裁切 0、控制台错误 0、资源加载失败 0、正文非空 |
+- **三类用户：管理员 / 文章作者 / 游客**。
+- 流程：注册、异常注册、登录、异常登录、发布文章、定时发布、创建系列、创建分类、
+  系列中新增文章、分类中新增文章、多级评论、申请置顶 / 精华；访问异常路由与权限路由
+  （看板）核对返回；同时观察看板计数、后台请求、访问日志是否完整记录 **用户、时间、路由**。
+- 交互态：所有按钮 hover / 点击 / 选中；字体与背景符合二次元萌系。
+- 矩阵：Chrome + Edge；桌面 + 移动；亮 / 暗双主题；视口 360/390/414/768/1024/1440/1920。
+- 截图集：`docs/ui_screenshots/`（chrome / edge）。
 
-验收脚本（零依赖：Node 内置 WebSocket 自研 CDP 客户端，不需要 puppeteer / playwright）：
+> 规则：每修复单个问题即做一次 UI 验收；全部完成再做一次全量回归，防止后续改动破坏前面。
 
-```powershell
-# 准备：Redis + runserver 在跑；先造 QA 账号与数据
-cd docs\bugfix_20260926_bug9\scripts
-node setup_qa_users.mjs          # QA 账号 qa_author(staff) / qa_plain，密码 QaPass12345
+### 10.3 访问日志降级专项
 
-node verify_bug9_1.mjs           # 定时投稿可见性与状态流转
-node verify_badge_panel.mjs      # 徽章 / 成就面板（四视口主题）
-node verify_flow3.mjs            # 三用户全流程（管理员 / 作者 / 游客，独立浏览器实例）
-node verify_accesslog_tiers.mjs  # 访问日志三层降级专项
-node ui_matrix.mjs chrome        # 8 视口 × 亮暗 × 6 页面
-node ui_matrix.mjs edge
-```
-
-### 11.3 最近一轮验收结果（工单 Bug9）
-
-| 项目 | 结果 |
-| --- | --- |
-| `manage.py check` | 0 错误 0 警告（`-W error` 同） |
-| `diag --deps` | 无 requests 版本告警 |
-| `security_test` | **51/51** |
-| `routes_audit` | 186 路由、0 占位视图、0 零引用死代码 |
-| `messages_audit` | 注册表 286 条 / 19 域 |
-| 访问日志三层降级 | **4/4**（异步 45ms / 兜底 42ms 且 DB 零写入 / 批量补录 6/6 / 极端同步 44ms） |
-| 8 视口矩阵 | Chrome 96 帧 + Edge 96 帧，**问题 0 项** |
-| 三用户全流程 | **25/25** |
-| Bug9-1 可见性 | **8/8** |
-| 徽章面板 | **9/9** |
-
-详细产物见 `docs/bugfix_20260926_bug9/`（修改清单、验证报告、审计 JSON、192 帧截图）。
-
-### 11.4 本轮验收结果（views 包重构 + 全量 UI 视觉验收，2026-09-27）
-
-| 项目 | 结果 |
-| --- | --- |
-| `manage.py check` | 0 错误 0 警告 |
-| `import requests` / `diag --deps` | 无 `RequestsDependencyWarning`（urllib3 2.8.0 与 requests 2.32.3 兼容） |
-| `security_test` | **51/51**（含访问日志模块专项 12 项：防信息泄露 / 注入 / 兜底队列 / 响应时延） |
-| 视口矩阵 | **352 组合 0 横向溢出**（8 视口 × 亮/暗黑 × Chrome/Edge，含看板 / 编辑器） |
-| 三角色功能流程（Chrome） | 注册 6/6、登录 5/5、发布+定时 8/8、系列+分类 6/6、多级评论、推广申请+审核 12/12、游客路由 25/25、看板计数 16/16 |
-| Edge 关键流程抽测 | **9/9**（游客权限 / 异常路由 / 作者发布+评论 / 看板三项计数与 ORM 一致） |
-| 访问日志三层降级 | 层1 Celery 异步（积压 653→0、补录 650）；层2 Redis 兜底队列（5 条，`accesslog_queue --drain` 补录）；层3 全不可用同步入库（+3），日志不丢失 |
-| 按钮交互三态 | hover / focus / active / 选中态在亮+暗黑均有清晰反馈，字体与背景符合二次元萌系（19/19） |
-
-产物见 `docs/views_refactor/`（拆分脚本 / 报告 / legacy 归档）与 `docs/ui_test/`（测试库、场景脚本、`screenshots/` 截图集、运行日志）。
+- 正常：Worker 异步消费，队列归零、字段完整；
+- Broker 故障：日志进兜底队列不丢，恢复后 `--drain` 入库；
+- Redis 不可用：才同步入库。
 
 ---
 
-## 12. 工单变更历史
+## 11. 扩展开发指南
 
-| 工单 | 主要内容 | 归档目录 |
-| --- | --- | --- |
-| **views 重构（最新）** | 5700 行单文件 `blog/views.py` 按功能拆为 `blog/views/` 包（15 子模块，AST 辅助切分 + `__init__` 全量再导出 204 名，完全兼容旧导入）；修复评论区 `content-visibility` 导致视口外不渲染；全站等分网格改 `minmax(0,1fr)` 防窄屏溢出；清理登录/注册/系列表单模板内联样式迁入 CSS；三角色全流程 + 352 组合视口矩阵 + 51 项安全测试全绿 | `docs/views_refactor/`、`docs/ui_test/` |
-| Bug9 | 定时投稿可见性与状态流转修复；个人中心徽章成就面板；全站文案后端变量化（286 条注册表 + 三层接入）；路由与视图审计（`routes_audit`）；`feature` / `round` 文件全部合并归档；按钮交互三态；三用户全流程验收；README 重写 | `docs/bugfix_20260926_bug9/` |
-| Bug8 | 注册页内联红字校验；推广「系统执行状态」；访问日志重构为三层降级（异步优先 + 兜底队列 + 熔断）；移动端底部操作条修复 | `docs/bugfix_20260925_bug8/` |
-| 工单 6 | 置顶 / 精华 / 热度权限与审核流（迁移 0016）；定时发文与访问日志两个真实缺陷修复 | `docs/bug1/`、`docs/bug11/`、`docs/bug12/` |
-| 工单 5 | 17 项 Bug + 健壮性增强（`html_safety.py`、无功能 stub 归档、BUILD_TOKEN 热更新等） | `docs/bugfix_ticket5/` |
-| 更早 | Round3 / Round4 / Round5 / Round6 迭代报告 | `docs/round*_report.md`、`docs/ROUND*_FINAL_REPORT.md` |
-
-**已知历史数据缺口**：2026-09-23 前后部分日期的访问日志，为早期 broker / worker 宕机期间缺失，
-无法回填；中间件现已实现三层降级 + `accesslog_queue` 批量补录 + beat 自动补齐，
-从机制上杜绝再次缺口。
-
-### 12.1 已归档的无功能实现
-
-| 归档内容 | 原因 | 位置 |
-| --- | --- | --- |
-| `/api/features/` 下 1000 个 echo 占位桩（`features_*.py` × 10 + `features_urls.py`） | 仅回显请求体、无真实业务、前端零调用 | `docs/archived_feature_stubs/` |
-| round5 自动生成的 11,606 个占位路由 | 视图全为元数据回显 stub，拖慢 URL 解析 | `docs/archive/round5_stubs/` |
-| 第三方登录占位（GitHub / 微信 / 微博） | 无可用凭据、无真实 OAuth 流程 | `docs/archived_feature_stubs/social_login/` |
-| `features_round5/`（功能开关注册表原实现） | 已并入 `blog/views/features.py` + `urls.py` | `docs/archived_feature_stubs/round5_features/` |
-| `/test-404/` 调试路由 + `test_404_page` | 非业务功能；404 页由中间件统一渲染 | `docs/archived_feature_stubs/debug_routes/` |
+- **新增模型 / 字段**：在 `blog/models/` 对应领域文件添加（或新建文件并在 `__init__.py` 导出）；
+  跨文件外键用字符串；`makemigrations` → `migrate`；在 `admin.py` 注册。
+  纯新增向后兼容；改动既有字段 / 表关系前先评审影响面。
+- **新增视图 / 路由**：在 `blog/views/` 对应文件实现（页面 render / 接口 DRF），
+  `blog/urls.py` 注册并命名；员工页用 `staff_required_moe`；模板 `extends 'base.html'`，
+  选中态用 `aria-current="page"`。
+- **新增中间件**：`blog/middleware/` 新建独立文件，`__init__.py` 再导出，
+  按「先请求后响应」顺序插入 settings.MIDDLEWARE。
+  ⚠️ 访问日志中间件为永久强制模块，不可删除、破坏。
+- **新增异步任务**：`blog/tasks.py` 用 `@shared_task`（异常兜底），需周期则在
+  `CELERY_BEAT_SCHEDULE` 注册；任务须能在 Windows solo 池运行。
+- **新增文案**：统一进 `services/site_messages.py::MESSAGES`（`<域>.<语义>`，萌系口吻），
+  视图 `msg()`、模板 `MSG`、前端 `moeMsg()`；跑 `messages_audit`，禁止新写中文字面量提示。
+- **新增前端样式 / 脚本**：优先在原 CSS/JS 文件内修改，避免模板内联；只引用 CSS 变量
+  自动适配明暗；完成后 `refresh_assets --only <改动文件>` 并硬刷新。
+- **新增主题**：在 `:root[data-theme="..."]` 增加令牌集合并在切换器登记。
+- **新增徽章 / 成就**：`Badge` 配置条件与获取文案，触发点调用 `check_and_award_badges`。
+- **注释要求**：自有 py / css / js 注释行数须大于代码行数，
+  用 `docs/refactor_tools/comment_audit.py` 复核。
+- **彩蛋 / 美化**：不改核心架构、不破坏日志与信号前提下可自由新增。
 
 ---
+
+## 12. 安全约定
+
+- 安全测试（约 40~51 项）通过、无漏洞回归；访问日志模块纳入安全测试，防信息泄露与注入。
+- 评论 / 富文本用 bleach 白名单清洗；前端插入外部内容优先 `textContent`，防 XSS。
+- 不记录密码、令牌等敏感信息；错误页不泄露堆栈与内部路径。
+- 表单带 CSRF；权限页严格校验；`@csrf_exempt` 仅限明确必要接口。
+- 依赖固定版本并及时升级；`DEBUG=False` 上线。
+
+---
+
+## 13. 工单变更历史
+
+| 工单 | 主要内容 |
+| --- | --- |
+| **大规模重构（最新）** | ①常量收拢 settings.py 并注释来源/含义；②models.py 拆为 15 文件包（51 模型，`__init__` 统一导出，表结构不变、无新迁移）；③blog 根散落文件归入 services/utils 并修正跨模块 import；④三用户全流程 UI 视觉验收（亮/暗黑、按钮三态、Chrome+Edge、8 视口）；⑤所有自有 py/css/js 注释行数 > 代码行数；⑥README 完整重构；⑦全量回归 |
+| views 包重构 | 单文件 views.py 按功能拆为 views/ 包，`__init__` 再导出兼容旧导入；修复 `content-visibility` 与窄屏溢出；三角色全流程 + 视口矩阵 + 安全测试全绿 |
+| Bug9 | 定时投稿可见性与状态流转；徽章成就面板；文案后端变量化；路由 / 视图审计；按钮三态 |
+| Bug8 | 注册内联校验；推广系统执行状态；访问日志三层降级；移动端底部操作条 |
+| 更早 | 置顶 / 精华 / 热度权限与审核流；Round3~Round6 迭代；17 项 Bug + 健壮性增强 |
+
+**已归档的无功能实现**：批量 echo 占位桩、自动生成的占位路由、无凭据第三方登录占位、
+调试路由等，统一归档于 `docs/` 下归档目录（保留可追溯，不占产品代码）。
+
+---
+
+## 14. 常见问题 FAQ
+
+**Q：改了 CSS/JS 页面没变化？**
+A：模板引用 `.min` 文件，运行 `python manage.py refresh_assets` 并强刷（构建号自动更新）。
+
+**Q：作者访问看板被弹回首页且无提示？**
+A：已由 `staff_required_moe` 修复——非员工见萌系 403，游客跳登录。
+
+**Q：定时文章没上线？**
+A：确认 Worker / beat；未启动时 Web 兜底扫描，也可手动 `process_due_articles`。
+
+**Q：访问日志会丢吗？**
+A：不会。Celery 异步 → Redis 兜底队列（`accesslog_queue --drain`）→ 极端才同步入库。
+
+**Q：Windows 下 Celery 报错？**
+A：使用 solo 池：`celery -A DjangoBlog worker -l info -P solo`。
+
+---
+
+> 维护提示：访问日志中间件与 Django 信号为全局永久模块，任何重构都不得删除或破坏；
+> 核心数据结构 / 底层架构变更需提前评估并配套迁移与回归。
 
 🌸 愿这个小站也能让你写得开心、逛得治愈喵~

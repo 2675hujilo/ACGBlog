@@ -5,104 +5,212 @@
 /* print.css —— 60. 打印专用样式（仅 media="print" 生效）
  * 目标：只输出文章正文，隐藏导航 / 侧栏 / 评论 / 装饰，保证打印可读。
  */
-
 /* 隐藏所有不需要打印的元素 */
-.site-header,
-.sidebar,
-.col-left,
-.col-right,
-.site-footer,
-.back-to-top,
-.reading-progress,
-#page-loader,
-.sakura-deco,
-.flash-stack,
-.breadcrumb,
-.article-extra-bar,
-.share-group,
-.share-btn,
-#print-btn,
-.rating-widget,
-.article-actions,
-.comments-section,
-.edit-log,
-.post-nav,
-.related,
-.series-nav-card,
-.notice-bar,
-.snapshot-modal-mask,
-.list-toolbar,
-.side-chips,
-.footer-grid {
-    display: none !important;
+/* ============================================================
+   作用对象：.site-header, .sidebar, .col-left, .col-right, .site-footer, .back-to-top, .reading-progress, #page-loader, .sakura-deco
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.site-header, .sidebar, .col-left, .col-right, .site-footer, .back-to-top, .reading-progress, #page-loader, .sakura-deco, .flash-stack, .breadcrumb, .article-extra-bar, .share-group, .share-btn, #print-btn, .rating-widget, .article-actions, .comments-section, .edit-log, .post-nav, .related, .series-nav-card, .notice-bar, .snapshot-modal-mask, .list-toolbar, .side-chips, .footer-grid {
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: none !important;
 }
-
 /* 主内容全宽 */
+/* ============================================================
+   作用对象：body
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 body {
-    background: #fff !important;
-    color: #000 !important;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #fff !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #000 !important;
 }
+/* ============================================================
+   作用对象：.site-main.container
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .site-main.container {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
+	/* max-width：限制元素的最大宽度 */
+	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+	max-width: 100% !important;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 100% !important;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 0 !important;
+	/* margin：设置元素四周的外边距 */
+	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
+	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
+	margin: 0 !important;
 }
+/* ============================================================
+   作用对象：.three-col-grid
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .three-col-grid {
-    display: block !important;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: block !important;
 }
+/* ============================================================
+   作用对象：.col-center
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .col-center {
-    width: 100% !important;
-    max-width: 100% !important;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 100% !important;
+	/* max-width：限制元素的最大宽度 */
+	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+	max-width: 100% !important;
 }
+/* ============================================================
+   作用对象：.article-paper
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .article-paper {
-    box-shadow: none !important;
-    border: none !important;
-    background: #fff !important;
-    padding: 0 !important;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: none !important;
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: none !important;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #fff !important;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 0 !important;
 }
-
 /* 文章标题大号加粗 */
+/* ============================================================
+   作用对象：.article-title
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .article-title {
-    font-size: 28pt !important;
-    font-weight: 700 !important;
-    color: #000 !important;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 28pt !important;
+	/* font-weight：设置字重 */
+	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
+	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
+	font-weight: 700 !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #000 !important;
 }
+/* ============================================================
+   作用对象：.article-meta
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .article-meta {
-    font-size: 10pt !important;
-    color: #555 !important;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 10pt !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #555 !important;
 }
-
 /* 代码块：白底黑字，确保打印可读 */
-.article-body pre,
-.article-body code {
-    background: #fff !important;
-    color: #000 !important;
-    border: 1px solid #ccc !important;
-    white-space: pre-wrap !important;
-    word-wrap: break-word !important;
+/* ============================================================
+   作用对象：.article-body pre, .article-body code
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.article-body pre, .article-body code {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #fff !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #000 !important;
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 1px solid #ccc !important;
+	/* white-space：控制元素内空白与换行规则 */
+	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
+	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
+	white-space: pre-wrap !important;
+	/* word-wrap：overflow-wrap 的旧名 */
+	/* 用途/效果：break-word 实现长词折行 */
+	/* 注意点：现代写法用 overflow-wrap */
+	word-wrap: break-word !important;
 }
-
 /* 图片不超宽 */
+/* ============================================================
+   作用对象：.article-body img
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .article-body img {
-    max-width: 100% !important;
-    height: auto !important;
+	/* max-width：限制元素的最大宽度 */
+	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+	max-width: 100% !important;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: auto !important;
 }
-
 /* 链接打印时显示 URL */
+/* ============================================================
+   作用对象：.article-body a[href]::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 .article-body a[href]::after {
-    content: " (" attr(href) ")";
-    font-size: 90%;
-    color: #555;
+	/* content：为伪元素插入生成内容 */
+	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
+	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
+	content: " (" attr(href) ")";
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 90%;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #555;
 }
-
 /* 避免标题后分页 */
+/* ============================================================
+   作用对象：h1, h2, h3, h4, h5
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 h1, h2, h3, h4, h5 {
-    page-break-after: avoid;
+	/* page-break-after：打印/分页媒体后是否分页（旧属性） */
+	/* 用途/效果：always 在元素后强制分页 */
+	/* 注意点：现代用 break-after */
+	page-break-after: avoid;
 }
-.article-body p,
-.article-body blockquote,
-.article-body pre,
-.article-body table {
-    page-break-inside: avoid;
+/* ============================================================
+   作用对象：.article-body p, .article-body blockquote, .article-body pre, .article-body table
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.article-body p, .article-body blockquote, .article-body pre, .article-body table {
+	/* page-break-inside：打印时元素内部是否允许分页（旧属性） */
+	/* 用途/效果：avoid 防止卡片、图片、代码块被打印分页切断 */
+	/* 注意点：现代写法 break-inside:avoid */
+	page-break-inside: avoid;
 }

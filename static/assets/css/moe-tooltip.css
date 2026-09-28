@@ -9,99 +9,310 @@
  * 配合：moe-tooltip.js（单例 #moe-tooltip 挂载到 <body> 末尾，
  *       因此不会被按钮 overflow:hidden 或父容器裁切）。
  * ============================================================ */
-
 /* 提示气泡单例：默认隐藏，fixed 定位，不拦截鼠标事件 */
+/* ============================================================
+   作用对象：#moe-tooltip
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 #moe-tooltip {
-    position: fixed;
-    z-index: 9999;                 /* 高于导航栏(900)/弹窗(1300)，保证永远可见 */
-    max-width: 240px;              /* 文案过长时换行，避免顶出视口 */
-    padding: 7px 13px;
-    font-size: 0.82rem;
-    line-height: 1.45;
-    letter-spacing: 0.2px;
-    color: #6b21a8;               /* 深紫文字，在浅色气泡上清晰可读 */
-    white-space: normal;
-    word-break: break-word;
-    pointer-events: none;          /* 纯展示，不阻挡下方元素点击 */
-    user-select: none;
-    /* 浅色系气泡：近白 → 浅薰衣草渐变（参考看板娘 waifu-tips 配色），柔和不刺眼 */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(253, 244, 255, 0.97));
-    border: 1px solid #e9d5ff;
-    border-radius: 999px;
-    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.22);
-    /* 初始为缩放 0.8 + 透明的隐藏态，由 .show 触发动画 */
-    opacity: 0;
-    transform: scale(0.82);
-    transform-origin: left center;
-    transition: opacity 0.16s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: opacity, transform;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 9999;
+	/* 高于导航栏(900)/弹窗(1300)，保证永远可见 */
+	/* max-width：限制元素的最大宽度 */
+	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
+	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
+	max-width: 240px;
+	/* 文案过长时换行，避免顶出视口 */
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 7px 13px;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 0.82rem;
+	/* line-height：设置行高（行盒高度） */
+	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
+	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
+	line-height: 1.45;
+	/* letter-spacing：设置字符间距 */
+	/* 用途/效果：正值拉开字距用于标题/按钮，负值收紧 */
+	/* 注意点：中文正文通常保持正常，标题微加宽更精致 */
+	letter-spacing: 0.2px;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #6b21a8;
+	/* 深紫文字，在浅色气泡上清晰可读 */
+	/* white-space：控制元素内空白与换行规则 */
+	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
+	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
+	white-space: normal;
+	/* word-break：规定单词在何处断行 */
+	/* 用途/效果：break-all 允许长串/URL 在任意点换行，防止溢出 */
+	/* 注意点：break-all 会让西文单词被随意拆断，正文慎用 */
+	word-break: break-word;
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
+	/* 纯展示，不阻挡下方元素点击 */
+	/* user-select：控制用户能否选中文本 */
+	/* 用途/效果：none 防止按钮、装饰文字被误选；all 便于整段复制 */
+	/* 注意点：过度禁止选择影响用户正常复制，正文不要禁用 */
+	user-select: none;
+	/* 浅色系气泡：近白 → 浅薰衣草渐变（参考看板娘 waifu-tips 配色），柔和不刺眼 */
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(253, 244, 255, 0.97));
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 1px solid #e9d5ff;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 999px;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 6px 20px rgba(168, 85, 247, 0.22);
+	/* 初始为缩放 0.8 + 透明的隐藏态，由 .show 触发动画 */
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 0;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: scale(0.82);
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: left center;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: opacity 0.16s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+	/* will-change：告知浏览器元素将要变化的属性 */
+	/* 用途/效果：提前为 transform/opacity 等做合成优化，让动画更流畅 */
+	/* 注意点：不可滥用，过多会消耗内存；仅在确实需要的动画元素上临时使用 */
+	will-change: opacity, transform;
 }
-
 /* 显示态：完全不透明 + 回弹到正常大小 */
+/* ============================================================
+   作用对象：#moe-tooltip.show
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 #moe-tooltip.show {
-    opacity: 1;
-    transform: scale(1);
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 1;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: scale(1);
 }
-
 /* 小箭头：默认指向左侧（气泡在元素右侧时，箭头朝左指向元素） */
+/* ============================================================
+   作用对象：#moe-tooltip::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 #moe-tooltip::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -5px;
-    width: 9px;
-    height: 9px;
-    margin-top: -4.5px;
-    background: inherit;
-    border-radius: 2px;
-    transform: rotate(45deg);
+	/* content：为伪元素插入生成内容 */
+	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
+	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
+	content: "";
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 50%;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: -5px;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 9px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 9px;
+	/* margin-top：设置元素上外边距 */
+	/* 用途/效果：拉开与上方元素的纵向距离 */
+	/* 注意点：可能与相邻元素的上下外边距折叠 */
+	margin-top: -4.5px;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: inherit;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 2px;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: rotate(45deg);
 }
-
 /* 气泡在元素「左侧」时：箭头翻转到右边，动画原点也改到右侧 */
+/* ============================================================
+   作用对象：#moe-tooltip.tip-left
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 #moe-tooltip.tip-left {
-    transform-origin: right center;
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: right center;
 }
+/* ============================================================
+   作用对象：#moe-tooltip.tip-left::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 #moe-tooltip.tip-left::after {
-    left: auto;
-    right: -5px;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: auto;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: -5px;
 }
-
 /* 气泡在元素「上方 / 下方」时：缩放原点贴近元素，动画更自然 */
+/* ============================================================
+   作用对象：#moe-tooltip.tip-top
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 #moe-tooltip.tip-top {
-    transform-origin: center bottom;
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: center bottom;
 }
+/* ============================================================
+   作用对象：#moe-tooltip.tip-bottom
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 #moe-tooltip.tip-bottom {
-    transform-origin: center top;
+	/* transform-origin：设置变换的基准点 */
+	/* 用途/效果：旋转/缩放围绕的中心，如 center、top left */
+	/* 注意点：默认中心；改变基准点会显著影响动画轨迹 */
+	transform-origin: center top;
 }
-
 /* 气泡在元素「上方」时：箭头朝下 */
+/* ============================================================
+   作用对象：#moe-tooltip.tip-top::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 #moe-tooltip.tip-top::after {
-    top: auto;
-    bottom: -4px;
-    left: 50%;
-    margin-top: 0;
-    margin-left: -4.5px;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: auto;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: -4px;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 50%;
+	/* margin-top：设置元素上外边距 */
+	/* 用途/效果：拉开与上方元素的纵向距离 */
+	/* 注意点：可能与相邻元素的上下外边距折叠 */
+	margin-top: 0;
+	/* margin-left：设置元素左外边距 */
+	/* 用途/效果：拉开与左侧元素的横向距离，缩进场景常用 */
+	/* 注意点：flex 布局中更推荐 gap；auto 可把元素推到右侧 */
+	margin-left: -4.5px;
 }
-
 /* 气泡在元素「下方」时：箭头朝上 */
+/* ============================================================
+   作用对象：#moe-tooltip.tip-bottom::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 #moe-tooltip.tip-bottom::after {
-    top: -4px;
-    left: 50%;
-    margin-top: 0;
-    margin-left: -4.5px;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: -4px;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 50%;
+	/* margin-top：设置元素上外边距 */
+	/* 用途/效果：拉开与上方元素的纵向距离 */
+	/* 注意点：可能与相邻元素的上下外边距折叠 */
+	margin-top: 0;
+	/* margin-left：设置元素左外边距 */
+	/* 用途/效果：拉开与左侧元素的横向距离，缩进场景常用 */
+	/* 注意点：flex 布局中更推荐 gap；auto 可把元素推到右侧 */
+	margin-left: -4.5px;
 }
-
 /* 暗黑主题：气泡仍走浅色系（柔薰衣草），避免深色背景上再压深色块；
    深紫文字保持高对比，描边略加深以勾勒轮廓。 */
+/* ============================================================
+   作用对象：:root[data-theme="dark"] #moe-tooltip
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 :root[data-theme="dark"] #moe-tooltip {
-    background: linear-gradient(135deg, rgba(246, 240, 255, 0.98), rgba(238, 228, 255, 0.98));
-    border-color: #c9b4ee;
-    color: #5b21b6;
-    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, rgba(246, 240, 255, 0.98), rgba(238, 228, 255, 0.98));
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: #c9b4ee;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #5b21b6;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
 }
-
 /* 尊重系统「减少动态效果」偏好：关闭弹性动画，仅做淡入淡出 */
+/* ===== @media (prefers-reduced-motion: reduce)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (prefers-reduced-motion: reduce) {
-    #moe-tooltip { transition: opacity 0.12s ease; transform: none; }
-    #moe-tooltip.show { transform: none; }
+	/* ============================================================
+	   作用对象：#moe-tooltip
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	#moe-tooltip {
+		/* transition：过渡的简写（属性 时长 缓动 延迟） */
+		/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+		/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+		transition: opacity 0.12s ease;
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: none;
+	}
+	/* ============================================================
+	   作用对象：#moe-tooltip.show
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	#moe-tooltip.show {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: none;
+	}
 }

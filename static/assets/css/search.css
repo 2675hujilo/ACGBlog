@@ -2,30 +2,195 @@
  * search.css —— 搜索结果页样式
  * 搜索框、搜索结果列表、关键词高亮、无结果空状态
  */
-.search-result-list { display: flex; flex-direction: column; gap: 16px; }
+/* ============================================================
+   作用对象：.search-result-list
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.search-result-list {
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: flex;
+	/* flex-direction：规定弹性主轴方向 */
+	/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
+	/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
+	flex-direction: column;
+	/* gap：设置 flex/grid 子项之间的间距 */
+	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
+	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
+	gap: 16px;
+}
+/* ============================================================
+   作用对象：.search-result-item
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .search-result-item {
-    background: var(--c-card);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    box-shadow: var(--shadow-card);
-    transition: transform .2s ease, box-shadow .2s ease;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: var(--c-card);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 1px solid var(--c-border);
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: var(--radius);
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 20px 24px;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: var(--shadow-card);
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: transform .2s ease, box-shadow .2s ease;
 }
-.search-result-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.search-result-title { margin: 0 0 8px; font-size: 1.15rem; font-weight: 700; }
-.search-result-title a { color: var(--c-text); text-decoration: none; }
-.search-result-excerpt { color: var(--c-text-dim); font-size: .9rem; line-height: 1.6; margin: 0; }
+/* ============================================================
+   作用对象：.search-result-item:hover
+   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
+   ============================================================ */
+.search-result-item:hover {
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateY(-2px);
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: var(--shadow-hover);
+}
+/* ============================================================
+   作用对象：.search-result-title
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.search-result-title {
+	/* margin：设置元素四周的外边距 */
+	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
+	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
+	margin: 0 0 8px;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 1.15rem;
+	/* font-weight：设置字重 */
+	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
+	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
+	font-weight: 700;
+}
+/* ============================================================
+   作用对象：.search-result-title a
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.search-result-title a {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text);
+	/* text-decoration：设置文本装饰线 */
+	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
+	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
+	text-decoration: none;
+}
+/* ============================================================
+   作用对象：.search-result-excerpt
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.search-result-excerpt {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text-dim);
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: .9rem;
+	/* line-height：设置行高（行盒高度） */
+	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
+	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
+	line-height: 1.6;
+	/* margin：设置元素四周的外边距 */
+	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
+	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
+	margin: 0;
+}
+/* ============================================================
+   作用对象：.search-highlight
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .search-highlight {
-    background: linear-gradient(135deg, rgba(255,143,177,.35), rgba(160,108,213,.35));
-    color: var(--c-primary);
-    font-weight: 700;
-    padding: 0 2px;
-    border-radius: 3px;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, rgba(255,143,177,.35), rgba(160,108,213,.35));
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-primary);
+	/* font-weight：设置字重 */
+	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
+	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
+	font-weight: 700;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 0 2px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 3px;
 }
+/* ============================================================
+   作用对象：.search-empty
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .search-empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--c-text-dim);
+	/* text-align：设置行内内容水平对齐 */
+	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
+	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
+	text-align: center;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 60px 20px;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text-dim);
 }
-.search-empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
-.search-meta { font-size: .8rem; color: var(--c-text-dim); margin-top: 8px; }
+/* ============================================================
+   作用对象：.search-empty .empty-icon
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.search-empty .empty-icon {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 3rem;
+	/* margin-bottom：设置元素下外边距 */
+	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
+	/* 注意点：可能与下一个元素的上外边距折叠 */
+	margin-bottom: 12px;
+}
+/* ============================================================
+   作用对象：.search-meta
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.search-meta {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: .8rem;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text-dim);
+	/* margin-top：设置元素上外边距 */
+	/* 用途/效果：拉开与上方元素的纵向距离 */
+	/* 注意点：可能与相邻元素的上下外边距折叠 */
+	margin-top: 8px;
+}

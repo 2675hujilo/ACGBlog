@@ -3,267 +3,1415 @@
  * 覆盖：粒子/视差/打字机/玻璃拟态/渐变文字/呼吸灯/萌系加载/
  *       入场交错/滚动淡入/节日主题/彩蛋/底部快捷导航/移动工具栏
  * ============================================================ */
-
 /* ---------- E3 粒子背景 Canvas ---------- */
+/* ============================================================
+   作用对象：#particle-canvas
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 #particle-canvas {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* inset：一次性设置 top/right/bottom/left（逻辑属性） */
+	/* 用途/效果：absolute/fixed 元素 inset:0 可快速铺满父盒 */
+	/* 注意点：需现代浏览器；多值顺序同 margin */
+	inset: 0;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 0;
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
 }
-body.has-particle #particle-canvas { display: block; }
-#particle-canvas { display: none; }
-
+/* ============================================================
+   作用对象：body.has-particle #particle-canvas
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.has-particle #particle-canvas {
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: block;
+}
+/* ============================================================
+   作用对象：#particle-canvas
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+#particle-canvas {
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: none;
+}
 /* ---------- E4 视差滚动背景 ---------- */
+/* ============================================================
+   作用对象：.parallax-bg
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .parallax-bg {
-    position: fixed; inset: 0; z-index: -1;
-    background-size: cover; background-position: center;
-    will-change: transform;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* inset：一次性设置 top/right/bottom/left（逻辑属性） */
+	/* 用途/效果：absolute/fixed 元素 inset:0 可快速铺满父盒 */
+	/* 注意点：需现代浏览器；多值顺序同 margin */
+	inset: 0;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: -1;
+	/* background-size：设置背景图尺寸 */
+	/* 用途/效果：cover 铺满裁剪、contain 完整显示、具体宽高 */
+	/* 注意点：封面常用 cover；渐变加 100% 可控制方向范围 */
+	background-size: cover;
+	/* background-position：设置背景图起始位置 */
+	/* 用途/效果：center/top/具体坐标，控制图片或渐变焦点 */
+	/* 注意点：百分比定位是相对“容器-图片”差值，行为特殊需留意 */
+	background-position: center;
+	/* will-change：告知浏览器元素将要变化的属性 */
+	/* 用途/效果：提前为 transform/opacity 等做合成优化，让动画更流畅 */
+	/* 注意点：不可滥用，过多会消耗内存；仅在确实需要的动画元素上临时使用 */
+	will-change: transform;
 }
-
 /* ---------- E8 打字机效果 ---------- */
+/* ============================================================
+   作用对象：.typewriter-text
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .typewriter-text {
-    display: inline-block; overflow: hidden; white-space: nowrap;
-    border-right: 2px solid var(--c-purple);
-    animation: typeCaret .8s steps(1) infinite;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: inline-block;
+	/* overflow：规定内容超出盒框时如何处理 */
+	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
+	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
+	overflow: hidden;
+	/* white-space：控制元素内空白与换行规则 */
+	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
+	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
+	white-space: nowrap;
+	/* border-right：单独设置右边框 */
+	/* 用途/效果：分隔列、卡片侧边装饰 */
+	/* 注意点：相邻元素边框可能重叠变粗 */
+	border-right: 2px solid var(--c-purple);
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: typeCaret .8s steps(1) infinite;
 }
-@keyframes typeCaret { 50% { border-color: transparent; } }
-
+/* ===== @keyframes typeCaret：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@keyframes typeCaret {
+	/* ============================================================
+	   作用对象：50%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	50% {
+		/* border-color：设置边框颜色 */
+		/* 用途/效果：描边上色，弱化或强调边界 */
+		/* 注意点：可一到四个值分别对应四边 */
+		border-color: transparent;
+	}
+}
 /* ---------- E10 玻璃拟态卡片增强 ---------- */
+/* ============================================================
+   作用对象：.glass-card
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .glass-card {
-    background: var(--c-card);
-    backdrop-filter: blur(14px);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: var(--c-card);
+	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
+	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
+	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
+	backdrop-filter: blur(14px);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 1px solid var(--c-border);
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: var(--radius);
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: var(--shadow-card);
 }
-
 /* ---------- E11 渐变流动文字 ---------- */
+/* ============================================================
+   作用对象：.gradient-text-flow
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .gradient-text-flow {
-    background: linear-gradient(90deg, var(--c-pink), var(--c-purple), var(--c-blue), var(--c-pink));
-    background-size: 300% 100%;
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: gradFlow 6s linear infinite;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(90deg, var(--c-pink), var(--c-purple), var(--c-blue), var(--c-pink));
+	/* background-size：设置背景图尺寸 */
+	/* 用途/效果：cover 铺满裁剪、contain 完整显示、具体宽高 */
+	/* 注意点：封面常用 cover；渐变加 100% 可控制方向范围 */
+	background-size: 300% 100%;
+	/* -webkit-background-clip：WebKit 下设置背景裁剪区域 */
+	/* 用途/效果：text 用于渐变文字效果 */
+	/* 注意点：需配合文字透明 */
+	-webkit-background-clip: text;
+	/* background-clip：规定背景绘制（裁剪）到哪个区域 */
+	/* 用途/效果：border-box/padding-box/content-box；text 可做渐变文字 */
+	/* 注意点：做渐变文字需配合文字透明（-webkit-text-fill-color:transparent） */
+	background-clip: text;
+	/* -webkit-text-fill-color：WebKit 下设置文字填充色 */
+	/* 用途/效果：transparent 配合 background-clip:text 实现渐变文字 */
+	/* 注意点：会覆盖 color；仅在需要渐变文字等场景使用 */
+	-webkit-text-fill-color: transparent;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: gradFlow 6s linear infinite;
 }
-@keyframes gradFlow { 0% { background-position: 0 0; } 100% { background-position: 300% 0; } }
-
+/* ===== @keyframes gradFlow：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@keyframes gradFlow {
+	/* ============================================================
+	   作用对象：0%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0% {
+		/* background-position：设置背景图起始位置 */
+		/* 用途/效果：center/top/具体坐标，控制图片或渐变焦点 */
+		/* 注意点：百分比定位是相对“容器-图片”差值，行为特殊需留意 */
+		background-position: 0 0;
+	}
+	/* ============================================================
+	   作用对象：100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	100% {
+		/* background-position：设置背景图起始位置 */
+		/* 用途/效果：center/top/具体坐标，控制图片或渐变焦点 */
+		/* 注意点：百分比定位是相对“容器-图片”差值，行为特殊需留意 */
+		background-position: 300% 0;
+	}
+}
 /* ---------- E12 呼吸灯在线状态 ---------- */
+/* ============================================================
+   作用对象：.breath-dot
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .breath-dot {
-    position: relative; width: 10px; height: 10px; border-radius: 50%;
-    background: #3bbf6b; display: inline-block;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: relative;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 10px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 10px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 50%;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #3bbf6b;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: inline-block;
 }
+/* ============================================================
+   作用对象：.breath-dot::after
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 .breath-dot::after {
-    content: ''; position: absolute; inset: -4px; border-radius: 50%;
-    background: rgba(59, 191, 107, .4); animation: breathPulse 1.8s ease-out infinite;
+	/* content：为伪元素插入生成内容 */
+	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
+	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
+	content: '';
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: absolute;
+	/* inset：一次性设置 top/right/bottom/left（逻辑属性） */
+	/* 用途/效果：absolute/fixed 元素 inset:0 可快速铺满父盒 */
+	/* 注意点：需现代浏览器；多值顺序同 margin */
+	inset: -4px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 50%;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(59, 191, 107, .4);
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: breathPulse 1.8s ease-out infinite;
 }
+/* ===== @keyframes breathPulse：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes breathPulse {
-    0% { transform: scale(.6); opacity: 1; }
-    100% { transform: scale(1.8); opacity: 0; }
+	/* ============================================================
+	   作用对象：0%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(.6);
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 1;
+	}
+	/* ============================================================
+	   作用对象：100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	100% {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: scale(1.8);
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 0;
+	}
 }
-
 /* ---------- E13 萌系加载动画（猫爪/樱花旋转） ---------- */
+/* ============================================================
+   作用对象：.moe-loading
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .moe-loading {
-    width: 42px; height: 42px; margin: 20px auto;
-    animation: moeSpin 1.1s linear infinite;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 42px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 42px;
+	/* margin：设置元素四周的外边距 */
+	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
+	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
+	margin: 20px auto;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: moeSpin 1.1s linear infinite;
 }
-.moe-loading svg { width: 100%; height: 100%; color: var(--c-pink); }
-@keyframes moeSpin { to { transform: rotate(360deg); } }
+/* ============================================================
+   作用对象：.moe-loading svg
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.moe-loading svg {
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 100%;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 100%;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-pink);
+}
+/* ===== @keyframes moeSpin：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@keyframes moeSpin {
+	/* ============================================================
+	   作用对象：to
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	to {
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: rotate(360deg);
+	}
+}
+/* ============================================================
+   作用对象：.moe-skeleton
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .moe-skeleton {
-    background: linear-gradient(90deg, var(--c-primary-soft) 25%, rgba(255,255,255,.6) 50%, var(--c-primary-soft) 75%);
-    background-size: 200% 100%; animation: shimmer 1.3s infinite;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(90deg, var(--c-primary-soft) 25%, rgba(255,255,255,.6) 50%, var(--c-primary-soft) 75%);
+	/* background-size：设置背景图尺寸 */
+	/* 用途/效果：cover 铺满裁剪、contain 完整显示、具体宽高 */
+	/* 注意点：封面常用 cover；渐变加 100% 可控制方向范围 */
+	background-size: 200% 100%;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: shimmer 1.3s infinite;
 }
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
+/* ===== @keyframes shimmer：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@keyframes shimmer {
+	/* ============================================================
+	   作用对象：0%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0% {
+		/* background-position：设置背景图起始位置 */
+		/* 用途/效果：center/top/具体坐标，控制图片或渐变焦点 */
+		/* 注意点：百分比定位是相对“容器-图片”差值，行为特殊需留意 */
+		background-position: 200% 0;
+	}
+	/* ============================================================
+	   作用对象：100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	100% {
+		/* background-position：设置背景图起始位置 */
+		/* 用途/效果：center/top/具体坐标，控制图片或渐变焦点 */
+		/* 注意点：百分比定位是相对“容器-图片”差值，行为特殊需留意 */
+		background-position: -200% 0;
+	}
+}
 /* ---------- E14 卡片入场交错 / E15 滚动淡入 ---------- */
-.animate-in { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
-.animate-in.visible { opacity: 1; transform: translateY(0); }
-.fade-scroll { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
-.fade-scroll.visible { opacity: 1; transform: translateY(0); }
-.article-card:nth-child(2) { transition-delay: .08s; }
-.article-card:nth-child(3) { transition-delay: .16s; }
-.article-card:nth-child(4) { transition-delay: .24s; }
-
+/* ============================================================
+   作用对象：.animate-in
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.animate-in {
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 0;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateY(20px);
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: opacity .6s ease, transform .6s ease;
+}
+/* ============================================================
+   作用对象：.animate-in.visible
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.animate-in.visible {
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 1;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateY(0);
+}
+/* ============================================================
+   作用对象：.fade-scroll
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.fade-scroll {
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 0;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateY(24px);
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: opacity .7s ease, transform .7s ease;
+}
+/* ============================================================
+   作用对象：.fade-scroll.visible
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.fade-scroll.visible {
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: 1;
+	/* transform：对元素做二维/三维变换 */
+	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+	transform: translateY(0);
+}
+/* ============================================================
+   作用对象：.article-card:nth-child(2)
+   交互状态：父级中按序号匹配的子元素
+   ============================================================ */
+.article-card:nth-child(2) {
+	/* transition-delay：设置过渡开始前的延迟 */
+	/* 用途/效果：hover 延迟触发，或串联多个动画 */
+	/* 注意点：鼠标快速划过时延迟可避免误触发 */
+	transition-delay: .08s;
+}
+/* ============================================================
+   作用对象：.article-card:nth-child(3)
+   交互状态：父级中按序号匹配的子元素
+   ============================================================ */
+.article-card:nth-child(3) {
+	/* transition-delay：设置过渡开始前的延迟 */
+	/* 用途/效果：hover 延迟触发，或串联多个动画 */
+	/* 注意点：鼠标快速划过时延迟可避免误触发 */
+	transition-delay: .16s;
+}
+/* ============================================================
+   作用对象：.article-card:nth-child(4)
+   交互状态：父级中按序号匹配的子元素
+   ============================================================ */
+.article-card:nth-child(4) {
+	/* transition-delay：设置过渡开始前的延迟 */
+	/* 用途/效果：hover 延迟触发，或串联多个动画 */
+	/* 注意点：鼠标快速划过时延迟可避免误触发 */
+	transition-delay: .24s;
+}
 /* ---------- E5 页面切换淡入 ---------- */
-body.page-enter { animation: pageFade .4s ease; }
-@keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
-
+/* ============================================================
+   作用对象：body.page-enter
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.page-enter {
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: pageFade .4s ease;
+}
+/* ===== @keyframes pageFade：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@keyframes pageFade {
+	/* ============================================================
+	   作用对象：from
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	from {
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 0;
+	}
+	/* ============================================================
+	   作用对象：to
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	to {
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 1;
+	}
+}
 /* ---------- A7 移动端底部快捷导航栏 ---------- */
+/* ============================================================
+   作用对象：.bottom-quick-nav
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .bottom-quick-nav {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 850;
-    display: none; justify-content: space-around; align-items: center;
-    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-    background: var(--c-card); backdrop-filter: blur(14px);
-    border-top: 1px solid var(--c-border);
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 0;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 0;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 0;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 850;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: none;
+	/* justify-content：控制子项沿主轴的对齐与间距分布 */
+	/* 用途/效果：flex-start/center/space-between/space-around 等 */
+	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
+	justify-content: space-around;
+	/* align-items：控制子项沿交叉轴的对齐 */
+	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
+	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
+	align-items: center;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: var(--c-card);
+	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
+	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
+	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
+	backdrop-filter: blur(14px);
+	/* border-top：单独设置上边框 */
+	/* 用途/效果：分隔线、标题强调线常用 */
+	/* 注意点：注意宽度样式颜色三要素齐全 */
+	border-top: 1px solid var(--c-border);
 }
+/* ============================================================
+   作用对象：.bottom-quick-nav .bq-item
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .bottom-quick-nav .bq-item {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    color: var(--c-text-dim); font-size: .68rem; cursor: pointer; text-decoration: none;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: flex;
+	/* flex-direction：规定弹性主轴方向 */
+	/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
+	/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
+	flex-direction: column;
+	/* align-items：控制子项沿交叉轴的对齐 */
+	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
+	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
+	align-items: center;
+	/* gap：设置 flex/grid 子项之间的间距 */
+	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
+	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
+	gap: 2px;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-text-dim);
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: .68rem;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: pointer;
+	/* text-decoration：设置文本装饰线 */
+	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
+	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
+	text-decoration: none;
 }
-.bottom-quick-nav .bq-item.active { color: var(--c-primary); }
-.bottom-quick-nav .bq-item svg { width: 22px; height: 22px; }
-@media (max-width: 768px) { .bottom-quick-nav { display: flex; } }
-
+/* ============================================================
+   作用对象：.bottom-quick-nav .bq-item.active
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.bottom-quick-nav .bq-item.active {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-primary);
+}
+/* ============================================================
+   作用对象：.bottom-quick-nav .bq-item svg
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.bottom-quick-nav .bq-item svg {
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 22px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 22px;
+}
+/* ===== @media (max-width: 768px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@media (max-width: 768px) {
+	/* ============================================================
+	   作用对象：.bottom-quick-nav
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.bottom-quick-nav {
+		/* display：规定元素的渲染框类型 */
+		/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+		/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+		display: flex;
+	}
+}
 /* ---------- A9 移动端浮动工具栏 ---------- */
+/* ============================================================
+   作用对象：.mobile-fab
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .mobile-fab {
-    position: fixed; right: 16px; bottom: 90px; z-index: 850;
-    width: 48px; height: 48px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-    color: #fff; display: none; align-items: center; justify-content: center;
-    box-shadow: var(--shadow-hover); border: none; cursor: pointer;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 16px;
+	/* bottom：设置定位元素距下参考边的偏移 */
+	/* 用途/效果：固定底栏、悬浮按钮常用 */
+	/* 注意点：仅对非 static 定位元素生效；正值向上 */
+	bottom: 90px;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 850;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 48px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 48px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 50%;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #fff;
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: none;
+	/* align-items：控制子项沿交叉轴的对齐 */
+	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
+	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
+	align-items: center;
+	/* justify-content：控制子项沿主轴的对齐与间距分布 */
+	/* 用途/效果：flex-start/center/space-between/space-around 等 */
+	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
+	justify-content: center;
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: var(--shadow-hover);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: none;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: pointer;
 }
-.mobile-fab svg { width: 22px; height: 22px; }
-@media (max-width: 768px) { .mobile-fab { display: flex; } }
-
+/* ============================================================
+   作用对象：.mobile-fab svg
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.mobile-fab svg {
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 22px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 22px;
+}
+/* ===== @media (max-width: 768px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
+@media (max-width: 768px) {
+	/* ============================================================
+	   作用对象：.mobile-fab
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	.mobile-fab {
+		/* display：规定元素的渲染框类型 */
+		/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+		/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+		display: flex;
+	}
+}
 /* ---------- H1 节日主题：春节 / 圣诞 / 万圣 ---------- */
-body.festival-spring .site-header { background: rgba(180, 30, 40, .85); color: #fff; }
-body.festival-xmas .site-header { background: rgba(30, 90, 60, .85); color: #fff; }
-body.festival-halloween .site-header { background: rgba(60, 30, 90, .85); color: #ffd166; }
+/* ============================================================
+   作用对象：body.festival-spring .site-header
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.festival-spring .site-header {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(180, 30, 40, .85);
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #fff;
+}
+/* ============================================================
+   作用对象：body.festival-xmas .site-header
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.festival-xmas .site-header {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(30, 90, 60, .85);
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #fff;
+}
+/* ============================================================
+   作用对象：body.festival-halloween .site-header
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.festival-halloween .site-header {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(60, 30, 90, .85);
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #ffd166;
+}
+/* ============================================================
+   作用对象：.festival-deco
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .festival-deco {
-    position: fixed; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 1;
-    font-size: 1.4rem;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 0;
+	/* left：设置定位元素距左参考边的偏移 */
+	/* 用途/效果：控制元素相对左边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向右 */
+	left: 0;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 100%;
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 1;
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 1.4rem;
 }
-
 /* ---------- H3 任意点击爱心粒子 ---------- */
+/* ============================================================
+   作用对象：.click-heart
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .click-heart {
-    position: fixed; pointer-events: none; z-index: 9998;
-    color: var(--c-pink); animation: heartRise 1s ease-out forwards;
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
+	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
+	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
+	pointer-events: none;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 9998;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: var(--c-pink);
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: heartRise 1s ease-out forwards;
 }
+/* ===== @keyframes heartRise：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes heartRise {
-    0% { opacity: 1; transform: translate(-50%, 0) scale(.5); }
-    100% { opacity: 0; transform: translate(-50%, -70px) scale(1.4); }
+	/* ============================================================
+	   作用对象：0%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	0% {
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 1;
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translate(-50%, 0) scale(.5);
+	}
+	/* ============================================================
+	   作用对象：100%
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	100% {
+		/* opacity：设置整体不透明度 */
+		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+		opacity: 0;
+		/* transform：对元素做二维/三维变换 */
+		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
+		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
+		transform: translate(-50%, -70px) scale(1.4);
+	}
 }
-
 /* ---------- H4 控制台彩蛋占位（由 effects.js console.log） ---------- */
-
 /* ---------- H8/H9 音效开关按钮状态 ---------- */
-.sound-toggle.off { opacity: .4; filter: grayscale(1); }
-
+/* ============================================================
+   作用对象：.sound-toggle.off
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.sound-toggle.off {
+	/* opacity：设置整体不透明度 */
+	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
+	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
+	opacity: .4;
+	/* filter：设置图形滤镜效果 */
+	/* 用途/效果：blur 模糊、brightness 亮度、drop-shadow 形状阴影等 */
+	/* 注意点：作用于整个元素渲染结果；drop-shadow 会跟随透明轮廓，性能开销需注意 */
+	filter: grayscale(1);
+}
 /* ---------- H10 Konami 彩蛋：樱花暴雨模式 ---------- */
-body.konami-mode { filter: hue-rotate(300deg) saturate(1.4); }
-
+/* ============================================================
+   作用对象：body.konami-mode
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.konami-mode {
+	/* filter：设置图形滤镜效果 */
+	/* 用途/效果：blur 模糊、brightness 亮度、drop-shadow 形状阴影等 */
+	/* 注意点：作用于整个元素渲染结果；drop-shadow 会跟随透明轮廓，性能开销需注意 */
+	filter: hue-rotate(300deg) saturate(1.4);
+}
 /* ---------- H6/H7 自定义主题色 / 背景面板 ---------- */
+/* ============================================================
+   作用对象：.custom-bg-panel
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .custom-bg-panel {
-    position: fixed; z-index: 900; right: 18px; top: 90px; width: 240px;
-    padding: 16px; border-radius: 16px; background: var(--c-surface);
-    border: 1px solid var(--c-border); box-shadow: var(--shadow-hover);
+	/* position：指定元素的定位方式 */
+	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
+	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
+	position: fixed;
+	/* z-index：设置定位元素的层叠顺序 */
+	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
+	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
+	z-index: 900;
+	/* right：设置定位元素距右参考边的偏移 */
+	/* 用途/效果：控制元素相对右边缘的位置 */
+	/* 注意点：仅对非 static 定位元素生效；正值向左 */
+	right: 18px;
+	/* top：设置定位元素距上参考边的偏移 */
+	/* 用途/效果：让元素相对上边缘移动或固定 */
+	/* 注意点：仅对非 static 定位元素生效；正值向下 */
+	top: 90px;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 240px;
+	/* padding：设置元素四周内边距（内容与边框之间） */
+	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
+	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
+	padding: 16px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 16px;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: var(--c-surface);
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 1px solid var(--c-border);
+	/* box-shadow：设置盒子阴影 */
+	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
+	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
+	box-shadow: var(--shadow-hover);
 }
-.custom-bg-panel h5 { margin: 0 0 10px; }
-.custom-bg-panel .bg-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+/* ============================================================
+   作用对象：.custom-bg-panel h5
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.custom-bg-panel h5 {
+	/* margin：设置元素四周的外边距 */
+	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
+	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
+	margin: 0 0 10px;
+}
+/* ============================================================
+   作用对象：.custom-bg-panel .bg-thumbs
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.custom-bg-panel .bg-thumbs {
+	/* display：规定元素的渲染框类型 */
+	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+	display: flex;
+	/* gap：设置 flex/grid 子项之间的间距 */
+	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
+	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
+	gap: 8px;
+	/* flex-wrap：规定子项超出是否换行 */
+	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
+	/* 注意点：默认 nowrap 会把所有子项压在一行 */
+	flex-wrap: wrap;
+}
+/* ============================================================
+   作用对象：.custom-bg-panel .bg-thumb
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 .custom-bg-panel .bg-thumb {
-    width: 44px; height: 32px; border-radius: 8px; cursor: pointer;
-    border: 2px solid transparent; background-size: cover;
+	/* width：设置元素内容区的宽度 */
+	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
+	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
+	width: 44px;
+	/* height：设置元素内容区的高度 */
+	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
+	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
+	height: 32px;
+	/* border-radius：设置圆角半径 */
+	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
+	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
+	border-radius: 8px;
+	/* cursor：设置鼠标指针样式 */
+	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
+	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
+	cursor: pointer;
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 2px solid transparent;
+	/* background-size：设置背景图尺寸 */
+	/* 用途/效果：cover 铺满裁剪、contain 完整显示、具体宽高 */
+	/* 注意点：封面常用 cover；渐变加 100% 可控制方向范围 */
+	background-size: cover;
 }
-.custom-bg-panel .bg-thumb.active { border-color: var(--c-purple); }
-
+/* ============================================================
+   作用对象：.custom-bg-panel .bg-thumb.active
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+.custom-bg-panel .bg-thumb.active {
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: var(--c-purple);
+}
 /* ---------- 动效总开关：关闭时禁用动画 ---------- */
+/* ============================================================
+   作用对象：body.motion-off *, body.motion-off *::before, body.motion-off *::after
+   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
 body.motion-off *, body.motion-off *::before, body.motion-off *::after {
-    animation: none !important; transition: none !important;
+	/* animation：动画的简写 */
+	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
+	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
+	animation: none !important;
+	/* transition：过渡的简写（属性 时长 缓动 延迟） */
+	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
+	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
+	transition: none !important;
 }
-
 /* ---------- 打印 / 低动效 ---------- */
+/* ===== @media print：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media print {
-    #particle-canvas, .parallax-bg, .bottom-quick-nav, .mobile-fab,
-    .custom-bg-panel, .festival-deco, .click-heart { display: none !important; }
+	/* ============================================================
+	   作用对象：#particle-canvas, .parallax-bg, .bottom-quick-nav, .mobile-fab, .custom-bg-panel, .festival-deco, .click-heart
+	   含义：该选择器命中元素的基础样式规则
+	   ============================================================ */
+	#particle-canvas, .parallax-bg, .bottom-quick-nav, .mobile-fab, .custom-bg-panel, .festival-deco, .click-heart {
+		/* display：规定元素的渲染框类型 */
+		/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
+		/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
+		display: none !important;
+	}
 }
+/* ===== @media (prefers-reduced-motion: reduce)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+	/* ============================================================
+	   作用对象：*, *::before, *::after
+	   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
+	   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+	   ============================================================ */
+	*, *::before, *::after {
+		/* animation-duration：设置一次动画的时长 */
+		/* 用途/效果：控制动画播放速度 */
+		/* 注意点：默认 0s 等于不动画 */
+		animation-duration: .01ms !important;
+		/* transition-duration：设置过渡时长 */
+		/* 用途/效果：控制动画快慢，单位 s/ms */
+		/* 注意点：时长过短无感、过长拖沓，常用 .2-.4s */
+		transition-duration: .01ms !important;
+	}
 }
-
 /* ============================================================
    Bug22: 全站阅读偏好样式（账号设置页「阅读偏好」实时生效）
    主题色 / 字号档位 / 护眼模式 / AMOLED纯黑 / 动效开关
    与详情页 reading.css 的取值保持一致，但此处为全站兜底
    ============================================================ */
-
 /* ---- 主题色：覆盖品牌变量（紫粉为默认，无需声明） ---- */
+/* ============================================================
+   作用对象：body[data-theme-color="blue_green"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 body[data-theme-color="blue_green"] {
-    --c-pink: #6ec6ff;
-    --c-purple: #3aa6a0;
-    --c-blue: #4fa8ff;
-    --c-primary: #3aa6a0;
-    --c-accent: #3aa6a0;
+	/* 自定义变量 --c-pink：粉色变量 */
+	/* 用途/效果：萌系粉色，装饰、女性向元素 */
+	/* 注意点：亮/暗黑下保持可识别 */
+	--c-pink: #6ec6ff;
+	/* 自定义变量 --c-purple：紫色变量 */
+	/* 用途/效果：萌系紫色，标题、渐变 */
+	/* 注意点：与粉色共同构成品牌渐变 */
+	--c-purple: #3aa6a0;
+	/* 自定义变量 --c-blue：蓝色变量 */
+	/* 用途/效果：清新蓝，信息、链接、冷色点缀 */
+	/* 注意点：冷色调平衡粉紫 */
+	--c-blue: #4fa8ff;
+	/* 自定义变量 --c-primary：主题主色变量 */
+	/* 用途/效果：品牌紫粉，用于主按钮、链接、强调 */
+	/* 注意点：是全站色彩核心，改动影响面大 */
+	--c-primary: #3aa6a0;
+	/* 自定义变量 --c-accent：强调色变量 */
+	/* 用途/效果：点缀、高亮、次级强调 */
+	/* 注意点：与主色搭配形成层次 */
+	--c-accent: #3aa6a0;
 }
+/* ============================================================
+   作用对象：body[data-theme-color="orange_yellow"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 body[data-theme-color="orange_yellow"] {
-    --c-pink: #ffb347;
-    --c-purple: #ff8a5c;
-    --c-blue: #ffd166;
-    --c-primary: #ff8a5c;
-    --c-accent: #ff8a5c;
+	/* 自定义变量 --c-pink：粉色变量 */
+	/* 用途/效果：萌系粉色，装饰、女性向元素 */
+	/* 注意点：亮/暗黑下保持可识别 */
+	--c-pink: #ffb347;
+	/* 自定义变量 --c-purple：紫色变量 */
+	/* 用途/效果：萌系紫色，标题、渐变 */
+	/* 注意点：与粉色共同构成品牌渐变 */
+	--c-purple: #ff8a5c;
+	/* 自定义变量 --c-blue：蓝色变量 */
+	/* 用途/效果：清新蓝，信息、链接、冷色点缀 */
+	/* 注意点：冷色调平衡粉紫 */
+	--c-blue: #ffd166;
+	/* 自定义变量 --c-primary：主题主色变量 */
+	/* 用途/效果：品牌紫粉，用于主按钮、链接、强调 */
+	/* 注意点：是全站色彩核心，改动影响面大 */
+	--c-primary: #ff8a5c;
+	/* 自定义变量 --c-accent：强调色变量 */
+	/* 用途/效果：点缀、高亮、次级强调 */
+	/* 注意点：与主色搭配形成层次 */
+	--c-accent: #ff8a5c;
 }
+/* ============================================================
+   作用对象：body[data-theme-color="rose"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 body[data-theme-color="rose"] {
-    --c-pink: #ff7a9e;
-    --c-purple: #c86b98;
-    --c-blue: #ff9e7a;
-    --c-primary: #c86b98;
-    --c-accent: #ff7a9e;
+	/* 自定义变量 --c-pink：粉色变量 */
+	/* 用途/效果：萌系粉色，装饰、女性向元素 */
+	/* 注意点：亮/暗黑下保持可识别 */
+	--c-pink: #ff7a9e;
+	/* 自定义变量 --c-purple：紫色变量 */
+	/* 用途/效果：萌系紫色，标题、渐变 */
+	/* 注意点：与粉色共同构成品牌渐变 */
+	--c-purple: #c86b98;
+	/* 自定义变量 --c-blue：蓝色变量 */
+	/* 用途/效果：清新蓝，信息、链接、冷色点缀 */
+	/* 注意点：冷色调平衡粉紫 */
+	--c-blue: #ff9e7a;
+	/* 自定义变量 --c-primary：主题主色变量 */
+	/* 用途/效果：品牌紫粉，用于主按钮、链接、强调 */
+	/* 注意点：是全站色彩核心，改动影响面大 */
+	--c-primary: #c86b98;
+	/* 自定义变量 --c-accent：强调色变量 */
+	/* 用途/效果：点缀、高亮、次级强调 */
+	/* 注意点：与主色搭配形成层次 */
+	--c-accent: #ff7a9e;
 }
-
 /* ---- 全站基础字号档位（详情页正文另有 --read-font-scale 精细控制） ---- */
-body[data-font-size="small"]   { font-size: 15px; }
-body[data-font-size="medium"]  { font-size: 16px; }
-body[data-font-size="large"]   { font-size: 17.5px; }
-body[data-font-size="xlarge"]  { font-size: 19px; }
-
+/* ============================================================
+   作用对象：body[data-font-size="small"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body[data-font-size="small"] {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 15px;
+}
+/* ============================================================
+   作用对象：body[data-font-size="medium"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body[data-font-size="medium"] {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 16px;
+}
+/* ============================================================
+   作用对象：body[data-font-size="large"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body[data-font-size="large"] {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 17.5px;
+}
+/* ============================================================
+   作用对象：body[data-font-size="xlarge"]
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body[data-font-size="xlarge"] {
+	/* font-size：设置字号 */
+	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
+	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
+	font-size: 19px;
+}
 /* ---- 护眼模式：全站米黄暖底，弱化刺眼对比 ---- */
+/* ============================================================
+   作用对象：body.eye-protection
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 body.eye-protection {
-    background: #f3ecd6 !important;
-    --c-bg: #f3ecd6;
-    --c-text: #4a3f2a;
-    --c-text-dim: #7a6c4e;
-    --c-card: rgba(255, 252, 240, .82);
-    --c-surface: #fffcF0;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #f3ecd6 !important;
+	/* 自定义变量 --c-bg：页面主背景颜色变量 */
+	/* 用途/效果：整站底色，亮/暗黑分别为浅色与深色 */
+	/* 注意点：与卡片色拉开层次 */
+	--c-bg: #f3ecd6;
+	/* 自定义变量 --c-text：正文主文字颜色变量 */
+	/* 用途/效果：用于绝大多数正文，是对比度基准 */
+	/* 注意点：亮/暗黑主题会分别赋值，切换主题即整体变色 */
+	--c-text: #4a3f2a;
+	/* 自定义变量 --c-text-dim：弱化文字颜色变量 */
+	/* 用途/效果：用于次要说明、时间、占位等低层级文字 */
+	/* 注意点：对比度低于主文字，不可用于关键信息 */
+	--c-text-dim: #7a6c4e;
+	/* 自定义变量 --c-card：卡片背景颜色变量 */
+	/* 用途/效果：文章卡片、弹层、面板底色 */
+	/* 注意点：亮/暗黑分别赋值，是内容容器主色 */
+	--c-card: rgba(255, 252, 240, .82);
+	/* 自定义变量 --c-surface：表面层颜色变量 */
+	/* 用途/效果：嵌套面板、二级容器底色 */
+	/* 注意点：用于卡片内部再分层 */
+	--c-surface: #fffcF0;
 }
-body.eye-protection .site-header { background: rgba(243, 236, 214, .92) !important; }
+/* ============================================================
+   作用对象：body.eye-protection .site-header
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.eye-protection .site-header {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(243, 236, 214, .92) !important;
+}
+/* ============================================================
+   作用对象：:root[data-theme="dark"] body.eye-protection
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 :root[data-theme="dark"] body.eye-protection {
-    background: #2a2618 !important;
-    --c-bg: #2a2618; --c-text: #e6dcc0; --c-text-dim: #b8ab88;
-    --c-card: rgba(50, 44, 28, .8); --c-surface: #322c1c;
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #2a2618 !important;
+	/* 自定义变量 --c-bg：页面主背景颜色变量 */
+	/* 用途/效果：整站底色，亮/暗黑分别为浅色与深色 */
+	/* 注意点：与卡片色拉开层次 */
+	--c-bg: #2a2618;
+	/* 自定义变量 --c-text：正文主文字颜色变量 */
+	/* 用途/效果：用于绝大多数正文，是对比度基准 */
+	/* 注意点：亮/暗黑主题会分别赋值，切换主题即整体变色 */
+	--c-text: #e6dcc0;
+	/* 自定义变量 --c-text-dim：弱化文字颜色变量 */
+	/* 用途/效果：用于次要说明、时间、占位等低层级文字 */
+	/* 注意点：对比度低于主文字，不可用于关键信息 */
+	--c-text-dim: #b8ab88;
+	/* 自定义变量 --c-card：卡片背景颜色变量 */
+	/* 用途/效果：文章卡片、弹层、面板底色 */
+	/* 注意点：亮/暗黑分别赋值，是内容容器主色 */
+	--c-card: rgba(50, 44, 28, .8);
+	/* 自定义变量 --c-surface：表面层颜色变量 */
+	/* 用途/效果：嵌套面板、二级容器底色 */
+	/* 注意点：用于卡片内部再分层 */
+	--c-surface: #322c1c;
 }
-
 /* ---- AMOLED 纯黑模式：OLED 屏幕省电、夜间不刺眼 ---- */
+/* ============================================================
+   作用对象：body.amoled-dark
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
 body.amoled-dark {
-    background: #000 !important;
-    --c-bg: #000; --c-text: #e8e8e8; --c-text-dim: #9a9a9a;
-    --c-card: rgba(14, 14, 14, .85); --c-surface: #0d0d0d;
-    --c-border: rgba(255, 255, 255, .1);
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #000 !important;
+	/* 自定义变量 --c-bg：页面主背景颜色变量 */
+	/* 用途/效果：整站底色，亮/暗黑分别为浅色与深色 */
+	/* 注意点：与卡片色拉开层次 */
+	--c-bg: #000;
+	/* 自定义变量 --c-text：正文主文字颜色变量 */
+	/* 用途/效果：用于绝大多数正文，是对比度基准 */
+	/* 注意点：亮/暗黑主题会分别赋值，切换主题即整体变色 */
+	--c-text: #e8e8e8;
+	/* 自定义变量 --c-text-dim：弱化文字颜色变量 */
+	/* 用途/效果：用于次要说明、时间、占位等低层级文字 */
+	/* 注意点：对比度低于主文字，不可用于关键信息 */
+	--c-text-dim: #9a9a9a;
+	/* 自定义变量 --c-card：卡片背景颜色变量 */
+	/* 用途/效果：文章卡片、弹层、面板底色 */
+	/* 注意点：亮/暗黑分别赋值，是内容容器主色 */
+	--c-card: rgba(14, 14, 14, .85);
+	/* 自定义变量 --c-surface：表面层颜色变量 */
+	/* 用途/效果：嵌套面板、二级容器底色 */
+	/* 注意点：用于卡片内部再分层 */
+	--c-surface: #0d0d0d;
+	/* 自定义变量 --c-border：边框颜色变量 */
+	/* 用途/效果：统一描边、分隔线颜色 */
+	/* 注意点：弱化边界，萌系常用浅色半透明 */
+	--c-border: rgba(255, 255, 255, .1);
 }
-body.amoled-dark .site-header { background: rgba(0, 0, 0, .92) !important; }
-body.amoled-dark .article-card,
-body.amoled-dark .settings-card,
-body.amoled-dark .card,
-body.amoled-dark .widget,
-body.amoled-dark .comment-item,
-body.amoled-dark input,
-body.amoled-dark textarea,
-body.amoled-dark select {
-    background: #0d0d0d !important;
-    color: #e8e8e8;
-    border-color: #222 !important;
+/* ============================================================
+   作用对象：body.amoled-dark .site-header
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark .site-header {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: rgba(0, 0, 0, .92) !important;
 }
-
+/* ============================================================
+   作用对象：body.amoled-dark .article-card, body.amoled-dark .settings-card, body.amoled-dark .card, body.amoled-dark .widget, body.
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark .article-card, body.amoled-dark .settings-card, body.amoled-dark .card, body.amoled-dark .widget, body.amoled-dark .comment-item, body.amoled-dark input, body.amoled-dark textarea, body.amoled-dark select {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #0d0d0d !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #e8e8e8;
+	/* border-color：设置边框颜色 */
+	/* 用途/效果：描边上色，弱化或强调边界 */
+	/* 注意点：可一到四个值分别对应四边 */
+	border-color: #222 !important;
+}
 /* ---- 关闭页面动效：禁用动画/过渡/平滑滚动（保留焦点与可用性） ---- */
-html.motion-off, html.motion-off body { scroll-behavior: auto !important; }
-html.motion-off *,
-html.motion-off *::before,
-html.motion-off *::after {
-    animation-duration: .001s !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .001s !important;
+/* ============================================================
+   作用对象：html.motion-off, html.motion-off body
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+html.motion-off, html.motion-off body {
+	/* scroll-behavior：设置滚动是否平滑 */
+	/* 用途/效果：smooth 让锚点跳转、回顶部平滑滚动 */
+	/* 注意点：全局开启后所有滚动都平滑，注意 reduced-motion 偏好 */
+	scroll-behavior: auto !important;
 }
-
-
+/* ============================================================
+   作用对象：html.motion-off *, html.motion-off *::before, html.motion-off *::after
+   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
+   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
+   ============================================================ */
+html.motion-off *, html.motion-off *::before, html.motion-off *::after {
+	/* animation-duration：设置一次动画的时长 */
+	/* 用途/效果：控制动画播放速度 */
+	/* 注意点：默认 0s 等于不动画 */
+	animation-duration: .001s !important;
+	/* animation-iteration-count：设置动画播放次数 */
+	/* 用途/效果：infinite 无限循环用于漂浮、呼吸、樱花 */
+	/* 注意点：数值为具体次数时播完即停 */
+	animation-iteration-count: 1 !important;
+	/* transition-duration：设置过渡时长 */
+	/* 用途/效果：控制动画快慢，单位 s/ms */
+	/* 注意点：时长过短无感、过长拖沓，常用 .2-.4s */
+	transition-duration: .001s !important;
+}
 /* ---- Bug22 补充：AMOLED 模式下操作按钮与表单控件保持可见 ---- */
-body.amoled-dark .like-btn,
-body.amoled-dark button[type="submit"],
-body.amoled-dark .btn-primary,
-body.amoled-dark .like-btn .like-icon {
-    background: linear-gradient(90deg, #c86b98, #a06cd5) !important;
-    color: #fff !important;
-    border: 1px solid rgba(255, 255, 255, .18) !important;
+/* ============================================================
+   作用对象：body.amoled-dark .like-btn, body.amoled-dark button[type="submit"], body.amoled-dark .btn-primary, body.amoled-dark .lik
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark .like-btn, body.amoled-dark button[type="submit"], body.amoled-dark .btn-primary, body.amoled-dark .like-btn .like-icon {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: linear-gradient(90deg, #c86b98, #a06cd5) !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #fff !important;
+	/* border：边框的简写（宽度 样式 颜色） */
+	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
+	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
+	border: 1px solid rgba(255, 255, 255, .18) !important;
 }
-body.amoled-dark .like-btn .like-text { color: #fff !important; }
-body.amoled-dark select,
-body.amoled-dark option { background: #141414 !important; color: #ececf2 !important; }
-body.amoled-dark .settings-card,
-body.amoled-dark .settings-page-title,
-body.amoled-dark label,
-body.amoled-dark h1, body.amoled-dark h2, body.amoled-dark h3 { color: #ececf2; }
-body.amoled-dark .form-hint, body.amoled-dark .muted { color: #9a9a9a !important; }
+/* ============================================================
+   作用对象：body.amoled-dark .like-btn .like-text
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark .like-btn .like-text {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #fff !important;
+}
+/* ============================================================
+   作用对象：body.amoled-dark select, body.amoled-dark option
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark select, body.amoled-dark option {
+	/* background：背景属性的简写 */
+	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
+	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
+	background: #141414 !important;
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #ececf2 !important;
+}
+/* ============================================================
+   作用对象：body.amoled-dark .settings-card, body.amoled-dark .settings-page-title, body.amoled-dark label, body.amoled-dark h1, bod
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark .settings-card, body.amoled-dark .settings-page-title, body.amoled-dark label, body.amoled-dark h1, body.amoled-dark h2, body.amoled-dark h3 {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #ececf2;
+}
+/* ============================================================
+   作用对象：body.amoled-dark .form-hint, body.amoled-dark .muted
+   含义：该选择器命中元素的基础样式规则
+   ============================================================ */
+body.amoled-dark .form-hint, body.amoled-dark .muted {
+	/* color：设置文字颜色 */
+	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
+	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
+	color: #9a9a9a !important;
+}

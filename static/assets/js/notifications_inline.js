@@ -1,36 +1,165 @@
+/* ============================================================================
+ * notifications_inline.js —— 通知中心列表项点击与「全部已读」
+ * ----------------------------------------------------------------------------
+ * 适用页面：通知中心页（.notif-center-item 列表 + #notif-mark-all 按钮）。
+ *
+ * 行为：
+ *   · 点击单条通知：
+ *       - 若该通知未读（data-read='false'），先 POST 标记已读接口，
+ *         成功或失败都继续跳转（失败也不能把用户卡住）；
+ *       - 然后跳转到通知关联地址 data-url；没有地址则刷新页面。
+ *   · 支持键盘：Enter / 空格触发同样动作（可访问性，列表项可能不是 <a>）。
+ *   · 点击「全部已读」：POST read_all 接口后刷新页面。
+ *
+ * 安全：所有 POST 都带 X-CSRFToken 与同源凭证。
+ * 注意：通知项的 id / url / read 状态由模板通过 data-* 注入。
+ * ----------------------------------------------------------------------------
+ * 排错速查：
+ *   · 接口：POST /api/notifications/<id>/read/（单条）、POST
+ *     /api/notifications/read_all/（全部），均需 CSRF + 登录；
+ *   · 未读标记失败也继续跳转（.then(done).catch(done)）：不能因标记接口抖动
+ *     把用户挡在目标内容之外，未读计数可在下次进入时再修正；
+ *   · 列表项若非天然可聚焦元素，需有 tabindex 才能键盘触发，模板需配合；
+ *   · data-id / data-url / data-read 全部由模板注入，前端不猜测；
+ *   · 相关文件：通知模型与信号（谁产生通知）、通知中心模板、后端通知 API。
+ *   · 注意：通知已读后图标 / 字重样式由模板按 data-read 渲染，标记后整页
+ *     刷新或跳转再回来即可看到已读样式（本页不做局部样式切换）。
+ * ============================================================================ */
+//> 该行执行对应的脚本逻辑（结合上下文理解）
 (function () {
+    //> 该行执行对应的脚本逻辑（结合上下文理解）
+    'use strict';
+
+    /** 从 cookie 读取 CSRF token。 */
+    // =========================================================
+    // 【函数】csrfToken
+    // 功能：处理「csrf token」相关逻辑（notifications_inline）
+    // 参数：无
+    // 返回：无显式返回值（undefined），多以副作用（DOM/事件）为主
+    // 注意：保持纯原生实现；修改时勿影响其它已初始化逻辑
+    // =========================================================
     function csrfToken() {
+        //> 声明变量「m」（m），用于保存对应数据，保存 DOM/窗口相关对象
         var m = document.cookie.match(/csrftoken=([^;]+)/);
+        //> 返回结果并结束当前函数
         return m ? m[1] : '';
+    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     }
+
+    /**
+     * 标记单条通知为已读（返回 fetch Promise）。
+     * @param {string} id - 通知 id。
+     */
+    // =========================================================
+    // 【函数】markRead
+    // 功能：标记「read」相关逻辑（mark read）
+    // 参数：
+    //   - id：传入的参数（含义结合调用处与函数体）
+    // 返回：无显式返回值（undefined），多以副作用（DOM/事件）为主
+    // 注意：保持纯原生实现；修改时勿影响其它已初始化逻辑
+    // =========================================================
     function markRead(id) {
+        //> 返回结果并结束当前函数
         return fetch('/api/notifications/' + id + '/read/', {
+            //> 该行执行对应的脚本逻辑（结合上下文理解）
             method: 'POST',
+            //> 该行执行对应的脚本逻辑（结合上下文理解）
             headers: { 'X-CSRFToken': csrfToken() },
+            //> 该行执行对应的脚本逻辑（结合上下文理解）
             credentials: 'same-origin'
+        //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
         });
+    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     }
+
+    // 为每条通知绑定点击 / 键盘事件
+    //> 查询所有匹配选择器的元素，返回可遍历的 NodeList
     document.querySelectorAll('.notif-center-item').forEach(function (item) {
+        /** 激活一条通知：必要时标记已读，然后跳转 / 刷新。 */
+        // =========================================================
+        // 【函数】activate
+        // 功能：处理「activate」相关逻辑（notifications_inline）
+        // 参数：无
+        // 返回：无显式返回值（undefined），多以副作用（DOM/事件）为主
+        // 注意：保持纯原生实现；修改时勿影响其它已初始化逻辑
+        // =========================================================
         function activate() {
+            //> 声明变量「url」（url），用于保存对应数据
             var url = item.dataset.url;
-            var done = function () { if (url) window.location.href = url; else window.location.reload(); };
+            // 跳转目标：有 url 走 url，无 url 刷新当前页
+            // =========================================================
+            // 【函数】done
+            // 功能：处理「done」相关逻辑（notifications_inline）
+            // 参数：无
+            // 返回：无显式返回值（undefined），多以副作用（DOM/事件）为主
+            // 注意：保持纯原生实现；修改时勿影响其它已初始化逻辑
+            // =========================================================
+            var done = function () {
+                //> 条件判断：满足括号内条件时执行对应分支
+                if (url) window.location.href = url;
+                //> 重新加载当前页面
+                else window.location.reload();
+            //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
+            };
+
+            //> 条件判断：满足括号内条件时执行对应分支
             if (item.dataset.read === 'false') {
+                // 未读：先标记已读，无论成败都执行跳转
+                //> 读写元素的 data-* 自定义数据属性
                 markRead(item.dataset.id).then(done).catch(done);
-            } else { done(); }
+            //> 以上条件都不满足时执行的兜底分支
+            } else {
+                // 已读：直接跳转
+                //> 调用函数「done」并传入参数执行对应逻辑
+                done();
+            //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
+            }
+        //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
         }
+
+        // 鼠标点击
+        //> 绑定「click」事件监听器，事件触发时执行回调（passive 可提升滚动性能）
         item.addEventListener('click', activate);
+        // 键盘可达：Enter 或空格触发
+        //> 绑定「keydown」事件监听器，事件触发时执行回调（passive 可提升滚动性能）
         item.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+            //> 条件判断：满足括号内条件时执行对应分支
+            if (e.key === 'Enter' || e.key === ' ') {
+                //> 阻止事件的默认行为（如表单提交、链接跳转）
+                e.preventDefault();
+                //> 调用函数「activate」并传入参数执行对应逻辑
+                activate();
+            //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
+            }
+        //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
         });
+    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     });
-    var all = document.getElementById('notif-mark-all');
-    if (all) {
-        all.addEventListener('click', function () {
+
+    // 「全部已读」按钮：调用批量接口后刷新
+    //> 声明变量「markAll」（mark all），用于保存对应数据，保存 DOM/窗口相关对象
+    var markAll = document.getElementById('notif-mark-all');
+    //> 条件判断：满足括号内条件时执行对应分支
+    if (markAll) {
+        //> 绑定「click」事件监听器，事件触发时执行回调（passive 可提升滚动性能）
+        markAll.addEventListener('click', function () {
+            //> 发起网络请求，返回 Promise；需处理响应与异常，并携带 CSRF
             fetch('/api/notifications/read_all/', {
+                //> 该行执行对应的脚本逻辑（结合上下文理解）
                 method: 'POST',
+                //> 该行执行对应的脚本逻辑（结合上下文理解）
                 headers: { 'X-CSRFToken': csrfToken() },
+                //> 该行执行对应的脚本逻辑（结合上下文理解）
                 credentials: 'same-origin'
-            }).then(function () { window.location.reload(); });
+            //> 该行执行对应的脚本逻辑（结合上下文理解）
+            }).then(function () {
+                //> 重新加载当前页面
+                window.location.reload();
+            //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
+            });
+        //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
         });
+    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     }
+//> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
 })();
