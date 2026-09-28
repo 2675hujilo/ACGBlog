@@ -90,7 +90,6 @@
     <meta name="window-controls-overlay" content="true">
     {# 60. 打印专用样式表：仅在打印时生效 #}
 <link rel="stylesheet" href="{% static 'assets/css/print.min.css' %}" media="print">
-<link rel="stylesheet" href="{% static 'assets/css/base_inline_core.min.css' %}?v={{ BUILD_TOKEN }}">
     {% comment %}
 ===== 全站样式表：base.css 基础令牌 / components.css 组件库 / blog.css 三栏布局 =====
 {% endcomment %}
@@ -291,17 +290,6 @@
     {% block breadcrumb %}{% endblock %}
     {% block content %}{% endblock %}
 
-{# Bug8：全站统一「确认弹窗」（服务端预置，moeConfirm 仅填充文案并显示，避免动态插入不绘制） #}
-<div class="moe-modal-overlay" id="globalConfirmModal" role="dialog" aria-modal="true" aria-labelledby="gcmTitle">
-    <div class="moe-modal-card">
-        <div class="moe-modal-title" id="gcmTitle">{{ MSG.js.confirm_default }}</div>
-        <div class="moe-modal-msg" id="gcmMsg"></div>
-        <div class="moe-modal-actions">
-            <button type="button" class="moe-btn moe-btn-cancel" id="gcmCancel">{{ MSG.btn.cancel }}</button>
-            <button type="button" class="moe-btn moe-btn-ok" id="gcmOk">{{ MSG.btn.confirm }}</button>
-        </div>
-    </div>
-</div>
 </main>
 {% comment %}
 ===== 页脚：版权与技术栈说明 =====
@@ -472,5 +460,17 @@
 <script src="{% static 'assets/js/article_card_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# 页面级脚本：子模板通过 {% block extra_js %} 追加（detail 的评论/点赞/目录、edit 的编辑器等） #}
 {% block extra_js %}{% endblock %}
+{# Bug8：全站统一「确认弹窗」。挂在 body 末尾、脱离 main 合成层，避免被提升为合成层的
+   文章卡片视觉遮挡；弹窗 DOM 服务端预置，moeConfirm 仅填充文案并加 .show，保证可靠绘制。 #}
+<div class="moe-modal-overlay" id="globalConfirmModal" role="dialog" aria-modal="true" aria-labelledby="gcmTitle">
+    <div class="moe-modal-card">
+        <div class="moe-modal-title" id="gcmTitle">{{ MSG.js.confirm_default }}</div>
+        <div class="moe-modal-msg" id="gcmMsg"></div>
+        <div class="moe-modal-actions">
+            <button type="button" class="moe-btn moe-btn-cancel" id="gcmCancel">{{ MSG.btn.cancel }}</button>
+            <button type="button" class="moe-btn moe-btn-ok" id="gcmOk">{{ MSG.btn.confirm }}</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

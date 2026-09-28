@@ -1,10 +1,2 @@
-/* ============================================================
-   作用对象：.profile-card
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.profile-card {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: relative;
-}
+
+.profile-card { position: relative; }

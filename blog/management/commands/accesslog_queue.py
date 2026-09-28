@@ -25,140 +25,70 @@
 自动兜底：Celery beat 定时任务 ``blog.tasks.flush_access_log_queue`` 每 5 分钟
 尝试消费一次，即使忘记手动执行也能自动补齐。
 """
-#: 从模块「django.core.management.base」导入所需对象
 from django.core.management.base import BaseCommand
 
-#: 从模块「blog.services.access_log_service」导入所需对象
 from blog.services.access_log_service import (FALLBACK_KEY, drain_fallback,
-                                     #: 该行执行对应逻辑（结合上下文理解）
                                      fallback_length, reset_broker_circuit,
-                                     #: 该行执行对应逻辑（结合上下文理解）
                                      reset_circuit)
 
 
 class Command(BaseCommand):
     """查看 / 消费 / 清空 访问日志 Redis 兜底队列。"""
 
-    #: 定义变量「help」，保存对应数据
     help = '访问日志 Redis 兜底队列运维：查看积压、批量消费入库、清空队列'
 
     def add_arguments(self, parser):
-        """
-        功能：添加「arguments」。
-
-        参数：
-          - parser：传入参数，含义结合函数体与调用处
-
-        返回：无显式返回（None），多以副作用为主。
-
-        注意：保持函数单一职责；修改时确认调用方不受影响。
-        """
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--drain', action='store_true',
-                            #: 定义变量「help」，保存对应数据
                             help='批量消费兜底队列并写入 AccessLog 表')
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--dry-run', action='store_true',
-                            #: 定义变量「help」，保存对应数据
                             help='只统计待消费条数，不消费不入库')
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--purge', action='store_true',
-                            #: 定义变量「help」，保存对应数据
                             help='清空兜底队列（会丢弃未入库日志，需配合 --yes）')
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--yes', action='store_true', help='配合 --purge 的二次确认')
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--batch', type=int, default=500, help='单批消费条数（默认 500）')
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--max-batches', type=int, default=100,
-                            #: 定义变量「help」，保存对应数据
                             help='单次最多消费批数（默认 100）')
-        #: 调用「parser.add_argument」执行相应逻辑
         parser.add_argument('--reset-circuit', action='store_true',
-                            #: 定义变量「help」，保存对应数据
                             help='先清除 Redis / Broker 熔断状态再执行（诊断用）')
 
     def handle(self, *args, **options):
-        """
-        功能：处理「handle」。
-
-        返回：无显式返回（None），多以副作用为主。
-
-        注意：保持函数单一职责；修改时确认调用方不受影响。
-        """
-        #: 条件判断：条件成立时执行该分支
         if options['reset_circuit']:
-            #: 调用「reset_circuit」执行相应逻辑
             reset_circuit()
-            #: 调用「reset_broker_circuit」执行相应逻辑
             reset_broker_circuit()
-            #: 调用「self.stdout.write」执行相应逻辑
             self.stdout.write(self.style.WARNING('已清除 Redis / Broker 熔断窗口。'))
 
-        #: 定义变量「before」，保存对应数据
         before = fallback_length()
-        #: 条件判断：条件成立时执行该分支
         if before < 0:
-            #: 调用「self.stdout.write」执行相应逻辑
             self.stdout.write(self.style.ERROR(
-                #: 该行执行对应逻辑（结合上下文理解）
                 'Redis 不可用（或连接超时）。请确认 redis-server 已启动，'
-                #: 该行执行对应逻辑（结合上下文理解）
                 '再执行本命令；中间件此时会自动走「极端降级」同步入库。'))
-            #: 返回结果并结束当前函数
             return
-        #: 调用「self.stdout.write」执行相应逻辑
         self.stdout.write('兜底队列 %s 当前积压：%s 条' % (FALLBACK_KEY, before))
 
-        #: 条件判断：条件成立时执行该分支
         if options['purge']:
-            #: 条件判断：条件成立时执行该分支
             if not options['yes']:
-                #: 调用「self.stdout.write」执行相应逻辑
                 self.stdout.write(self.style.ERROR(
-                    #: 该行执行对应逻辑（结合上下文理解）
                     '拒绝执行：--purge 会永久丢弃未入库日志，请追加 --yes 二次确认。'))
-                #: 返回结果并结束当前函数
                 return
-            #: 从模块「blog.services.access_log_service」导入所需对象
             from blog.services.access_log_service import get_redis
-            #: 定义变量「client」，保存对应数据
             client = get_redis()
-            #: 定义变量「removed」，保存对应数据
             removed = client.delete(FALLBACK_KEY) if client else 0
-            #: 调用「self.stdout.write」执行相应逻辑
             self.stdout.write(self.style.WARNING(
-                #: 该行执行对应逻辑（结合上下文理解）
                 '已清空兜底队列（删除 key=%s，丢弃 %s 条未入库日志）。' % (removed, before)))
-            #: 返回结果并结束当前函数
             return
 
-        #: 条件判断：条件成立时执行该分支
         if options['dry_run'] or not options['drain']:
-            #: 调用「self.stdout.write」执行相应逻辑
             self.stdout.write(self.style.SUCCESS(
-                #: 该行执行对应逻辑（结合上下文理解）
                 '待消费 %s 条。执行 `manage.py accesslog_queue --drain` 批量入库。' % before))
-            #: 返回结果并结束当前函数
             return
 
-        #: 定义变量「result」，保存对应数据
         result = drain_fallback(batch=max(1, options['batch']),
-                                #: 定义变量「max_batches」，保存对应数据
                                 max_batches=max(1, options['max_batches']))
-        #: 条件判断：条件成立时执行该分支
         if result['error']:
-            #: 调用「self.stdout.write」执行相应逻辑
             self.stdout.write(self.style.ERROR('消费失败：%s' % result['error']))
-        #: 调用「self.stdout.write」执行相应逻辑
         self.stdout.write(self.style.SUCCESS(
-            #: 该行执行对应逻辑（结合上下文理解）
             '消费完成：入库 %s 条，坏数据 %s 条，剩余 %s 条'
-            #: 该行执行对应逻辑（结合上下文理解）
             % (result['ok'], result['bad'], result['remaining'])))
-        #: 条件判断：条件成立时执行该分支
         if result['bad']:
-            #: 调用「self.stdout.write」执行相应逻辑
             self.stdout.write(self.style.WARNING(
-                #: 该行执行对应逻辑（结合上下文理解）
                 '存在 %s 条无法解析的坏数据（已丢弃），请检查上游写入。' % result['bad']))

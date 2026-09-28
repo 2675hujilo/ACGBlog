@@ -14,36 +14,20 @@
 本 ``__init__`` 统一再导出全部公开类。
 """
 # 再导出全部公开符号，保证 blog.middleware.X 旧引用方式继续可用
-#: 从模块「.slow_query」导入所需对象
 from .slow_query import SlowQueryFilter
-#: 从模块「.access_log」导入所需对象
 from .access_log import AccessLogMiddleware
-#: 从模块「.online_status」导入所需对象
 from .online_status import OnlineStatusMiddleware
-#: 从模块「.cute_error_pages」导入所需对象
 from .cute_error_pages import CuteErrorPagesMiddleware
-#: 从模块「.site_info」导入所需对象
 from .site_info import SiteInfoMiddleware
-#: 从模块「.site_messages」导入所需对象
 from .site_messages import SiteMessagesMiddleware
-#: 从模块「.mascot」导入所需对象
 from .mascot import MascotToggleMiddleware
 
-#: 定义变量「__all__」，保存对应数据（集合/元组）
 __all__ = [
-    #: 该行执行对应逻辑（结合上下文理解）
     'SlowQueryFilter',
-    #: 该行执行对应逻辑（结合上下文理解）
     'AccessLogMiddleware',
-    #: 该行执行对应逻辑（结合上下文理解）
     'OnlineStatusMiddleware',
-    #: 该行执行对应逻辑（结合上下文理解）
     'CuteErrorPagesMiddleware',
-    #: 该行执行对应逻辑（结合上下文理解）
     'SiteInfoMiddleware',
-    #: 该行执行对应逻辑（结合上下文理解）
     'SiteMessagesMiddleware',
-    #: 该行执行对应逻辑（结合上下文理解）
     'MascotToggleMiddleware',
-#: 该行执行对应逻辑（结合上下文理解）
 ]

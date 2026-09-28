@@ -3,4545 +3,1077 @@
  * 每个组件含默认态、悬浮态、禁用态与暗黑主题变量适配，保证全站组件视觉统一。
  */
 /* ============================================================
-   作用对象：﻿/* ============================================================ * components.css —— 通用 UI 组件库 * 包含：标签胶囊 / 徽章 / 文章卡片 / 分
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-﻿/* ============================================================ * components.css —— 通用 UI 组件库 * 包含：标签胶囊 / 徽章 / 文章卡片 / 分页 / 侧栏部件(widget) / * 热门文章列表 / 标签云 / 分类导航 / 分类网格卡片 * 依赖：base.css 中定义的 CSS 设计令牌（颜色/间距/圆角/阴影） * ============================================================ */ /* ---------- 标签胶囊（Chip）：标签、筛选条件、小按钮 ---------- */ .chip {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-block;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 3px 12px;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 2px 4px 2px 0;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid transparent;
+ * components.css —— 通用 UI 组件库
+ * 包含：标签胶囊 / 徽章 / 文章卡片 / 分页 / 侧栏部件(widget) /
+ *       热门文章列表 / 标签云 / 分类导航 / 分类网格卡片
+ * 依赖：base.css 中定义的 CSS 设计令牌（颜色/间距/圆角/阴影）
+ * ============================================================ */
+
+/* ---------- 标签胶囊（Chip）：标签、筛选条件、小按钮 ---------- */
+.chip {
+    display: inline-block; padding: 3px 12px; margin: 2px 4px 2px 0;
+    border-radius: 999px; background: var(--c-primary-soft); color: var(--c-primary);
+    font-size: .82rem; border: 1px solid transparent;
 }
-/* ============================================================
-   作用对象：.chip:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.chip:hover {
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-primary);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
-/* ============================================================
-   作用对象：.chip--active
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.chip--active {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-}
-/* 选中态：实心填充 */
+.chip:hover { border-color: var(--c-primary); color: var(--c-primary); }
+.chip:active { transform: scale(.93); filter: brightness(.96); }  /* 按下：轻微收缩变暗 */
+.chip--active { background: var(--c-primary); color: #fff; }  /* 选中态：实心填充 */
+
 /* ---------- 徽章（Badge）：文章分类/状态标记 ---------- */
-/* ============================================================
-   作用对象：.badge
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.badge {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-block;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 2px 10px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 6px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .76rem;
-	/* margin-right：设置元素右外边距 */
-	/* 用途/效果：拉开与右侧元素的横向距离 */
-	/* 注意点：flex 布局中间距更推荐用 gap */
-	margin-right: 6px;
-}
-/* ============================================================
-   作用对象：.badge-category
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.badge-category {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: #e3ecff;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #2a5cd7;
-}
-/* 分类徽章：蓝色系 */
-/* ============================================================
-   作用对象：.badge-draft
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.badge-draft {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: #fff2d6;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #b8860b;
-}
-/* 草稿状态：黄色系 */
-/* ============================================================
-   作用对象：.badge-note
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.badge-note {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: #ffe1ec;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #d6336c;
-}
-/* 笔记类型：粉色系 */
-/* ============================================================
-   作用对象：.badge-page
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.badge-page {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: #eef0f5;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #5b6478;
-}
-/* 独立页面：灰色系 */
+.badge { display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: .76rem; margin-right: 6px; }
+.badge-category { background: #e3ecff; color: #2a5cd7; }  /* 分类徽章：蓝色系 */
+.badge-draft { background: #fff2d6; color: #b8860b; }       /* 草稿状态：黄色系 */
+.badge-note { background: #ffe1ec; color: #d6336c; }       /* 笔记类型：粉色系 */
+.badge-page { background: #eef0f5; color: #5b6478; }       /* 独立页面：灰色系 */
+
 /* ---------- 文章卡片（Article Card）：列表页每条文章的预览卡片 ---------- */
-/* ============================================================
-   作用对象：.article-card
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .article-card {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: var(--space-3) var(--space-4);
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: var(--space-3);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: transform .15s, box-shadow .15s;
+    background: var(--c-card); backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border); border-radius: var(--radius);
+    padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
+    box-shadow: var(--shadow-card); transition: transform .15s, box-shadow .15s;
 }
-/* ============================================================
-   作用对象：.article-card:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.article-card:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-2px);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-hover);
-}
-/* 悬停上浮+阴影加深 */
-/* ============================================================
-   作用对象：.article-card-title
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-title {
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 0 8px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.18rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* line-height：设置行高（行盒高度） */
-	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
-	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
-	line-height: 1.5;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 8px;
-}
-/* ============================================================
-   作用对象：.article-card .article-card-title a
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card .article-card-title a {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* -webkit-text-fill-color：WebKit 下设置文字填充色 */
-	/* 用途/效果：transparent 配合 background-clip:text 实现渐变文字 */
-	/* 注意点：会覆盖 color；仅在需要渐变文字等场景使用 */
-	-webkit-text-fill-color: var(--c-text);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 5px 14px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 14px;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .25s ease;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-block;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* background-image：设置背景图片或渐变 */
-	/* 用途/效果：url() 图片、linear-gradient/radial-gradient 渐变，营造柔和氛围 */
-	/* 注意点：渐变本质是图片；记得给 background-color 兜底防图片加载失败 */
-	background-image: none;
-	/* max-width：限制元素的最大宽度 */
-	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
-	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
-	max-width: 100%;
-	/* min-width：设置元素允许的最小宽度 */
-	/* 用途/效果：防止 flex/grid 子项被压缩得过窄，保证按钮、标签可点击与可读 */
-	/* 注意点：百分比最小宽度相对于包含块；flex 项常配合 flex-shrink 使用 */
-	min-width: 0;
-	/* overflow：规定内容超出盒框时如何处理 */
-	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
-	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
-	overflow: hidden;
-	/* text-overflow：设置溢出文本的提示方式 */
-	/* 用途/效果：ellipsis 显示省略号，单行截断标题常用 */
-	/* 注意点：必须配合 white-space:nowrap 与 overflow:hidden 才生效 */
-	text-overflow: ellipsis;
-	/* white-space：控制元素内空白与换行规则 */
-	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
-	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
-	white-space: nowrap;
-}
-/* ============================================================
-   作用对象：.article-card .article-card-title a:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.article-card .article-card-title a:hover {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* -webkit-text-fill-color：WebKit 下设置文字填充色 */
-	/* 用途/效果：transparent 配合 background-clip:text 实现渐变文字 */
-	/* 注意点：会覆盖 color；仅在需要渐变文字等场景使用 */
-	-webkit-text-fill-color: var(--c-primary);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, rgba(255,143,177,.25), rgba(160,108,213,.25));
-	/* background-image：设置背景图片或渐变 */
-	/* 用途/效果：url() 图片、linear-gradient/radial-gradient 渐变，营造柔和氛围 */
-	/* 注意点：渐变本质是图片；记得给 background-color 兜底防图片加载失败 */
-	background-image: none;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 3px 12px rgba(160,108,213,.2);
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-1px);
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: none;
-}
-/* ============================================================
-   作用对象：.article-card-excerpt
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-excerpt {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .92rem;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 0 10px;
-	/* line-height：设置行高（行盒高度） */
-	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
-	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
-	line-height: 1.6;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: -webkit-box;
-	/* -webkit-line-clamp：限制元素显示的行数 */
-	/* 用途/效果：配合几个固定属性实现多行省略号截断 */
-	/* 注意点：需 display:-webkit-box 与 -webkit-box-orient:vertical */
-	-webkit-line-clamp: 2;
-	/* -webkit-box-orient：WebKit 盒的排列方向 */
-	/* 用途/效果：vertical 配合 line-clamp 做多行截断 */
-	/* 注意点：属于较老的盒模型写法，仅为截断服务 */
-	-webkit-box-orient: vertical;
-	/* overflow：规定内容超出盒框时如何处理 */
-	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
-	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
-	overflow: hidden;
-}
-/* 文章摘要：最多显示2行 */
-/* ============================================================
-   作用对象：.article-card-meta
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-meta {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: var(--space-3);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-}
-/* 日期/分类/阅读量等元信息（兼容旧版） */
+.article-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }  /* 悬停上浮+阴影加深 */
+.article-card-title { margin: 0 0 8px; font-size: 1.18rem; font-weight: 700; line-height: 1.5; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.article-card .article-card-title a { color: var(--c-text); -webkit-text-fill-color: var(--c-text); padding: 5px 14px; border-radius: 14px; transition: all .25s ease; display: inline-block; background: var(--c-primary-soft); background-image: none; max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.article-card .article-card-title a:hover { color: var(--c-primary); -webkit-text-fill-color: var(--c-primary); background: linear-gradient(135deg, rgba(255,143,177,.25), rgba(160,108,213,.25)); background-image: none; box-shadow: 0 3px 12px rgba(160,108,213,.2); transform: translateY(-1px); animation: none; }
+.article-card-excerpt { color: var(--c-text-dim); font-size: .92rem; margin: 0 0 10px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }  /* 文章摘要：最多显示2行 */
+.article-card-meta { display: flex; gap: var(--space-3); color: var(--c-text-dim); font-size: .82rem; flex-wrap: wrap; }  /* 日期/分类/阅读量等元信息（兼容旧版） */
+
 /* ---------- 第三行：互动数据（浏览/点赞/收藏/评论/阅读时长） ---------- */
-/* ============================================================
-   作用对象：.article-card-stats
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .article-card-stats {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 14px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 6px 0;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 0 8px;
-	/* border-top：单独设置上边框 */
-	/* 用途/效果：分隔线、标题强调线常用 */
-	/* 注意点：注意宽度样式颜色三要素齐全 */
-	border-top: 1px dashed var(--c-border);
-	/* border-bottom：单独设置下边框 */
-	/* 用途/效果：输入框下划线、列表分隔线主力 */
-	/* 注意点：常配合 hover 改变颜色做交互反馈 */
-	border-bottom: 1px dashed var(--c-border);
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 6px 0; margin: 0 0 8px;
+    border-top: 1px dashed var(--c-border); border-bottom: 1px dashed var(--c-border);
 }
-/* ============================================================
-   作用对象：.article-card-stats .stat-item
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .article-card-stats .stat-item {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: none;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 0;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .82rem; color: var(--c-text-dim);
+    background: none; padding: 0; border-radius: 0;
 }
-/* ============================================================
-   作用对象：.article-card-stats .stat-item .icon
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-stats .stat-item .icon {
-	/* width：设置元素内容区的宽度 */
-	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-	width: 14px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 14px;
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: .7;
-}
-/* ============================================================
-   作用对象：.article-card-stats .stat-item:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.article-card-stats .stat-item:hover {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
-/* ============================================================
-   作用对象：.article-card-stats .stat-item:hover .icon
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.article-card-stats .stat-item:hover .icon {
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: 1;
-}
+.article-card-stats .stat-item .icon { width: 14px; height: 14px; opacity: .7; }
+.article-card-stats .stat-item:hover { color: var(--c-primary); }
+.article-card-stats .stat-item:hover .icon { opacity: 1; }
+
 /* ---------- 第四行：作者信息 + 分类 + 标签 + 更新时间 ---------- */
-/* ============================================================
-   作用对象：.article-card-footer
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .article-card-footer {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    font-size: .82rem; color: var(--c-text-dim);
 }
-/* ============================================================
-   作用对象：.article-card-footer .author-link-inline
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-footer .author-link-inline {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-}
-/* ============================================================
-   作用对象：.article-card-footer .footer-category a
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
+.article-card-footer .author-link-inline { font-size: .82rem; }
 .article-card-footer .footer-category a {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .8rem;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 2px 8px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .15s ease;
+    color: var(--c-text-dim); text-decoration: none; font-size: .8rem;
+    padding: 2px 8px; border-radius: 999px; background: var(--c-primary-soft);
+    transition: all .15s ease;
 }
-/* ============================================================
-   作用对象：.article-card-footer .footer-category a:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.article-card-footer .footer-category a:hover {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-}
+.article-card-footer .footer-category a:hover { color: var(--c-primary); background: linear-gradient(90deg, var(--c-pink), var(--c-purple)); color: #fff; }
 /* 兜底：提高优先级，保证「白字」一定伴随粉紫填充背景（hover/active/focus 均覆盖），
    避免个别浏览器或其它样式把背景压回浅色、只剩白字看不清。 */
-/* ============================================================
-   作用对象：.article-card .article-card-footer .footer-category a:hover, .article-card .article-card-footer .footer-category a:activ
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   交互状态：元素获得键盘/输入焦点时的状态，需有清晰焦点指示（可访问性）
-   交互状态：鼠标按下未松开的瞬间状态，常用于轻微下沉/变暗模拟按压
-   ============================================================ */
-.article-card .article-card-footer .footer-category a:hover, .article-card .article-card-footer .footer-category a:active, .article-card .article-card-footer .footer-category a:focus {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff !important;
-	/* -webkit-text-fill-color：WebKit 下设置文字填充色 */
-	/* 用途/效果：transparent 配合 background-clip:text 实现渐变文字 */
-	/* 注意点：会覆盖 color；仅在需要渐变文字等场景使用 */
-	-webkit-text-fill-color: #fff !important;
-	/* background-color：设置背景颜色 */
-	/* 用途/效果：卡片、按钮、区块底色，配合透明可做层次 */
-	/* 注意点：可设 transparent；萌系常用半透明叠加 */
-	background-color: var(--c-purple) !important;
-	/* background-image：设置背景图片或渐变 */
-	/* 用途/效果：url() 图片、linear-gradient/radial-gradient 渐变，营造柔和氛围 */
-	/* 注意点：渐变本质是图片；记得给 background-color 兜底防图片加载失败 */
-	background-image: linear-gradient(90deg, var(--c-pink), var(--c-purple)) !important;
+.article-card .article-card-footer .footer-category a:hover,
+.article-card .article-card-footer .footer-category a:active,
+.article-card .article-card-footer .footer-category a:focus {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background-color: var(--c-purple) !important;
+    background-image: linear-gradient(90deg, var(--c-pink), var(--c-purple)) !important;
 }
-/* ============================================================
-   作用对象：.article-card-footer .footer-tags
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-footer .footer-tags {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-}
-/* ============================================================
-   作用对象：.article-card-footer .footer-tags .chip
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-footer .footer-tags .chip {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .76rem;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 2px 8px;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0;
-}
-/* ============================================================
-   作用对象：.article-card-footer .footer-date
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
+.article-card-footer .footer-tags { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.article-card-footer .footer-tags .chip { font-size: .76rem; padding: 2px 8px; margin: 0; }
 .article-card-footer .footer-date {
-	/* margin-left：设置元素左外边距 */
-	/* 用途/效果：拉开与左侧元素的横向距离，缩进场景常用 */
-	/* 注意点：flex 布局中更推荐 gap；auto 可把元素推到右侧 */
-	margin-left: auto;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .78rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
+    margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+    font-size: .78rem; color: var(--c-text-dim);
 }
-/* ============================================================
-   作用对象：.article-card-footer .footer-date .icon
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card-footer .footer-date .icon {
-	/* width：设置元素内容区的宽度 */
-	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-	width: 13px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 13px;
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: .6;
-}
+.article-card-footer .footer-date .icon { width: 13px; height: 13px; opacity: .6; }
+
 /* 移动端适配：卡片四行排版 */
-/* ===== @media (max-width: 640px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 640px) {
-	/* ============================================================
-	   作用对象：.article-card-stats
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.article-card-stats {
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 10px;
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 5px 0;
-	}
-	/* ============================================================
-	   作用对象：.article-card-stats .stat-item
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.article-card-stats .stat-item {
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .76rem;
-	}
-	/* ============================================================
-	   作用对象：.article-card-footer
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.article-card-footer {
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 8px;
-	}
-	/* ============================================================
-	   作用对象：.article-card-footer .footer-date
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.article-card-footer .footer-date {
-		/* margin-left：设置元素左外边距 */
-		/* 用途/效果：拉开与左侧元素的横向距离，缩进场景常用 */
-		/* 注意点：flex 布局中更推荐 gap；auto 可把元素推到右侧 */
-		margin-left: 0;
-		/* width：设置元素内容区的宽度 */
-		/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-		/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-		width: 100%;
-	}
+    .article-card-stats { gap: 10px; padding: 5px 0; }
+    .article-card-stats .stat-item { font-size: .76rem; }
+    .article-card-footer { gap: 8px; }
+    .article-card-footer .footer-date { margin-left: 0; width: 100%; }
 }
+
 /* ---------- 分页组件（Pagination）：列表页底部页码导航 ---------- */
-/* ============================================================
-   作用对象：.pagination
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.pagination {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 6px;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: center;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: var(--space-4) 0;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-}
-/* ============================================================
-   作用对象：.page-link
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
+.pagination { display: flex; gap: 6px; justify-content: center; margin: var(--space-4) 0; flex-wrap: wrap; }
 .page-link {
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 6px 12px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius-sm);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-surface);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
+    padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--c-border);
+    background: var(--c-surface); color: var(--c-text);
 }
-/* ============================================================
-   作用对象：.page-link:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.page-link:hover {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-}
-/* ============================================================
-   作用对象：.page-link.current
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.page-link.current {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-primary);
-}
-/* 当前页高亮 */
-/* ============================================================
-   作用对象：.page-link.disabled
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.page-link.disabled {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #b6b0c8;
-	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
-	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
-	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
-	pointer-events: none;
-}
-/* 不可点击的禁用态 */
+.page-link:hover { background: var(--c-primary-soft); }
+.page-link.current { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }  /* 当前页高亮 */
+.page-link.disabled { color: #b6b0c8; pointer-events: none; }  /* 不可点击的禁用态 */
+
 /* ---------- 侧栏部件（Widget）：侧栏通用卡片容器 ---------- */
-/* ============================================================
-   作用对象：.widget
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .widget {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 14px 16px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: var(--space-3);
+    background: var(--c-card); backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border); border-radius: var(--radius);
+    box-shadow: var(--shadow-card); padding: 14px 16px; margin-bottom: var(--space-3);
 }
-/* ============================================================
-   作用对象：.widget-title
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.widget-title {
-	/* 部件标题：左侧紫色竖条装饰 */
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .95rem;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 0 10px;
-	/* border-left：单独设置左边框 */
-	/* 用途/效果：引用块竖线、状态提示条左侧强调 */
-	/* 注意点：萌系提示条常用彩色左边框 */
-	border-left: 4px solid var(--c-purple);
-	/* padding-left：设置左内边距 */
-	/* 用途/效果：增加内容与左边框的距离，缩进对齐常用 */
-	/* 注意点：多行文本左边距会一起缩进 */
-	padding-left: 8px;
+.widget-title {  /* 部件标题：左侧紫色竖条装饰 */
+    font-weight: 700; font-size: .95rem; margin: 0 0 10px;
+    border-left: 4px solid var(--c-purple); padding-left: 8px;
 }
 /* 统计数据网格（文章数/标签数等） */
-/* ============================================================
-   作用对象：.stat-grid
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.stat-grid {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: grid;
-	/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-	/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-	/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-	grid-template-columns: 1fr 1fr;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 10px;
-	/* text-align：设置行内内容水平对齐 */
-	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
-	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
-	text-align: center;
-}
-/* ============================================================
-   作用对象：.stat-item
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.stat-item {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius-sm);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 10px 4px;
-}
-/* ============================================================
-   作用对象：.stat-item .num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.stat-item .num {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: block;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.3rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 800;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
-/* ============================================================
-   作用对象：.stat-item .label
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.stat-item .label {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .78rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-}
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+.stat-item { background: var(--c-primary-soft); border-radius: var(--radius-sm); padding: 10px 4px; }
+.stat-item .num { display: block; font-size: 1.3rem; font-weight: 800; color: var(--c-primary); }
+.stat-item .label { font-size: .78rem; color: var(--c-text-dim); }
+
 /* ---------- 热门文章列表：带序号排名的侧栏组件 ---------- */
-/* ============================================================
-   作用对象：.hot-list
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.hot-list {
-	/* list-style：列表样式简写 */
-	/* 用途/效果：none 去掉项目符号、disc/decimal 指定符号类型 */
-	/* 注意点：可设位置 inside/outside；自定义图标常用 background 或 ::marker */
-	list-style: none;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0;
-	/* counter-reset：创建/重置 CSS 计数器 */
-	/* 用途/效果：配合 counter-increment 实现章节、楼层自动编号 */
-	/* 注意点：需与 counter()/counters() 配合取值 */
-	counter-reset: hot;
+.hot-list { list-style: none; margin: 0; padding: 0; counter-reset: hot; }  /* CSS 计数器从 1 开始 */
+.hot-list li { counter-increment: hot; padding: 6px 0; border-bottom: 1px dashed var(--c-border); font-size: .9rem; }
+.hot-list li:last-child { border-bottom: none; }
+.hot-list li a::before {  /* 序号徽章：用 CSS counter 自动生成 1/2/3... */
+    content: counter(hot); display: inline-block; width: 20px; height: 20px; margin-right: 6px;
+    text-align: center; line-height: 20px; border-radius: 6px; font-size: .75rem;
+    background: var(--c-primary-soft); color: var(--c-primary);
 }
-/* CSS 计数器从 1 开始 */
-/* ============================================================
-   作用对象：.hot-list li
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.hot-list li {
-	/* counter-increment：递增 CSS 计数器 */
-	/* 用途/效果：让编号随元素自动累加 */
-	/* 注意点：计数器名要与 counter-reset 一致 */
-	counter-increment: hot;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 6px 0;
-	/* border-bottom：单独设置下边框 */
-	/* 用途/效果：输入框下划线、列表分隔线主力 */
-	/* 注意点：常配合 hover 改变颜色做交互反馈 */
-	border-bottom: 1px dashed var(--c-border);
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .9rem;
-}
-/* ============================================================
-   作用对象：.hot-list li:last-child
-   交互状态：父级中的最后一个子元素
-   ============================================================ */
-.hot-list li:last-child {
-	/* border-bottom：单独设置下边框 */
-	/* 用途/效果：输入框下划线、列表分隔线主力 */
-	/* 注意点：常配合 hover 改变颜色做交互反馈 */
-	border-bottom: none;
-}
-/* ============================================================
-   作用对象：.hot-list li a::before
-   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
-   ============================================================ */
-.hot-list li a::before {
-	/* 序号徽章：用 CSS counter 自动生成 1/2/3... */
-	/* content：为伪元素插入生成内容 */
-	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
-	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
-	content: counter(hot);
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-block;
-	/* width：设置元素内容区的宽度 */
-	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-	width: 20px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 20px;
-	/* margin-right：设置元素右外边距 */
-	/* 用途/效果：拉开与右侧元素的横向距离 */
-	/* 注意点：flex 布局中间距更推荐用 gap */
-	margin-right: 6px;
-	/* text-align：设置行内内容水平对齐 */
-	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
-	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
-	text-align: center;
-	/* line-height：设置行高（行盒高度） */
-	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
-	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
-	line-height: 20px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 6px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .75rem;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
-/* ============================================================
-   作用对象：.hot-list li:nth-child(-n+3) a::before
-   交互状态：父级中按序号匹配的子元素
-   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
-   组合方式：「+」表示相邻的下一个兄弟元素
-   ============================================================ */
-.hot-list li:nth-child(-n+3) a::before {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-}
-/* 前三名渐变高亮 */
-/* ============================================================
-   作用对象：.hot-meta
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.hot-meta {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .76rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* padding-left：设置左内边距 */
-	/* 用途/效果：增加内容与左边框的距离，缩进对齐常用 */
-	/* 注意点：多行文本左边距会一起缩进 */
-	padding-left: 26px;
-}
-/* 阅读量等次级信息，缩进对齐序号 */
+.hot-list li:nth-child(-n+3) a::before { background: linear-gradient(135deg, var(--c-pink), var(--c-purple)); color: #fff; }  /* 前三名渐变高亮 */
+.hot-meta { font-size: .76rem; color: var(--c-text-dim); padding-left: 26px; }  /* 阅读量等次级信息，缩进对齐序号 */
+
 /* ---------- 标签云：侧栏或标签页中标签+文章数展示 ---------- */
-/* ============================================================
-   作用对象：.tag-cloud a
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.tag-cloud a {
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 3px;
+.tag-cloud a { margin: 3px; }
+.tag-cloud .count {  /* 标签后的文章数量小圆角徽章 */
+    display: inline-block; min-width: 18px; text-align: center; margin-left: 2px;
+    background: var(--c-primary); color: #fff; border-radius: 999px; font-size: .7rem; padding: 0 5px;
 }
-/* ============================================================
-   作用对象：.tag-cloud .count
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.tag-cloud .count {
-	/* 标签后的文章数量小圆角徽章 */
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-block;
-	/* min-width：设置元素允许的最小宽度 */
-	/* 用途/效果：防止 flex/grid 子项被压缩得过窄，保证按钮、标签可点击与可读 */
-	/* 注意点：百分比最小宽度相对于包含块；flex 项常配合 flex-shrink 使用 */
-	min-width: 18px;
-	/* text-align：设置行内内容水平对齐 */
-	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
-	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
-	text-align: center;
-	/* margin-left：设置元素左外边距 */
-	/* 用途/效果：拉开与左侧元素的横向距离，缩进场景常用 */
-	/* 注意点：flex 布局中更推荐 gap；auto 可把元素推到右侧 */
-	margin-left: 2px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .7rem;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0 5px;
-}
+
 /* ---------- 分类导航列表：侧栏中分类名+文章数横向排列 ---------- */
-/* ============================================================
-   作用对象：.cat-nav-list
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-nav-list {
-	/* list-style：列表样式简写 */
-	/* 用途/效果：none 去掉项目符号、disc/decimal 指定符号类型 */
-	/* 注意点：可设位置 inside/outside；自定义图标常用 background 或 ::marker */
-	list-style: none;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0;
-}
-/* ============================================================
-   作用对象：.cat-nav-list li
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-nav-list li {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: space-between;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 5px 2px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .9rem;
-	/* border-bottom：单独设置下边框 */
-	/* 用途/效果：输入框下划线、列表分隔线主力 */
-	/* 注意点：常配合 hover 改变颜色做交互反馈 */
-	border-bottom: 1px dashed var(--c-border);
-}
-/* ============================================================
-   作用对象：.cat-nav-list li:last-child
-   交互状态：父级中的最后一个子元素
-   ============================================================ */
-.cat-nav-list li:last-child {
-	/* border-bottom：单独设置下边框 */
-	/* 用途/效果：输入框下划线、列表分隔线主力 */
-	/* 注意点：常配合 hover 改变颜色做交互反馈 */
-	border-bottom: none;
-}
-/* ============================================================
-   作用对象：.cat-nav-list .n
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-nav-list .n {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .78rem;
-}
-/* 右侧文章数 */
+.cat-nav-list { list-style: none; margin: 0; padding: 0; }
+.cat-nav-list li { display: flex; justify-content: space-between; padding: 5px 2px; font-size: .9rem; border-bottom: 1px dashed var(--c-border); }
+.cat-nav-list li:last-child { border-bottom: none; }
+.cat-nav-list .n { color: var(--c-text-dim); font-size: .78rem; }  /* 右侧文章数 */
+
 /* ---------- 分类网格页：所有分类的卡片式网格布局 ---------- */
-/* ============================================================
-   作用对象：.cat-grid
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-grid {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: grid;
-	/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-	/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-	/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: var(--space-3);
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); }  /* 自适应填充列 */
+.cat-card {  /* 单个分类卡片 */
+    display: block; padding: var(--space-3) var(--space-4); border-radius: var(--radius);
+    background: var(--c-card); border: 1px solid var(--c-border); box-shadow: var(--shadow-card);
+    color: var(--c-text); transition: transform .15s, box-shadow .15s;
 }
-/* 自适应填充列 */
-/* ============================================================
-   作用对象：.cat-card
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-card {
-	/* 单个分类卡片 */
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: block;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: var(--space-3) var(--space-4);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: transform .15s, box-shadow .15s;
-}
-/* ============================================================
-   作用对象：.cat-card:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.cat-card:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-2px);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-hover);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
-/* ============================================================
-   作用对象：.cat-card .cat-name
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-card .cat-name {
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.05rem;
-}
-/* ============================================================
-   作用对象：.cat-card .cat-desc
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-card .cat-desc {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .84rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 6px 0;
-	/* min-height：设置元素允许的最小高度 */
-	/* 用途/效果：保证卡片、按钮、空区域有基本高度，内容增多时仍可自动撑高 */
-	/* 注意点：比固定 height 更安全，不会因内容变多而溢出 */
-	min-height: 1.2em;
-}
-/* 分类描述，固定最小高度保持对齐 */
-/* ============================================================
-   作用对象：.cat-card .cat-count
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cat-card .cat-count {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .8rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
-/* 该分类下文章数 */
+.cat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); color: var(--c-primary); }
+.cat-card .cat-name { font-weight: 700; font-size: 1.05rem; }
+.cat-card .cat-desc { font-size: .84rem; color: var(--c-text-dim); margin: 6px 0; min-height: 1.2em; }  /* 分类描述，固定最小高度保持对齐 */
+.cat-card .cat-count { font-size: .8rem; color: var(--c-primary); }  /* 该分类下文章数 */
+
 /* ========== 标签页统计与排序样式 ========== */
+
 /* 全站统计卡片网格 */
-/* ============================================================
-   作用对象：.tag-stats-grid
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-stats-grid {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: grid;
-	/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-	/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-	/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-	grid-template-columns: repeat(5, minmax(0, 1fr));
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
 }
-/* ============================================================
-   作用对象：.tag-stat-card
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-stat-card {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 16px 12px;
-	/* text-align：设置行内内容水平对齐 */
-	/* 用途/效果：left/center/right/justify，标题居中、正文左对齐 */
-	/* 注意点：justify 两端对齐在西文常用，中文可能造成字距不均 */
-	text-align: center;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: transform .2s ease, box-shadow .2s ease;
+    background: var(--c-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+    transition: transform .2s ease, box-shadow .2s ease;
 }
-/* ============================================================
-   作用对象：.tag-stat-card:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-stat-card:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-3px);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
 }
-/* ============================================================
-   作用对象：.tag-stat-icon
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-stat-icon {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.5rem;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 6px;
+    font-size: 1.5rem;
+    margin-bottom: 6px;
 }
-/* ============================================================
-   作用对象：.tag-stat-num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-stat-num {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.5rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 800;
-	/* line-height：设置行高（行盒高度） */
-	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
-	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
-	line-height: 1.2;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.2;
 }
-/* ============================================================
-   作用对象：.tag-stat-label
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-stat-label {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .78rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* margin-top：设置元素上外边距 */
-	/* 用途/效果：拉开与上方元素的纵向距离 */
-	/* 注意点：可能与相邻元素的上下外边距折叠 */
-	margin-top: 2px;
+    font-size: .78rem;
+    color: var(--c-text-dim);
+    margin-top: 2px;
 }
-/* ============================================================
-   作用对象：.tag-stat-card.stat-pink .tag-stat-num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.tag-stat-card.stat-pink .tag-stat-num {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-pink);
-}
-/* ============================================================
-   作用对象：.tag-stat-card.stat-purple .tag-stat-num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.tag-stat-card.stat-purple .tag-stat-num {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-purple);
-}
-/* ============================================================
-   作用对象：.tag-stat-card.stat-blue .tag-stat-num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.tag-stat-card.stat-blue .tag-stat-num {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-blue);
-}
+.tag-stat-card.stat-pink .tag-stat-num { color: var(--c-pink); }
+.tag-stat-card.stat-purple .tag-stat-num { color: var(--c-purple); }
+.tag-stat-card.stat-blue .tag-stat-num { color: var(--c-blue); }
+
 /* 排序工具栏 */
-/* ============================================================
-   作用对象：.tag-sort-toolbar
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-toolbar {
-	/* flex-direction：规定弹性主轴方向 */
-	/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
-	/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
-	flex-direction: column;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: flex-start;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
 }
-/* ============================================================
-   作用对象：.tag-sort-tabs
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-tabs {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 8px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
-/* ============================================================
-   作用对象：.tag-sort-tab
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-tab {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 6px 14px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .85rem;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: .85rem;
+    transition: all .15s ease;
 }
-/* ============================================================
-   作用对象：.tag-sort-tab:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-sort-tab:hover {
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
+    border-color: var(--c-purple);
+    color: var(--c-primary);
 }
-/* ============================================================
-   作用对象：.tag-sort-tab.active
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-tab.active {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: transparent;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+    border-color: transparent;
+    font-weight: 600;
 }
+
 /* 标签统计 tooltip */
-/* ============================================================
-   作用对象：.chip
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .chip {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: relative;
+    position: relative;
 }
-/* ============================================================
-   作用对象：.tag-stats-tooltip
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-stats-tooltip {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: absolute;
-	/* bottom：设置定位元素距下参考边的偏移 */
-	/* 用途/效果：固定底栏、悬浮按钮常用 */
-	/* 注意点：仅对非 static 定位元素生效；正值向上 */
-	bottom: calc(100% + 8px);
-	/* left：设置定位元素距左参考边的偏移 */
-	/* 用途/效果：控制元素相对左边缘的位置 */
-	/* 注意点：仅对非 static 定位元素生效；正值向右 */
-	left: 50%;
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateX(-50%) translateY(4px);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 10px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 8px 12px;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 10px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .75rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* white-space：控制元素内空白与换行规则 */
-	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
-	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
-	white-space: nowrap;
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: 0;
-	/* visibility：控制元素可见性 */
-	/* 用途/效果：hidden 隐藏但仍占位，collapse 用于表格行 */
-	/* 注意点：与 display:none 不同，hidden 保留布局空间；子元素可单独设 visible 恢复 */
-	visibility: hidden;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .2s ease;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 16px rgba(0,0,0,.12);
-	/* z-index：设置定位元素的层叠顺序 */
-	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
-	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
-	z-index: 100;
-	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
-	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
-	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
-	pointer-events: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    gap: 10px;
+    font-size: .75rem;
+    color: var(--c-text);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .2s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    z-index: 100;
+    pointer-events: none;
 }
-/* ============================================================
-   作用对象：.tag-stats-tooltip::after
-   伪元素：::after 在元素内容后插入装饰生成内容（需配合 content）
-   ============================================================ */
 .tag-stats-tooltip::after {
-	/* content：为伪元素插入生成内容 */
-	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
-	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
-	content: '';
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: absolute;
-	/* top：设置定位元素距上参考边的偏移 */
-	/* 用途/效果：让元素相对上边缘移动或固定 */
-	/* 注意点：仅对非 static 定位元素生效；正值向下 */
-	top: 100%;
-	/* left：设置定位元素距左参考边的偏移 */
-	/* 用途/效果：控制元素相对左边缘的位置 */
-	/* 注意点：仅对非 static 定位元素生效；正值向右 */
-	left: 50%;
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateX(-50%);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 6px solid transparent;
-	/* border-top-color：设置上边框颜色 */
-	/* 用途/效果：单独调整上边框颜色 */
-	/* 注意点：需边框已存在 */
-	border-top-color: var(--c-card);
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--c-card);
 }
-/* ============================================================
-   作用对象：.chip:hover .tag-stats-tooltip
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .chip:hover .tag-stats-tooltip {
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: 1;
-	/* visibility：控制元素可见性 */
-	/* 用途/效果：hidden 隐藏但仍占位，collapse 用于表格行 */
-	/* 注意点：与 display:none 不同，hidden 保留布局空间；子元素可单独设 visible 恢复 */
-	visibility: visible;
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
+
 /* 标签排行榜 */
-/* ============================================================
-   作用对象：.tag-ranking-section
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-ranking-section {
-	/* margin-top：设置元素上外边距 */
-	/* 用途/效果：拉开与上方元素的纵向距离 */
-	/* 注意点：可能与相邻元素的上下外边距折叠 */
-	margin-top: 28px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 20px 24px;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
+    margin-top: 28px;
+    background: var(--c-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-card);
 }
-/* ============================================================
-   作用对象：.tag-ranking-title
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-ranking-title {
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 0 16px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.2rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* border-left：单独设置左边框 */
-	/* 用途/效果：引用块竖线、状态提示条左侧强调 */
-	/* 注意点：萌系提示条常用彩色左边框 */
-	border-left: 4px solid var(--c-purple);
-	/* padding-left：设置左内边距 */
-	/* 用途/效果：增加内容与左边框的距离，缩进对齐常用 */
-	/* 注意点：多行文本左边距会一起缩进 */
-	padding-left: 10px;
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    color: var(--c-text);
+    border-left: 4px solid var(--c-purple);
+    padding-left: 10px;
 }
-/* ============================================================
-   作用对象：.tag-ranking-list
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-ranking-list {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* flex-direction：规定弹性主轴方向 */
-	/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
-	/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
-	flex-direction: column;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
-/* ============================================================
-   作用对象：.tag-ranking-item
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-ranking-item {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 10px 14px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 10px;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: background .15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: background .15s ease;
 }
-/* ============================================================
-   作用对象：.tag-ranking-item:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-ranking-item:hover {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
+    background: var(--c-primary-soft);
 }
-/* ============================================================
-   作用对象：.tag-rank-num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-rank-num {
-	/* flex：flex-grow/shrink/basis 的简写 */
-	/* 用途/效果：控制弹性子项如何分配与占据主轴空间 */
-	/* 注意点：flex:1 表示等分剩余空间；各子项 flex 值决定比例 */
-	flex: 0 0 28px;
-	/* width：设置元素内容区的宽度 */
-	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-	width: 28px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 28px;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: center;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 8px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .85rem;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--c-primary-soft);
+    color: var(--c-primary);
+    font-weight: 700;
+    font-size: .85rem;
 }
-/* ============================================================
-   作用对象：.tag-rank-num.top3
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-rank-num.top3 {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff;
 }
-/* ============================================================
-   作用对象：.tag-rank-name
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-rank-name {
-	/* flex：flex-grow/shrink/basis 的简写 */
-	/* 用途/效果：控制弹性子项如何分配与占据主轴空间 */
-	/* 注意点：flex:1 表示等分剩余空间；各子项 flex 值决定比例 */
-	flex: 0 0 160px;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .92rem;
-	/* overflow：规定内容超出盒框时如何处理 */
-	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
-	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
-	overflow: hidden;
-	/* text-overflow：设置溢出文本的提示方式 */
-	/* 用途/效果：ellipsis 显示省略号，单行截断标题常用 */
-	/* 注意点：必须配合 white-space:nowrap 与 overflow:hidden 才生效 */
-	text-overflow: ellipsis;
-	/* white-space：控制元素内空白与换行规则 */
-	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
-	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
-	white-space: nowrap;
+    flex: 0 0 160px;
+    font-weight: 600;
+    color: var(--c-text);
+    text-decoration: none;
+    font-size: .92rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-/* ============================================================
-   作用对象：.tag-rank-name:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-rank-name:hover {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
+    color: var(--c-primary);
 }
-/* ============================================================
-   作用对象：.tag-rank-stats
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-rank-stats {
-	/* flex：flex-grow/shrink/basis 的简写 */
-	/* 用途/效果：控制弹性子项如何分配与占据主轴空间 */
-	/* 注意点：flex:1 表示等分剩余空间；各子项 flex 值决定比例 */
-	flex: 1;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 16px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    font-size: .82rem;
+    color: var(--c-text-dim);
 }
-/* ============================================================
-   作用对象：.tag-rank-stats span
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-rank-stats span {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
+
 /* 标签详情页统计条 */
-/* ============================================================
-   作用对象：.tag-detail-stats
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-detail-stats {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 16px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 14px 20px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, rgba(255,143,177,.1), rgba(160,108,213,.1));
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 16px;
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, rgba(255,143,177,.1), rgba(160,108,213,.1));
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    border: 1px solid var(--c-border);
 }
-/* ============================================================
-   作用对象：.tag-detail-stat-item
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-detail-stat-item {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 6px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .88rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .88rem;
+    color: var(--c-text);
 }
-/* ============================================================
-   作用对象：.tag-detail-stat-item .num
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-detail-stat-item .num {
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
+    font-weight: 700;
+    color: var(--c-primary);
 }
+
 /* 移动端适配 */
-/* ===== @media (max-width: 980px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 980px) {
-	/* ============================================================
-	   作用对象：.tag-stats-grid
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-stats-grid {
-		/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-		/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-		/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
-	/* ============================================================
-	   作用对象：.tag-rank-name
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-rank-name {
-		/* flex：flex-grow/shrink/basis 的简写 */
-		/* 用途/效果：控制弹性子项如何分配与占据主轴空间 */
-		/* 注意点：flex:1 表示等分剩余空间；各子项 flex 值决定比例 */
-		flex: 0 0 120px;
-	}
+    .tag-stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .tag-rank-name {
+        flex: 0 0 120px;
+    }
 }
-/* ===== @media (max-width: 640px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 640px) {
-	/* ============================================================
-	   作用对象：.tag-stats-grid
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-stats-grid {
-		/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-		/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-		/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-	/* ============================================================
-	   作用对象：.tag-stat-num
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-stat-num {
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: 1.2rem;
-	}
-	/* ============================================================
-	   作用对象：.tag-rank-stats
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-rank-stats {
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 8px;
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .75rem;
-	}
-	/* ============================================================
-	   作用对象：.tag-rank-name
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-rank-name {
-		/* flex：flex-grow/shrink/basis 的简写 */
-		/* 用途/效果：控制弹性子项如何分配与占据主轴空间 */
-		/* 注意点：flex:1 表示等分剩余空间；各子项 flex 值决定比例 */
-		flex: 0 0 100px;
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .85rem;
-	}
-	/* ============================================================
-	   作用对象：.tag-detail-stats
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-detail-stats {
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 10px;
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 10px 14px;
-	}
+    .tag-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .tag-stat-num {
+        font-size: 1.2rem;
+    }
+    .tag-rank-stats {
+        gap: 8px;
+        font-size: .75rem;
+    }
+    .tag-rank-name {
+        flex: 0 0 100px;
+        font-size: .85rem;
+    }
+    .tag-detail-stats {
+        gap: 10px;
+        padding: 10px 14px;
+    }
 }
 /* ========== 标签页排行与索引分页样式 ========== */
+
 /* 页面工具栏 */
-/* ============================================================
-   作用对象：.tag-page-toolbar
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-page-toolbar {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: space-between;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: flex-start;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
 }
+
 /* 页面模式切换 */
-/* ============================================================
-   作用对象：.tag-mode-tabs
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-tabs {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 8px;
+    display: flex;
+    gap: 8px;
 }
-/* ============================================================
-   作用对象：.tag-mode-tab
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-tab {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 6px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 8px 20px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .95rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 999px;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: .95rem;
+    font-weight: 600;
+    transition: all .2s ease;
 }
-/* ============================================================
-   作用对象：.tag-mode-tab:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-mode-tab:hover {
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-1px);
+    border-color: var(--c-purple);
+    color: var(--c-primary);
+    transform: translateY(-1px);
 }
-/* ============================================================
-   作用对象：.tag-mode-tab.active
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-tab.active {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: transparent;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 12px rgba(192, 132, 252, .3);
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(192, 132, 252, .3);
 }
+
 /* 排序控制栏 */
-/* ============================================================
-   作用对象：.tag-sort-controls
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-controls {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
-/* ============================================================
-   作用对象：.tag-sort-tabs
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-tabs {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 6px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
 }
-/* ============================================================
-   作用对象：.tag-sort-tab
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-tab {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 5px 12px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-surface);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: .82rem;
+    transition: all .15s ease;
 }
-/* ============================================================
-   作用对象：.tag-sort-tab:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-sort-tab:hover {
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
+    border-color: var(--c-purple);
+    color: var(--c-primary);
 }
-/* ============================================================
-   作用对象：.tag-sort-tab.active
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-tab.active {
-	/* 高对比选中态：白字 + 粉紫渐变，明暗主题下都能一眼辨别 */
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: transparent;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 12px rgba(160, 108, 213, .35);
+    /* 高对比选中态：白字 + 粉紫渐变，明暗主题下都能一眼辨别 */
+    background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+    border-color: transparent;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(160, 108, 213, .35);
 }
+
 /* 排序方向切换 */
-/* ============================================================
-   作用对象：.tag-order-toggle
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-order-toggle {
-	/* flex-shrink：定义子项收缩比例 */
-	/* 用途/效果：空间不足时按值收缩，设 0 可防止被压扁 */
-	/* 注意点：与 min-width 配合能更好控制最小尺寸 */
-	flex-shrink: 0;
+    flex-shrink: 0;
 }
-/* ============================================================
-   作用对象：.tag-order-btn
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-order-btn {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 5px 14px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .82rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+    text-decoration: none;
+    font-size: .82rem;
+    font-weight: 600;
+    transition: all .15s ease;
 }
-/* ============================================================
-   作用对象：.tag-order-btn:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-order-btn:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: scale(1.05);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 3px 10px rgba(192, 132, 252, .4);
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(192, 132, 252, .4);
 }
+
 /* 区块标题 */
-/* ============================================================
-   作用对象：.tag-section-title
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-section-title {
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 0 14px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.15rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* border-left：单独设置左边框 */
-	/* 用途/效果：引用块竖线、状态提示条左侧强调 */
-	/* 注意点：萌系提示条常用彩色左边框 */
-	border-left: 4px solid var(--c-purple);
-	/* padding-left：设置左内边距 */
-	/* 用途/效果：增加内容与左边框的距离，缩进对齐常用 */
-	/* 注意点：多行文本左边距会一起缩进 */
-	padding-left: 10px;
+    margin: 0 0 14px;
+    font-size: 1.15rem;
+    color: var(--c-text);
+    border-left: 4px solid var(--c-purple);
+    padding-left: 10px;
 }
+
 /* 排行页布局 */
-/* ============================================================
-   作用对象：.tag-rank-page
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-rank-page {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* flex-direction：规定弹性主轴方向 */
-	/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
-	/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
-	flex-direction: column;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
-/* ============================================================
-   作用对象：.tag-cloud-section
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-cloud-section {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 20px 24px;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
+    background: var(--c-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-card);
 }
-/* ============================================================
-   作用对象：.tags-cloud-rank
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tags-cloud-rank {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 10px;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
 }
+
 /* 词云布局容器 */
-/* ============================================================
-   作用对象：.tags-cloud-wordcloud
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tags-cloud-wordcloud {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: relative;
-	/* min-height：设置元素允许的最小高度 */
-	/* 用途/效果：保证卡片、按钮、空区域有基本高度，内容增多时仍可自动撑高 */
-	/* 注意点：比固定 height 更安全，不会因内容变多而溢出 */
-	min-height: 380px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, rgba(255, 214, 232, 0.15), rgba(233, 213, 255, 0.15), rgba(214, 232, 255, 0.15));
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 12px;
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px dashed var(--c-border);
-	/* overflow：规定内容超出盒框时如何处理 */
-	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
-	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
-	overflow: hidden;
+    position: relative;
+    min-height: 380px;
+    background: linear-gradient(135deg, rgba(255, 214, 232, 0.15), rgba(233, 213, 255, 0.15), rgba(214, 232, 255, 0.15));
+    border-radius: 12px;
+    border: 1px dashed var(--c-border);
+    overflow: hidden;
 }
-/* ============================================================
-   作用对象：.tags-cloud-wordcloud .chip
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tags-cloud-wordcloud .chip {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: absolute;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+    position: absolute;
+    margin: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
 }
-/* ============================================================
-   作用对象：.tags-cloud-wordcloud .chip:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tags-cloud-wordcloud .chip:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: scale(1.12) !important;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 6px 20px rgba(192, 132, 252, 0.4);
-	/* z-index：设置定位元素的层叠顺序 */
-	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
-	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
-	z-index: 200 !important;
+    transform: scale(1.12) !important;
+    box-shadow: 0 6px 20px rgba(192, 132, 252, 0.4);
+    z-index: 200 !important;
 }
 /* 词云中心装饰光晕 */
-/* ============================================================
-   作用对象：.tags-cloud-wordcloud::before
-   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
-   ============================================================ */
 .tags-cloud-wordcloud::before {
-	/* content：为伪元素插入生成内容 */
-	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
-	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
-	content: '';
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: absolute;
-	/* top：设置定位元素距上参考边的偏移 */
-	/* 用途/效果：让元素相对上边缘移动或固定 */
-	/* 注意点：仅对非 static 定位元素生效；正值向下 */
-	top: 50%;
-	/* left：设置定位元素距左参考边的偏移 */
-	/* 用途/效果：控制元素相对左边缘的位置 */
-	/* 注意点：仅对非 static 定位元素生效；正值向右 */
-	left: 50%;
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translate(-50%, -50%);
-	/* width：设置元素内容区的宽度 */
-	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-	width: 200px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 200px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: radial-gradient(circle, rgba(255, 143, 177, 0.15) 0%, rgba(192, 132, 252, 0.1) 40%, transparent 70%);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 50%;
-	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
-	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
-	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
-	pointer-events: none;
-	/* z-index：设置定位元素的层叠顺序 */
-	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
-	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
-	z-index: 0;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 143, 177, 0.15) 0%, rgba(192, 132, 252, 0.1) 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
 }
-/* ============================================================
-   作用对象：.tags-cloud-rank .chip
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tags-cloud-rank .chip {
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: transform .2s ease, box-shadow .2s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
 }
-/* ============================================================
-   作用对象：.tags-cloud-rank .chip:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tags-cloud-rank .chip:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: scale(1.08);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 12px rgba(192, 132, 252, .3);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(192, 132, 252, .3);
 }
+
 /* 标签索引分页 */
-/* ============================================================
-   作用对象：.tag-index-page
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-index-page {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 20px 24px;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
+    background: var(--c-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-card);
 }
-/* ============================================================
-   作用对象：.tag-index-grid
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-index-grid {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: grid;
-	/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-	/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-	/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 10px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
 }
-/* ============================================================
-   作用对象：.tag-index-item
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-index-item {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: space-between;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 10px 14px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 10px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-surface);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .15s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    text-decoration: none;
+    transition: all .15s ease;
 }
-/* ============================================================
-   作用对象：.tag-index-item:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-index-item:hover {
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-2px);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 12px rgba(192, 132, 252, .2);
+    border-color: var(--c-purple);
+    background: var(--c-primary-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(192, 132, 252, .2);
 }
-/* ============================================================
-   作用对象：.tag-index-name
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-index-name {
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .92rem;
-	/* overflow：规定内容超出盒框时如何处理 */
-	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
-	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
-	overflow: hidden;
-	/* text-overflow：设置溢出文本的提示方式 */
-	/* 用途/效果：ellipsis 显示省略号，单行截断标题常用 */
-	/* 注意点：必须配合 white-space:nowrap 与 overflow:hidden 才生效 */
-	text-overflow: ellipsis;
-	/* white-space：控制元素内空白与换行规则 */
-	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
-	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
-	white-space: nowrap;
-	/* max-width：限制元素的最大宽度 */
-	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
-	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
-	max-width: 120px;
+    font-weight: 600;
+    color: var(--c-text);
+    font-size: .92rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
 }
-/* ============================================================
-   作用对象：.tag-index-item:hover .tag-index-name
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-index-item:hover .tag-index-name {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
+    color: var(--c-primary);
 }
-/* ============================================================
-   作用对象：.tag-index-meta
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-index-meta {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 8px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .76rem;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* flex-shrink：定义子项收缩比例 */
-	/* 用途/效果：空间不足时按值收缩，设 0 可防止被压扁 */
-	/* 注意点：与 min-width 配合能更好控制最小尺寸 */
-	flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    font-size: .76rem;
+    color: var(--c-text-dim);
+    flex-shrink: 0;
 }
+
 /* 分页导航 */
-/* ============================================================
-   作用对象：.tag-pagination
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-pagination {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: center;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 6px;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* padding-top：设置上内边距 */
-	/* 用途/效果：增加内容与上边框的距离 */
-	/* 注意点：会撑大盒子高度，注意 box-sizing */
-	padding-top: 16px;
-	/* border-top：单独设置上边框 */
-	/* 用途/效果：分隔线、标题强调线常用 */
-	/* 注意点：注意宽度样式颜色三要素齐全 */
-	border-top: 1px dashed var(--c-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-top: 16px;
+    border-top: 1px dashed var(--c-border);
 }
-/* ============================================================
-   作用对象：.tag-page-link
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-page-link {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: center;
-	/* min-width：设置元素允许的最小宽度 */
-	/* 用途/效果：防止 flex/grid 子项被压缩得过窄，保证按钮、标签可点击与可读 */
-	/* 注意点：百分比最小宽度相对于包含块；flex 项常配合 flex-shrink 使用 */
-	min-width: 36px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 36px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0 12px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 8px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-surface);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .88rem;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    text-decoration: none;
+    font-size: .88rem;
+    transition: all .15s ease;
 }
-/* ============================================================
-   作用对象：.tag-page-link:hover:not(.disabled):not(.current)
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   交互状态：不满足括号条件的元素
-   ============================================================ */
 .tag-page-link:hover:not(.disabled):not(.current) {
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
+    border-color: var(--c-purple);
+    color: var(--c-primary);
+    background: var(--c-primary-soft);
 }
-/* ============================================================
-   作用对象：.tag-page-link.current
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-page-link.current {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: transparent;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+    border-color: transparent;
+    font-weight: 700;
 }
-/* ============================================================
-   作用对象：.tag-page-link.disabled
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-page-link.disabled {
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: .4;
-	/* cursor：设置鼠标指针样式 */
-	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
-	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
-	cursor: not-allowed;
+    opacity: .4;
+    cursor: not-allowed;
 }
-/* ============================================================
-   作用对象：.tag-page-ellipsis
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-page-ellipsis {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0 4px;
+    color: var(--c-text-dim);
+    padding: 0 4px;
 }
+
 /* 移动端适配 */
-/* ===== @media (max-width: 768px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 768px) {
-	/* ============================================================
-	   作用对象：.tag-page-toolbar
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-page-toolbar {
-		/* flex-direction：规定弹性主轴方向 */
-		/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
-		/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
-		flex-direction: column;
-	}
-	/* ============================================================
-	   作用对象：.tag-sort-controls
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-sort-controls {
-		/* width：设置元素内容区的宽度 */
-		/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-		/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-		width: 100%;
-	}
-	/* ============================================================
-	   作用对象：.tag-index-grid
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-index-grid {
-		/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-		/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-		/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-	}
-	/* ============================================================
-	   作用对象：.tag-index-name
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-index-name {
-		/* max-width：限制元素的最大宽度 */
-		/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
-		/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
-		max-width: 90px;
-	}
+    .tag-page-toolbar {
+        flex-direction: column;
+    }
+    .tag-sort-controls {
+        width: 100%;
+    }
+    .tag-index-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .tag-index-name {
+        max-width: 90px;
+    }
 }
-/* ===== @media (max-width: 480px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 480px) {
-	/* ============================================================
-	   作用对象：.tag-index-grid
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-index-grid {
-		/* grid-template-columns：定义网格的列轨道（数量与宽度） */
-		/* 用途/效果：repeat()、fr 单位可快速做等宽多列与响应式网格 */
-		/* 注意点：fr 按剩余空间比例分配；auto-fit/minmax 可自动换列 */
-		grid-template-columns: 1fr;
-	}
-	/* ============================================================
-	   作用对象：.tag-mode-tab
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-mode-tab {
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 6px 14px;
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .85rem;
-	}
+    .tag-index-grid {
+        grid-template-columns: 1fr;
+    }
+    .tag-mode-tab {
+        padding: 6px 14px;
+        font-size: .85rem;
+    }
 }
 /* ========== 标签页新布局样式 ========== */
+
 /* 排序控制栏（标签云上方） */
-/* ============================================================
-   作用对象：.tag-sort-bar
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-bar {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: space-between;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: wrap;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 12px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 16px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 12px 16px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: var(--radius);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--c-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
 }
+
 /* 标签云主区域 */
-/* ============================================================
-   作用对象：.tag-cloud-main
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-cloud-main {
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 20px;
+    margin-bottom: 20px;
 }
+
 /* 模式切换按钮（标签云下方） */
-/* ============================================================
-   作用对象：.tag-mode-switcher
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-switcher {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 16px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 24px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 12px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-card);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(10px);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: var(--shadow-card);
-	/* max-width：限制元素的最大宽度 */
-	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
-	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
-	max-width: 400px;
-	/* margin-left：设置元素左外边距 */
-	/* 用途/效果：拉开与左侧元素的横向距离，缩进场景常用 */
-	/* 注意点：flex 布局中更推荐 gap；auto 可把元素推到右侧 */
-	margin-left: auto;
-	/* margin-right：设置元素右外边距 */
-	/* 用途/效果：拉开与右侧元素的横向距离 */
-	/* 注意点：flex 布局中间距更推荐用 gap */
-	margin-right: auto;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: var(--c-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+    box-shadow: var(--shadow-card);
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
-/* ============================================================
-   作用对象：.tag-mode-btn
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-btn {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 8px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 10px 28px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-surface);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* text-decoration：设置文本装饰线 */
-	/* 用途/效果：none/underline/line-through，链接下划线、删除线常用 */
-	/* 注意点：可分别设线的样式、颜色、粗细；none 常用于去掉链接默认下划线 */
-	text-decoration: none;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .95rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: all .25s cubic-bezier(.25,.46,.45,.94);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 28px;
+    border-radius: 999px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: .95rem;
+    font-weight: 600;
+    transition: all .25s cubic-bezier(.25,.46,.45,.94);
 }
-/* ============================================================
-   作用对象：.tag-mode-btn:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
 .tag-mode-btn:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-2px);
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 12px rgba(192, 132, 252, .25);
+    transform: translateY(-2px);
+    border-color: var(--c-purple);
+    color: var(--c-primary);
+    box-shadow: 0 4px 12px rgba(192, 132, 252, .25);
 }
-/* ============================================================
-   作用对象：.tag-mode-btn.active
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-btn.active {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: transparent;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 4px 16px rgba(192, 132, 252, .4);
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(192, 132, 252, .4);
+    transform: translateY(-2px);
 }
-/* ============================================================
-   作用对象：.tag-mode-btn .mode-icon
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-btn .mode-icon {
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: 1.1rem;
+    font-size: 1.1rem;
 }
+
 /* 内容区域 */
-/* ============================================================
-   作用对象：.tag-content-area
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-content-area {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: relative;
+    position: relative;
 }
+
 /* 从下往前浮动动画 */
-/* ===== @keyframes floatUpIn：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @keyframes floatUpIn {
-	/* ============================================================
-	   作用对象：0%
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	0% {
-		/* opacity：设置整体不透明度 */
-		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-		opacity: 0;
-		/* transform：对元素做二维/三维变换 */
-		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-		transform: translateY(30px);
-	}
-	/* ============================================================
-	   作用对象：100%
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	100% {
-		/* opacity：设置整体不透明度 */
-		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-		opacity: 1;
-		/* transform：对元素做二维/三维变换 */
-		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-		transform: translateY(0);
-	}
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-/* ============================================================
-   作用对象：.float-up-animate
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .float-up-animate {
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: floatUpIn .6s cubic-bezier(.25,.46,.45,.94) both;
+    animation: floatUpIn .6s cubic-bezier(.25,.46,.45,.94) both;
 }
-/* ============================================================
-   作用对象：.float-up-item
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .float-up-item {
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: 0;
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) forwards;
+    opacity: 0;
+    animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) forwards;
 }
+
 /* 标签云也添加浮动动画 */
-/* ============================================================
-   作用对象：.tag-cloud-main
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-cloud-main {
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) both;
+    animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) both;
 }
-/* ============================================================
-   作用对象：.tag-sort-bar
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-sort-bar {
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) both;
+    animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) both;
 }
-/* ============================================================
-   作用对象：.tag-mode-switcher
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .tag-mode-switcher {
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) both;
+    animation: floatUpIn .35s cubic-bezier(.25,.46,.45,.94) both;
 }
+
 /* 移动端适配 */
-/* ===== @media (max-width: 640px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 640px) {
-	/* ============================================================
-	   作用对象：.tag-mode-switcher
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-mode-switcher {
-		/* max-width：限制元素的最大宽度 */
-		/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
-		/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
-		max-width: 100%;
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 8px;
-	}
-	/* ============================================================
-	   作用对象：.tag-mode-btn
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-mode-btn {
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 8px 18px;
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .85rem;
-	}
-	/* ============================================================
-	   作用对象：.tag-sort-bar
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.tag-sort-bar {
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 10px 12px;
-	}
+    .tag-mode-switcher {
+        max-width: 100%;
+        gap: 8px;
+    }
+    .tag-mode-btn {
+        padding: 8px 18px;
+        font-size: .85rem;
+    }
+    .tag-sort-bar {
+        padding: 10px 12px;
+    }
 }
+
 /* ============================================================
    文章卡片右上角统一角标系统（精华/置顶/热门/笔记/页面/加密/NEW）
    按优先级横向排列，空间不足时低优先级角标自动收缩隐藏，防止溢出
    ============================================================ */
-/* ============================================================
-   作用对象：.article-card
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.article-card {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: relative;
-}
-/* ============================================================
-   作用对象：.card-corner-badges
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
+.article-card { position: relative; }
 .card-corner-badges {
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: absolute;
-	/* top：设置定位元素距上参考边的偏移 */
-	/* 用途/效果：让元素相对上边缘移动或固定 */
-	/* 注意点：仅对非 static 定位元素生效；正值向下 */
-	top: 10px;
-	/* right：设置定位元素距右参考边的偏移 */
-	/* 用途/效果：控制元素相对右边缘的位置 */
-	/* 注意点：仅对非 static 定位元素生效；正值向左 */
-	right: 12px;
-	/* z-index：设置定位元素的层叠顺序 */
-	/* 用途/效果：数值越大越靠上，控制弹层、导航、遮罩的覆盖关系 */
-	/* 注意点：只对非 static 定位元素生效；受层叠上下文（stacking context）影响，父级会约束子级 */
-	z-index: 5;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* flex-direction：规定弹性主轴方向 */
-	/* 用途/效果：row 横向 / column 纵向，决定子项排列方向 */
-	/* 注意点：改方向后 justify 与 align 的作用轴随之互换 */
-	flex-direction: row;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* justify-content：控制子项沿主轴的对齐与间距分布 */
-	/* 用途/效果：flex-start/center/space-between/space-around 等 */
-	/* 注意点：方向取决于 flex-direction；是横向排布对齐主力 */
-	justify-content: flex-end;
-	/* flex-wrap：规定子项超出是否换行 */
-	/* 用途/效果：wrap 允许换行，避免被压缩变形 */
-	/* 注意点：默认 nowrap 会把所有子项压在一行 */
-	flex-wrap: nowrap;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 5px;
-	/* max-width：限制元素的最大宽度 */
-	/* 用途/效果：让图片、正文、容器在大屏不过宽，是响应式与可读性的关键 */
-	/* 注意点：配合 margin:auto 可让块级元素居中；不超过该值时按正常宽度渲染 */
-	max-width: calc(100% - 24px);
-	/* overflow：规定内容超出盒框时如何处理 */
-	/* 用途/效果：visible/hidden/scroll/auto，控制裁剪与滚动条 */
-	/* 注意点：设非 visible 会建立新的块级格式化上下文，可能影响定位与 margin 折叠 */
-	overflow: hidden;
-	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
-	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
-	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
-	pointer-events: none;
-	/* 不遮挡卡片其他区域点击，角标本身可单独放行 */
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 5;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 5px;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    pointer-events: none;  /* 不遮挡卡片其他区域点击，角标本身可单独放行 */
 }
-/* ============================================================
-   作用对象：.card-corner-badges .corner-badge
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.card-corner-badges .corner-badge {
-	/* pointer-events：控制元素是否响应鼠标/触摸事件 */
-	/* 用途/效果：none 让元素“穿透”不拦截点击，用于装饰层、遮罩 */
-	/* 注意点：none 的元素及其子级不响应事件；auto 恢复 */
-	pointer-events: auto;
-}
-/* ============================================================
-   作用对象：.corner-badge
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
+.card-corner-badges .corner-badge { pointer-events: auto; }
 .corner-badge {
-	/* flex：flex-grow/shrink/basis 的简写 */
-	/* 用途/效果：控制弹性子项如何分配与占据主轴空间 */
-	/* 注意点：flex:1 表示等分剩余空间；各子项 flex 值决定比例 */
-	flex: 0 0 auto;
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 2px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 20px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0 9px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .66rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* line-height：设置行高（行盒高度） */
-	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
-	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
-	line-height: 1;
-	/* white-space：控制元素内空白与换行规则 */
-	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
-	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
-	white-space: nowrap;
-	/* letter-spacing：设置字符间距 */
-	/* 用途/效果：正值拉开字距用于标题/按钮，负值收紧 */
-	/* 注意点：中文正文通常保持正常，标题微加宽更精致 */
-	letter-spacing: .02em;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 2px 7px rgba(120, 90, 200, .18);
-	/* backdrop-filter：对元素“背后”的内容应用滤镜 */
-	/* 用途/效果：毛玻璃（blur）磨砂面板，萌系通透感核心 */
-	/* 注意点：元素本身需半透明才能透出背景；性能开销较大，注意兼容前缀 */
-	backdrop-filter: blur(4px);
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 20px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: .66rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: .02em;
+    box-shadow: 0 2px 7px rgba(120, 90, 200, .18);
+    backdrop-filter: blur(4px);
 }
 /* 精华：金色渐变 */
-/* ============================================================
-   作用对象：.cb-featured
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-featured {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #ffd86b, #ffb347);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #7a4b00;
-}
+.cb-featured { background: linear-gradient(135deg, #ffd86b, #ffb347); color: #7a4b00; }
 /* 置顶：粉紫渐变白字 */
-/* ============================================================
-   作用对象：.cb-pinned
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-pinned {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-}
+.cb-pinned { background: linear-gradient(135deg, var(--c-pink), var(--c-purple)); color: #fff; }
 /* 热门：橙红渐变白字（与原热门喵风格一致） */
-/* ============================================================
-   作用对象：.cb-hot
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-hot {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #ff8a65, #ff5e8a);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 2px 8px rgba(255, 110, 138, .4);
-}
+.cb-hot { background: linear-gradient(135deg, #ff8a65, #ff5e8a); color: #fff; box-shadow: 0 2px 8px rgba(255, 110, 138, .4); }
 /* 笔记：粉色系 */
-/* ============================================================
-   作用对象：.cb-note
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-note {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #ffd6e8, #ffc0d9);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #c2185b;
-}
+.cb-note { background: linear-gradient(135deg, #ffd6e8, #ffc0d9); color: #c2185b; }
 /* 页面：蓝色系 */
-/* ============================================================
-   作用对象：.cb-page
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-page {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #d6e6ff, #c0d4ff);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #2a5cd7;
-}
+.cb-page { background: linear-gradient(135deg, #d6e6ff, #c0d4ff); color: #2a5cd7; }
 /* 加密：灰紫，仅图标更紧凑 */
-/* ============================================================
-   作用对象：.cb-locked
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-locked {
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0 6px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: rgba(120, 110, 150, .22);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: none;
-}
+.cb-locked { padding: 0 6px; background: rgba(120, 110, 150, .22); color: var(--c-text-dim); box-shadow: none; }
 /* 草稿：黄色系 */
-/* ============================================================
-   作用对象：.cb-draft
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-draft {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: #fff2d6;
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #b8860b;
-}
+.cb-draft { background: #fff2d6; color: #b8860b; }
 /* 定时：浅紫 */
-/* ============================================================
-   作用对象：.cb-scheduled
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.cb-scheduled {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-primary-soft);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
-}
+.cb-scheduled { background: var(--c-primary-soft); color: var(--c-primary); }
 /* NEW喵：马卡龙浅粉 + 深莓果文字，字体更小更圆润 */
-/* ============================================================
-   作用对象：.cb-new
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .cb-new {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #ffe4ec 0%, #fff0f5 100%);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #c2185b;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .58rem;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 18px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 0 8px;
-	/* font-family：指定字体族（优先顺序列表） */
-	/* 用途/效果：设置中文字体、英文字体与通用回退（sans-serif/serif/monospace） */
-	/* 注意点：务必给通用族回退；含空格的字体名要加引号 */
-	font-family: "Yuanti SC", "STYuanti", "YouYuan", "Comic Sans MS", "PingFang SC", "Microsoft YaHei", sans-serif;
-	/* text-shadow：设置文字阴影 */
-	/* 用途/效果：增强标题立体感、深色背景上的文字可读性 */
-	/* 注意点：过大或过深会显脏，萌系常用柔和浅色阴影 */
-	text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 2px 6px rgba(255, 143, 177, .35);
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: relative;
+    background: linear-gradient(135deg, #ffe4ec 0%, #fff0f5 100%);
+    color: #c2185b;
+    font-size: .58rem;
+    font-weight: 700;
+    height: 18px;
+    padding: 0 8px;
+    font-family: "Yuanti SC", "STYuanti", "YouYuan", "Comic Sans MS", "PingFang SC", "Microsoft YaHei", sans-serif;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+    box-shadow: 0 2px 6px rgba(255, 143, 177, .35);
+    position: relative;
 }
-/* ============================================================
-   作用对象：.cb-new::before
-   伪元素：::before 在元素内容前插入装饰生成内容（需配合 content）
-   ============================================================ */
 .cb-new::before {
-	/* content：为伪元素插入生成内容 */
-	/* 用途/效果：::before/::after 加文字、图标、计数器，装饰与 clearfix 常用 */
-	/* 注意点：只对 ::before/::after 生效；空内容也要写 content:"" 才能显示其他样式 */
-	content: '';
-	/* position：指定元素的定位方式 */
-	/* 用途/效果：static(默认)/relative/absolute/fixed/sticky，配合 top 等偏移摆放 */
-	/* 注意点：absolute 相对最近的非 static 祖先；fixed 相对视口；sticky 需设阈值 */
-	position: absolute;
-	/* left：设置定位元素距左参考边的偏移 */
-	/* 用途/效果：控制元素相对左边缘的位置 */
-	/* 注意点：仅对非 static 定位元素生效；正值向右 */
-	left: -5px;
-	/* top：设置定位元素距上参考边的偏移 */
-	/* 用途/效果：让元素相对上边缘移动或固定 */
-	/* 注意点：仅对非 static 定位元素生效；正值向下 */
-	top: 50%;
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-50%) rotate(-15deg);
-	/* width：设置元素内容区的宽度 */
-	/* 用途/效果：决定块级元素、图片、卡片等横向占据的尺寸，常用 px/%/vw/min() 等单位 */
-	/* 注意点：默认作用于 content-box；加 padding/border 会撑大总尺寸，除非 box-sizing:border-box */
-	width: 8px;
-	/* height：设置元素内容区的高度 */
-	/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-	/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-	height: 7px;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #fff0f5, #ffd6e8);
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 50% 50% 50% 0;
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-15deg);
+    width: 8px;
+    height: 7px;
+    background: linear-gradient(135deg, #fff0f5, #ffd6e8);
+    border-radius: 50% 50% 50% 0;
 }
 /* 角标入场轻微弹跳 */
-/* ===== @keyframes cornerPop：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
-@keyframes cornerPop {
-	/* ============================================================
-	   作用对象：0%
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	0% {
-		/* transform：对元素做二维/三维变换 */
-		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-		transform: scale(.6);
-		/* opacity：设置整体不透明度 */
-		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-		opacity: 0;
-	}
-	/* ============================================================
-	   作用对象：60%
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	60% {
-		/* transform：对元素做二维/三维变换 */
-		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-		transform: scale(1.08);
-	}
-	/* ============================================================
-	   作用对象：100%
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	100% {
-		/* transform：对元素做二维/三维变换 */
-		/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-		/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-		transform: scale(1);
-		/* opacity：设置整体不透明度 */
-		/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-		/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-		opacity: 1;
-	}
-}
-/* ============================================================
-   作用对象：.card-corner-badges .corner-badge
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.card-corner-badges .corner-badge {
-	/* animation：动画的简写 */
-	/* 用途/效果：绑定 @keyframes 并设置时长、循环、缓动、方向等 */
-	/* 注意点：需先定义 @keyframes；各子值顺序灵活但时长相关值要分清 */
-	animation: cornerPop .35s cubic-bezier(.34, 1.56, .64, 1) both;
-}
-/* ============================================================
-   作用对象：.card-corner-badges .corner-badge:nth-child(2)
-   交互状态：父级中按序号匹配的子元素
-   ============================================================ */
-.card-corner-badges .corner-badge:nth-child(2) {
-	/* animation-delay：设置动画延迟开始时间 */
-	/* 用途/效果：负值可让动画从中途状态开始，错开多个元素节奏 */
-	/* 注意点：多元素错峰更自然 */
-	animation-delay: .05s;
-}
-/* ============================================================
-   作用对象：.card-corner-badges .corner-badge:nth-child(3)
-   交互状态：父级中按序号匹配的子元素
-   ============================================================ */
-.card-corner-badges .corner-badge:nth-child(3) {
-	/* animation-delay：设置动画延迟开始时间 */
-	/* 用途/效果：负值可让动画从中途状态开始，错开多个元素节奏 */
-	/* 注意点：多元素错峰更自然 */
-	animation-delay: .1s;
-}
-/* ============================================================
-   作用对象：.card-corner-badges .corner-badge:nth-child(4)
-   交互状态：父级中按序号匹配的子元素
-   ============================================================ */
-.card-corner-badges .corner-badge:nth-child(4) {
-	/* animation-delay：设置动画延迟开始时间 */
-	/* 用途/效果：负值可让动画从中途状态开始，错开多个元素节奏 */
-	/* 注意点：多元素错峰更自然 */
-	animation-delay: .15s;
-}
-/* ============================================================
-   作用对象：.card-corner-badges .corner-badge:nth-child(n+5)
-   交互状态：父级中按序号匹配的子元素
-   组合方式：「+」表示相邻的下一个兄弟元素
-   ============================================================ */
-.card-corner-badges .corner-badge:nth-child(n+5) {
-	/* animation-delay：设置动画延迟开始时间 */
-	/* 用途/效果：负值可让动画从中途状态开始，错开多个元素节奏 */
-	/* 注意点：多元素错峰更自然 */
-	animation-delay: .2s;
-}
+@keyframes cornerPop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+.card-corner-badges .corner-badge { animation: cornerPop .35s cubic-bezier(.34, 1.56, .64, 1) both; }
+.card-corner-badges .corner-badge:nth-child(2) { animation-delay: .05s; }
+.card-corner-badges .corner-badge:nth-child(3) { animation-delay: .1s; }
+.card-corner-badges .corner-badge:nth-child(4) { animation-delay: .15s; }
+.card-corner-badges .corner-badge:nth-child(n+5) { animation-delay: .2s; }
 /* 深色模式角标微调 */
-/* ============================================================
-   作用对象：:root[data-theme="dark"] .cb-note
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-:root[data-theme="dark"] .cb-note {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #ff9ec0;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: rgba(255, 143, 177, .22);
-}
-/* ============================================================
-   作用对象：:root[data-theme="dark"] .cb-page
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-:root[data-theme="dark"] .cb-page {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #9ec1ff;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: rgba(110, 168, 254, .22);
-}
-/* ============================================================
-   作用对象：:root[data-theme="dark"] .cb-draft
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-:root[data-theme="dark"] .cb-draft {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: rgba(184, 134, 11, .22);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #f0c75e;
-}
-/* ============================================================
-   作用对象：:root[data-theme="dark"] .cb-new
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-:root[data-theme="dark"] .cb-new {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #ff9ec0;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: rgba(255, 143, 177, .2);
-	/* text-shadow：设置文字阴影 */
-	/* 用途/效果：增强标题立体感、深色背景上的文字可读性 */
-	/* 注意点：过大或过深会显脏，萌系常用柔和浅色阴影 */
-	text-shadow: none;
-}
+:root[data-theme="dark"] .cb-note { color: #ff9ec0; background: rgba(255, 143, 177, .22); }
+:root[data-theme="dark"] .cb-page { color: #9ec1ff; background: rgba(110, 168, 254, .22); }
+:root[data-theme="dark"] .cb-draft { background: rgba(184, 134, 11, .22); color: #f0c75e; }
+:root[data-theme="dark"] .cb-new { color: #ff9ec0; background: rgba(255, 143, 177, .2); text-shadow: none; }
 /* 移动端角标进一步缩小，避免挤占标题 */
-/* ===== @media (max-width: 640px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 640px) {
-	/* ============================================================
-	   作用对象：.corner-badge
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.corner-badge {
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .6rem;
-		/* height：设置元素内容区的高度 */
-		/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-		/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-		height: 18px;
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 0 7px;
-	}
-	/* ============================================================
-	   作用对象：.cb-new
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.cb-new {
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .54rem;
-		/* height：设置元素内容区的高度 */
-		/* 用途/效果：控制元素纵向尺寸；卡片、封面、按钮高度常用 */
-		/* 注意点：高度固定后内容溢出会被裁剪或溢出，需配合 overflow；多数场景更适合 min-height 自适应 */
-		height: 16px;
-	}
-	/* ============================================================
-	   作用对象：.card-corner-badges
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.card-corner-badges {
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 4px;
-		/* top：设置定位元素距上参考边的偏移 */
-		/* 用途/效果：让元素相对上边缘移动或固定 */
-		/* 注意点：仅对非 static 定位元素生效；正值向下 */
-		top: 8px;
-		/* right：设置定位元素距右参考边的偏移 */
-		/* 用途/效果：控制元素相对右边缘的位置 */
-		/* 注意点：仅对非 static 定位元素生效；正值向左 */
-		right: 8px;
-	}
+    .corner-badge { font-size: .6rem; height: 18px; padding: 0 7px; }
+    .cb-new { font-size: .54rem; height: 16px; }
+    .card-corner-badges { gap: 4px; top: 8px; right: 8px; }
 }
+
+
 /* ============================================================
    Bug20: 归档时间轴文章标题后的内联小角标（置顶/精华/NEW）
    比卡片右上角角标更小巧，跟随标题内联排列
    ============================================================ */
-/* ============================================================
-   作用对象：.arch-badges
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .arch-badges {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-flex;
-	/* align-items：控制子项沿交叉轴的对齐 */
-	/* 用途/效果：center 实现垂直居中、stretch 拉伸等高 */
-	/* 注意点：单行交叉轴对齐用它；多行整体对齐用 align-content */
-	align-items: center;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 4px;
-	/* margin：设置元素四周的外边距 */
-	/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-	/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-	margin: 0 4px;
-	/* vertical-align：设置行内/表格单元格内容的纵向对齐 */
-	/* 用途/效果：图片与文字基线对齐、表单控件居中常用 */
-	/* 注意点：对块级元素无效；百分比相对行高 */
-	vertical-align: middle;
-	/* white-space：控制元素内空白与换行规则 */
-	/* 用途/效果：nowrap 强制不换行、pre 保留空白、pre-wrap 保留并自动换行 */
-	/* 注意点：单行省略号三件套之一；nowrap 可能导致溢出 */
-	white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px;
+    vertical-align: middle;
+    white-space: nowrap;
 }
-/* ============================================================
-   作用对象：.arch-badge
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .arch-badge {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: inline-block;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .62rem;
-	/* line-height：设置行高（行盒高度） */
-	/* 用途/效果：控制多行文本行距，无单位值是倍数，提升可读性 */
-	/* 注意点：无单位值可正确继承；过小会重叠、过散影响连贯 */
-	line-height: 1.5;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 700;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 1px 7px;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* letter-spacing：设置字符间距 */
-	/* 用途/效果：正值拉开字距用于标题/按钮，负值收紧 */
-	/* 注意点：中文正文通常保持正常，标题微加宽更精致 */
-	letter-spacing: .02em;
-	/* vertical-align：设置行内/表格单元格内容的纵向对齐 */
-	/* 用途/效果：图片与文字基线对齐、表单控件居中常用 */
-	/* 注意点：对块级元素无效；百分比相对行高 */
-	vertical-align: middle;
+    display: inline-block;
+    font-size: .62rem;
+    line-height: 1.5;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
+    letter-spacing: .02em;
+    vertical-align: middle;
 }
-/* ============================================================
-   作用对象：.arch-badge.ab-pinned
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .arch-badge.ab-pinned {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, var(--c-pink, #ff8fb1), var(--c-purple, #a06cd5));
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 1px 4px rgba(160, 108, 213, .28);
+    color: #fff;
+    background: linear-gradient(135deg, var(--c-pink, #ff8fb1), var(--c-purple, #a06cd5));
+    box-shadow: 0 1px 4px rgba(160, 108, 213, .28);
 }
-/* ============================================================
-   作用对象：.arch-badge.ab-featured
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .arch-badge.ab-featured {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #8a5a00;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #ffe7a8, #ffd070);
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 1px 4px rgba(240, 180, 60, .3);
+    color: #8a5a00;
+    background: linear-gradient(135deg, #ffe7a8, #ffd070);
+    box-shadow: 0 1px 4px rgba(240, 180, 60, .3);
 }
-/* ============================================================
-   作用对象：.arch-badge.ab-new
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 .arch-badge.ab-new {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #e0508f;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #ffe3ef, #ffd6ec);
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid #ffc2dd;
+    color: #e0508f;
+    background: linear-gradient(135deg, #ffe3ef, #ffd6ec);
+    border: 1px solid #ffc2dd;
 }
 /* 深色模式适配 */
-/* ============================================================
-   作用对象：[data-theme="dark"] .arch-badge.ab-featured
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 [data-theme="dark"] .arch-badge.ab-featured {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #ffe2a0;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(135deg, #6b4d18, #8a6420);
+    color: #ffe2a0;
+    background: linear-gradient(135deg, #6b4d18, #8a6420);
 }
-/* ============================================================
-   作用对象：[data-theme="dark"] .arch-badge.ab-new
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
 [data-theme="dark"] .arch-badge.ab-new {
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #ffb0d2;
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: rgba(255, 143, 177, .16);
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: rgba(255, 143, 177, .35);
+    color: #ffb0d2;
+    background: rgba(255, 143, 177, .16);
+    border-color: rgba(255, 143, 177, .35);
 }
 /* 移动端：归档角标再缩一档，避免挤压标题 */
-/* ===== @media (max-width: 640px)：条件/容器规则，内部规则仅在其作用范围内生效 ===== */
 @media (max-width: 640px) {
-	/* ============================================================
-	   作用对象：.arch-badge
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.arch-badge {
-		/* font-size：设置字号 */
-		/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-		/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-		font-size: .58rem;
-		/* padding：设置元素四周内边距（内容与边框之间） */
-		/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-		/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-		padding: 0 6px;
-	}
-	/* ============================================================
-	   作用对象：.arch-badges
-	   含义：该选择器命中元素的基础样式规则
-	   ============================================================ */
-	.arch-badges {
-		/* gap：设置 flex/grid 子项之间的间距 */
-		/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-		/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-		gap: 3px;
-		/* margin：设置元素四周的外边距 */
-		/* 用途/效果：控制元素与元素之间的空白；auto 可实现水平居中 */
-		/* 注意点：上下相邻外边距会发生折叠（margin collapse）；值顺序为上右下左 */
-		margin: 0 3px;
-	}
+    .arch-badge { font-size: .58rem; padding: 0 6px; }
+    .arch-badges { gap: 3px; margin: 0 3px; }
 }
+
 /* 工单6-5：右栏热门文章 周/月/总榜 tab 与加载态 */
+.hot-rank-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.hot-rank-tab { cursor: pointer; border-radius: 999px; padding: 5px 12px; font-size: .76rem;
+    border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text-dim);
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease, border-color .15s ease; }
+.hot-rank-tab:hover { transform: translateY(-1px); border-color: var(--c-purple); color: var(--c-primary); }
+.hot-rank-tab.active { background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
+    color: #fff; border-color: transparent; font-weight: 600;
+    box-shadow: 0 3px 10px rgba(160,108,213,.32); }
+.hot-list.hot-loading { opacity: .5; transition: opacity .15s ease; }
+
 /* ============================================================
-   作用对象：.hot-rank-tabs
-   含义：该选择器命中元素的基础样式规则
+   全局浮层：Toast 轻提示 / 确认弹窗 Modal / 通知中心列表项
+   原由 common.js 运行时注入 <style>，现正式迁入样式表；JS 中保留同名规则作为
+   兜底（仅在检测不到本样式表时注入），静态资源加载失败也不会破图。
    ============================================================ */
-.hot-rank-tabs {
-	/* display：规定元素的渲染框类型 */
-	/* 用途/效果：决定元素是块级、行内、弹性盒(flex)、网格(grid)还是隐藏(none) */
-	/* 注意点：none 会让元素脱离渲染且不占位；改 display 会影响子元素布局上下文 */
-	display: flex;
-	/* gap：设置 flex/grid 子项之间的间距 */
-	/* 用途/效果：统一行列间距，替代易错的 margin 方案 */
-	/* 注意点：只作用于容器子项之间，不在外侧产生空白 */
-	gap: 6px;
-	/* margin-bottom：设置元素下外边距 */
-	/* 用途/效果：拉开与下方元素的纵向距离，是段落/卡片间距主力 */
-	/* 注意点：可能与下一个元素的上外边距折叠 */
-	margin-bottom: 10px;
+
+/* ---------- Toast：顶部居中，.show 时下滑淡入；info/success/error 三态 ---------- */
+#global-toast {
+    position: fixed; top: 84px; left: 50%; z-index: 10000; max-width: 90vw;
+    background: var(--c-card); color: var(--c-text); padding: 10px 18px;
+    border: 1.5px solid #7a5fc0; border-radius: 14px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 12px 30px rgba(80, 60, 120, .22);
+    opacity: 0; transform: translate(-50%, -14px);
+    transition: opacity .25s, transform .25s; pointer-events: none;
 }
-/* ============================================================
-   作用对象：.hot-rank-tab
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.hot-rank-tab {
-	/* cursor：设置鼠标指针样式 */
-	/* 用途/效果：pointer 表示可点击、default/text/not-allowed 禁用等，提供操作暗示 */
-	/* 注意点：按钮链接用 pointer；禁用态用 not-allowed；自定义光标需给图片回退 */
-	cursor: pointer;
-	/* border-radius：设置圆角半径 */
-	/* 用途/效果：把元素边角变圆润，是萌系风格核心（卡片、按钮、标签） */
-	/* 注意点：可分别设四角；过大接近胶囊/圆形；百分比相对宽高，椭圆角用 / 分隔 */
-	border-radius: 999px;
-	/* padding：设置元素四周内边距（内容与边框之间） */
-	/* 用途/效果：控制卡片、按钮内部留白，提升呼吸感 */
-	/* 注意点：padding 会占据空间并可能撑大盒子（取决于 box-sizing），不允许负值 */
-	padding: 5px 12px;
-	/* font-size：设置字号 */
-	/* 用途/效果：控制标题、正文、辅助文字大小，单位 px/rem/em */
-	/* 注意点：rem 相对根字号利于全局缩放；em 会随父级级联放大需留意 */
-	font-size: .76rem;
-	/* border：边框的简写（宽度 样式 颜色） */
-	/* 用途/效果：为元素加描边，卡片、按钮、输入框常用 */
-	/* 注意点：必须指定样式（如 solid）否则边框不显示；三值顺序为宽样式颜色 */
-	border: 1px solid var(--c-border);
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: var(--c-surface);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-text-dim);
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+#global-toast.show { opacity: 1; transform: translate(-50%, 0); }
+#global-toast.toast-info { border-color: #7a5fc0; color: #6a4fb0; }
+#global-toast.toast-success { border-color: #3aa77a; color: #2a8a63; background: #f2fbf7; }
+#global-toast.toast-error { border-color: #ef5d6b; color: #d84454; background: #fff1f2; }
+@media (max-width: 560px) {  /* 移动端：Toast 改为贴顶通栏，避免横向溢出 */
+    #global-toast { top: 76px; left: 16px; right: 16px; max-width: none; transform: translateY(-14px); text-align: center; }
+    #global-toast.show { transform: translateY(0); }
 }
-/* ============================================================
-   作用对象：.hot-rank-tab:hover
-   交互状态：鼠标悬浮在元素上时的状态，常用于提亮、放大、加深阴影做反馈
-   ============================================================ */
-.hot-rank-tab:hover {
-	/* transform：对元素做二维/三维变换 */
-	/* 用途/效果：translate 位移、scale 缩放、rotate 旋转、skew 倾斜，做悬浮动效 */
-	/* 注意点：变换不影响周围布局；会创建层叠上下文；多变换按顺序写在一个 transform 里 */
-	transform: translateY(-1px);
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: var(--c-purple);
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: var(--c-primary);
+
+/* ---------- 确认弹窗：半透明遮罩 + 居中圆角卡片，.show 时 flex 显示 ---------- */
+.moe-modal-overlay {
+    position: fixed; inset: 0; z-index: 10001; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(60, 45, 90, .34); backdrop-filter: blur(4px);
 }
-/* ============================================================
-   作用对象：.hot-rank-tab.active
-   含义：该选择器命中元素的基础样式规则
-   ============================================================ */
-.hot-rank-tab.active {
-	/* background：背景属性的简写 */
-	/* 用途/效果：一次设置颜色、图片、位置、大小、重复方式 */
-	/* 注意点：漏写子项会被重置；多层背景用逗号分隔 */
-	background: linear-gradient(90deg, var(--c-pink), var(--c-purple));
-	/* color：设置文字颜色 */
-	/* 用途/效果：决定前景文字、图标（currentColor）颜色，是品牌配色主力 */
-	/* 注意点：对比度要满足可读性标准；会被 currentColor 继承用于边框/阴影等 */
-	color: #fff;
-	/* border-color：设置边框颜色 */
-	/* 用途/效果：描边上色，弱化或强调边界 */
-	/* 注意点：可一到四个值分别对应四边 */
-	border-color: transparent;
-	/* font-weight：设置字重 */
-	/* 用途/效果：normal(400)/bold(700) 或 100-900，控制粗细层次 */
-	/* 注意点：可变字体才支持任意数值；普通字体仅支持有限档位 */
-	font-weight: 600;
-	/* box-shadow：设置盒子阴影 */
-	/* 用途/效果：营造卡片悬浮层次与立体感，hover 加深做反馈 */
-	/* 注意点：不占布局空间；多层阴影逗号分隔；萌系用柔和大范围浅色阴影 */
-	box-shadow: 0 3px 10px rgba(160,108,213,.32);
+.moe-modal-overlay.show { display: flex; }
+/* 弹窗打开时临时关闭 sticky header 的毛玻璃：部分 Chromium/GPU 下其 backdrop-filter
+   合成层会错误遮挡高 z-index 遮罩的顶部区域（遮罩本身已盖住 header，视觉无损失）；
+   由 common.js 在弹窗开关时给 body 切换 .moe-modal-open */
+body.moe-modal-open .site-header { backdrop-filter: none; }
+.moe-modal-card {
+    width: min(420px, 92vw); background: var(--c-surface);
+    border-radius: 20px; padding: 24px 24px 20px;
+    box-shadow: 0 24px 60px rgba(80, 60, 120, .32);
+    animation: moeModalPop .2s ease;  /* 入场轻微上浮 */
 }
+@keyframes moeModalPop {
+    from { opacity: 0; transform: translateY(8px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.moe-modal-title { font-size: 17px; font-weight: 700; color: var(--c-text); margin-bottom: 8px; }
+.moe-modal-msg { font-size: 14px; line-height: 1.7; color: var(--c-text-dim); white-space: pre-wrap; word-break: break-word; }
+.moe-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* 弹窗按钮：cancel / ok 两变体，具备 hover / active / focus-visible 完整反馈。
+   OK 按钮背景由 common.js 按是否危险动态 inline 设置，此处给默认渐变兜底。 */
+.moe-btn {
+    border: none; cursor: pointer; border-radius: 12px; padding: 9px 18px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease, background .15s ease, color .15s ease;
+}
+.moe-btn-cancel { background: var(--c-card); color: var(--c-text-dim); }
+.moe-btn-cancel:hover { background: var(--c-primary-soft); color: var(--c-primary); }
+.moe-btn-ok { color: #fff; background: linear-gradient(135deg, var(--c-pink), var(--c-purple)); box-shadow: 0 8px 18px rgba(160, 108, 213, .32); }
+.moe-btn-ok:hover { transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 10px 22px rgba(160, 108, 213, .42); }
+.moe-btn:active { transform: scale(.96); filter: brightness(.95); }  /* 按下：统一收缩变暗 */
+.moe-btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }  /* 键盘焦点：粉色轮廓 */
+
+/* ---------- 通知中心：列表项布局，未读项粉色渐变底 + 红点 ---------- */
+.notification-item { display: flex; gap: 9px; cursor: pointer; align-items: flex-start; }
+.notification-item .ni-icon { font-size: 15px; line-height: 1.3; }
+.notification-item .ni-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.notification-item .ni-title { font-size: .84rem; line-height: 1.4; color: var(--c-text); }
+.notification-item .ni-time { font-size: .72rem; color: var(--c-text-dim); }
+.notification-item.unread { background: linear-gradient(90deg, rgba(255, 143, 177, .14), transparent); }
+.notification-item.unread .ni-title { font-weight: 700; }
+.notification-item.unread .ni-title::after {
+    content: ""; display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: #ff5d73; margin-left: 6px; vertical-align: middle;
+}
+.notification-item.muted { justify-content: center; color: var(--c-text-dim); cursor: default; }
+
 /* ============================================================
-   作用对象：.hot-list.hot-loading
-   含义：该选择器命中元素的基础样式规则
+   全局「按下 Q 弹」基础反馈：统一所有按钮 / 控件型链接的鼠标按下手感，
+   避免个别组件漏掉 :active；各组件更具体的 :active（如 .btn-primary）
+   因优先级更高会覆盖此基础值。仅桌面（可 hover、精细指针）生效，
+   触屏按下反馈见 ui_polish.css 的移动端段。
    ============================================================ */
-.hot-list.hot-loading {
-	/* opacity：设置整体不透明度 */
-	/* 用途/效果：0 全透明到 1 不透明，做淡入淡出、禁用态 */
-	/* 注意点：会连同子元素一起透明；透明元素仍占位且可被点击（除非配合 pointer-events） */
-	opacity: .5;
-	/* transition：过渡的简写（属性 时长 缓动 延迟） */
-	/* 用途/效果：让属性变化在指定时间内平滑过渡，是 hover 等交互顺滑的关键 */
-	/* 注意点：只对可插值属性生效；all 会监听全部属性影响性能，建议指定具体属性 */
-	transition: opacity .15s ease;
+@media (hover: hover) and (pointer: fine) {
+    button:active:not(:disabled),
+    [role="button"]:active,
+    a.nav-link:active,
+    a.chip:active,
+    a.cat-card:active,
+    a.page-link:active,
+    a.user-menu-item:active,
+    a.hot-rank-tab:active,
+    a.tag-sort-tab:active,
+    a.tag-mode-tab:active,
+    a.tag-mode-btn:active,
+    a.tag-order-btn:active,
+    a[class*="btn"]:active {
+        transform: scale(.96);
+    }
 }

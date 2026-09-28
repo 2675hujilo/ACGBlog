@@ -23,116 +23,64 @@
  *   · 专注模式与暗黑 / 护眼 / 字号等偏好正交，可叠加使用；
  *   · 相关文件：详情页模板（按钮）、reading.css 或正文相关 CSS（专注态排版）。
  * ============================================================================ */
-//> 该行执行对应的脚本逻辑（结合上下文理解）
 (function () {
-    //> 该行执行对应的脚本逻辑（结合上下文理解）
     'use strict';
 
     // 按钮两种文案：激活态显示「退出」，未激活显示「进入」
-    //> 声明变量「BTN_TEXT_ON」（btn text on），用于保存对应数据，初始为字符串
     var BTN_TEXT_ON = '退出专注喵';
-    //> 声明变量「BTN_TEXT_OFF」（btn text off），用于保存对应数据，初始为字符串
     var BTN_TEXT_OFF = '专注喵';
 
     /**
      * 应用专注模式状态。
      * @param {boolean} on - true 进入专注，false 退出。
      */
-    // =========================================================
-    // 【函数】apply
-    // 功能：应用相关逻辑（apply）
-    // 参数：
-    //   - on：传入的参数（含义结合调用处与函数体）
-    // 返回：无显式返回值（undefined），多以副作用（DOM/事件）为主
-    // 注意：保持纯原生实现；修改时勿影响其它已初始化逻辑
-    // =========================================================
     function apply(on) {
         // 切换 body 类：CSS 据此隐藏侧栏、重排版心
-        //> 切换样式类（有则移除、无则添加），可传第二参强制状态
         document.body.classList.toggle('focus-mode-active', on);
 
-        //> 声明变量「btn」（btn），用于保存对应数据，保存 DOM/窗口相关对象
         var btn = document.querySelector('.focus-toggle');
-        //> 条件判断：满足括号内条件时执行对应分支
         if (btn) {
             // 只改文字 span，保留按钮里的图标 img（Bug23）
-            //> 声明变量「txt」（txt），用于保存对应数据
             var txt = btn.querySelector('.focus-text');
-            //> 条件判断：满足括号内条件时执行对应分支
             if (txt) {
-                //> 读写纯文本内容，不解析 HTML，可防 XSS
                 txt.textContent = on ? BTN_TEXT_ON : BTN_TEXT_OFF;
-            //> 以上条件都不满足时执行的兜底分支
             } else {
-                //> 读写纯文本内容，不解析 HTML，可防 XSS
                 btn.textContent = on ? BTN_TEXT_ON : BTN_TEXT_OFF;
-            //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
             }
             // 同步无障碍「按下」状态
-            //> 设置元素的 HTML 属性
             btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
         }
 
         // 持久化到 localStorage；存储不可用时静默忽略
-        //> 尝试执行可能出错的代码，出错则进入 catch
         try {
-            //> 操作 localStorage（持久化本地存储），注意容量与解析异常
             localStorage.setItem('focus_mode', on ? 'true' : 'false');
-        //> 该行执行对应的脚本逻辑（结合上下文理解）
         } catch (err) {}
-    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     }
 
     /** 初始化：恢复状态并绑定点击。 */
-    // =========================================================
-    // 【函数】init
-    // 功能：初始化相关逻辑（init）
-    // 参数：无
-    // 返回：无显式返回值（undefined），多以副作用（DOM/事件）为主
-    // 注意：保持纯原生实现；修改时勿影响其它已初始化逻辑
-    // =========================================================
     function init() {
-        //> 声明变量「btn」（btn），用于保存对应数据，保存 DOM/窗口相关对象
         var btn = document.querySelector('.focus-toggle');
         // 详情页以外没有该按钮，直接退出
-        //> 条件判断：满足括号内条件时执行对应分支
         if (!btn) return;
 
         // 恢复上次的专注状态（默认关闭）
-        //> 声明变量「saved」（saved），用于保存对应数据
         var saved = false;
-        //> 尝试执行可能出错的代码，出错则进入 catch
         try {
-            //> 操作 localStorage（持久化本地存储），注意容量与解析异常
             saved = localStorage.getItem('focus_mode') === 'true';
-        //> 该行执行对应的脚本逻辑（结合上下文理解）
         } catch (err) {}
-        //> 调用函数「apply」并传入参数执行对应逻辑
         apply(saved);
 
         // 点击按钮：在当前状态基础上取反
-        //> 绑定「click」事件监听器，事件触发时执行回调（passive 可提升滚动性能）
         btn.addEventListener('click', function () {
-            //> 声明变量「active」（active），用于保存对应数据，保存 DOM/窗口相关对象
             var active = document.body.classList.contains('focus-mode-active');
-            //> 调用函数「apply」并传入参数执行对应逻辑
             apply(!active);
-        //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
         });
-    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     }
 
     // DOM 未就绪则等待，否则直接初始化（兼容脚本在底部加载的情况）
-    //> 条件判断：满足括号内条件时执行对应分支
     if (document.readyState === 'loading') {
-        //> 绑定「DOMContentLoaded」事件监听器，事件触发时执行回调（passive 可提升滚动性能）
         document.addEventListener('DOMContentLoaded', init);
-    //> 以上条件都不满足时执行的兜底分支
     } else {
-        //> 调用函数「init」并传入参数执行对应逻辑
         init();
-    //> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
     }
-//> 闭合/分隔符：结束当前代码块或回调作用域，需与开头括号正确配对
 })();
