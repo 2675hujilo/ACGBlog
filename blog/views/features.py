@@ -29,7 +29,7 @@ class Round5FeatureRegistry:
     未注册任何功能时列表为空（属正常状态），端点仍返回合法 JSON 结构。
     """
 
-    #: 功能领域中文名（用于前端分组展示）
+    # 功能领域中文名（用于前端分组展示）
     DOMAINS = {
         'content': '内容创作生产域',
         'reading': '沉浸式阅读域',
@@ -45,7 +45,7 @@ class Round5FeatureRegistry:
         'easter': '彩蛋趣味工具域',
     }
 
-    #: 进程内注册表：feature_id -> 元信息字典
+    # 进程内注册表：feature_id -> 元信息字典
     _registry = {}
 
     @classmethod

@@ -26,7 +26,7 @@ import warnings
 
 logger = logging.getLogger(__name__)
 
-#: 需要静默的告警类名（按类名匹配，避免 requests 未安装时导入失败）
+# 需要静默的告警类名（按类名匹配，避免 requests 未安装时导入失败）
 _SUPPRESSED_WARNING_NAMES = ('RequestsDependencyWarning',)
 
 

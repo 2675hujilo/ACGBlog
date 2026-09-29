@@ -156,7 +156,7 @@ def msgfmt(template_text, a1=None, a2=None, a3=None):
         return template_text
 
 
-#: 兼容别名：模板里也可以写 ``|fmt``（更短，日常书写更方便）
+# 兼容别名：模板里也可以写 ``|fmt``（更短，日常书写更方便）
 register.filter('fmt', msgfmt)
 
 

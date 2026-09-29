@@ -38,6 +38,37 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 
+# ---------------- 全局样式表 bundle（顺序敏感） ----------------
+# 背景：全站核心样式长期按迭代批次拆成 12 个 .min.css，首页要发 12 个 CSS 请求。
+# 这里按 **与原 base.html 引用完全一致的顺序** 合并为单一 bundle，消除请求排队开销。
+#
+# 顺序约束（改动必须同步 base.html，否则层叠优先级会变化 → 样式崩坏）：
+#   基础令牌 base → 组件库 components → 三栏布局 blog → 增强 enhance
+#   → 细节打磨 ui_polish → 动效 effects → 气泡 moe-tooltip → Round6 修复 round6
+#   → 清理 inline_cleanup → 导航 header_menus → 内联组件 base_inline_components
+#
+# 有意**不并入** bundle 的样式表（保持其原始加载位置，层叠顺序零变化）：
+#   · base_inline_core.css —— 位于 <head> 顶部，承担首屏关键样式（防 FOUC）；
+#   · base_inline_a11y.css —— 原位于 waifu.css 之后，并入会改变二者相对顺序
+#     （虽经比对选择器无重叠，但仍按「零顺序变更」原则保留独立，代价仅 0.8 KB）；
+#   · print.css —— media="print"，不参与屏幕层叠。
+CSS_BUNDLES = {
+    'core_bundle': [
+        'base.css',
+        'components.css',
+        'blog.css',
+        'enhance.css',
+        'ui_polish.css',
+        'effects.css',
+        'moe-tooltip.css',
+        'round6.css',
+        'inline_cleanup.css',
+        'header_menus.css',
+        'base_inline_components.css',
+    ],
+}
+
+
 # ---------------- CSS 压缩 ----------------
 def minify_css(text):
     """移除注释与多余空白，安全压缩 CSS。"""
@@ -141,6 +172,9 @@ class Command(BaseCommand):
                             help='跳过为 .min.css/.min.js 生成 .gz 预压缩副本')
         parser.add_argument('--token-only', action='store_true',
                             help='只更新构建版本号（?v= 破缓存）')
+        parser.add_argument('--bundle-only', action='store_true',
+                            help='只重建全局样式 bundle（core_bundle.min.css），'
+                                 '不重压其它文件、不清缓存')
 
     # -------------------- .gz 预压缩（WhiteNoise 生产托管用） --------------------
     @staticmethod
@@ -163,6 +197,42 @@ class Command(BaseCommand):
                 continue
         return written
 
+    # -------------------- 全局样式 bundle 生成 --------------------
+    def _build_css_bundles(self, css_dir):
+        """按 CSS_BUNDLES 清单顺序拼接源 .css → 压缩 → 输出 <name>.min.css。
+
+        设计要点：
+        - 源文件用未压缩的 .css（一次压缩优于二次压缩），产物名以 .min.css 结尾，
+          因此不会被后续的「逐文件压缩」流程重复处理；
+        - 拼接顺序即层叠顺序，与 base.html 引用顺序严格一致；
+        - 若清单中的源文件缺失，跳过该文件并告警（不产出半截 bundle），
+          同时把缺失项计入返回值供调用方判断。
+        """
+        results = []
+        for bundle_name, files in CSS_BUNDLES.items():
+            parts, missing, used = [], [], []
+            for name in files:
+                src = os.path.join(css_dir, name)
+                if not os.path.exists(src):
+                    missing.append(name)
+                    continue
+                parts.append(minify_css(open(src, encoding='utf-8').read()))
+                used.append(name)
+            if not parts:
+                results.append({'bundle': bundle_name, 'ok': False,
+                                'reason': '全部源文件缺失', 'missing': missing})
+                continue
+            dst = os.path.join(css_dir, bundle_name + '.min.css')
+            content = '\n'.join(p for p in parts if p)
+            with open(dst, 'w', encoding='utf-8') as fh:
+                fh.write(content)
+            results.append({
+                'bundle': bundle_name, 'ok': True, 'path': dst,
+                'bytes': len(content.encode('utf-8')),
+                'sources': len(used), 'missing': missing,
+            })
+        return results
+
     def handle(self, *args, **opts):
         assets_root = os.path.join(settings.BASE_DIR, 'static', 'assets')
         css_dir = os.path.join(assets_root, 'css')
@@ -178,6 +248,33 @@ class Command(BaseCommand):
         if opts.get('token_only'):
             opts['no_css'] = opts['no_js'] = True
             opts['no_gz'] = True
+
+        # --bundle-only：只重建全局样式 bundle，跳过逐文件压缩与缓存清理
+        if opts.get('bundle_only'):
+            opts['no_css'] = opts['no_js'] = True
+            opts['no_cache'] = True
+            bundle_results = self._build_css_bundles(css_dir)
+            bundle_paths = [r['path'] for r in bundle_results if r.get('ok')]
+            for r in bundle_results:
+                if r.get('ok'):
+                    self.stdout.write(self.style.SUCCESS(
+                        '已生成 bundle %s.min.css：源 %d 个，%.1f KB%s' % (
+                            r['bundle'], r['sources'], r['bytes'] / 1024,
+                            ('，缺失 %s' % r['missing']) if r['missing'] else '')))
+                else:
+                    self.stdout.write(self.style.ERROR(
+                        'bundle %s 生成失败：%s' % (r['bundle'], r.get('reason'))))
+            if bundle_paths and not opts.get('no_gz'):
+                gz_done = self._write_gz(bundle_paths)
+                self.stdout.write(self.style.SUCCESS(
+                    '已为 bundle 生成 %d 个 .gz 预压缩副本。' % gz_done))
+            # bundle 内容变了，必须刷新版本号让 ?v= 破缓存
+            token = timezone.now().strftime('%Y%m%d%H%M%S')
+            with open(os.path.join(assets_root, '.build_token'), 'w',
+                      encoding='utf-8') as f:
+                f.write(token)
+            self.stdout.write(self.style.SUCCESS('构建版本号：%s' % token))
+            return
 
         def wanted(rel_path, filename):
             """--only 未指定时全量；指定时按文件名或相对路径匹配。"""

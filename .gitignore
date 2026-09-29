@@ -1,4 +1,72 @@
+# ============================================================================
+# 萌语博客 .gitignore
+# ----------------------------------------------------------------------------
+# 收录规则：一切「可由源码/命令重新生成」的运行时产物、构建产物、编辑器状态
+# 均不入库；源码、模板、未压缩静态资源等业务文件照常入库。
+# ============================================================================
+
+# ---- 项目既有规则（保持原样）----
 /docs/
 /media/
 /staticfiles/
 /blog/migrations/
+
+# ---- Python 编译产物 ----
+# 此前有 66 个 __pycache__/*.pyc 被误跟踪，已用 git rm --cached 停止跟踪。
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+
+# ---- Django 运行时产物 ----
+*.log
+logs/
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
+
+# ---- Celery Beat 调度状态（运行时生成的二进制 Pickle 状态）----
+# 仓库根目录的 celerybeat-schedule.bak/.dat/.dir 即由此产生。
+celerybeat-schedule
+celerybeat-schedule.*
+celerybeat.pid
+
+# ---- 静态资源构建产物 ----
+# .min.css / .min.js 由 `manage.py refresh_assets` 从同名源文件生成；因其体积小且模板
+# 以 ?v={{ BUILD_TOKEN }} 直接引用，保留入库以便开箱即用。以下两项属纯派生物，不入库：
+#   · *.gz —— WhiteNoise 预压缩副本，缺失时 WhiteNoise 自动回落到在线压缩；
+#   · .build_token —— 每次打包生成的版本号，入库只会造成提交噪音。
+static/assets/**/*.gz
+static/assets/.build_token
+
+# ---- 编辑器 / IDE ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*~
+
+# ---- 操作系统 ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+desktop.ini
+
+# ---- 浏览器自动化核验产物（截图 / 报告 / 临时 profile，可由脚本重新生成）----
+# 注：/docs/ 已整体忽略，此处显式声明以表达意图。
+docs/ui_test/verify/
+docs/ui_test/profiles/
+docs/ui_test/screenshots/

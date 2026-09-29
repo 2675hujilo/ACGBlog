@@ -170,7 +170,6 @@ class CategoryAdmin(_MoeModelAdmin):
     注意：
       - 关注实例状态与方法副作用，保持单一职责。
     """
-    #: 定义变量「list_display」，保存对应数据（集合/元组）
     list_display = ('id', 'icon', 'name', 'description', 'created_at')
     search_fields = ('name',)
 
@@ -189,7 +188,6 @@ class TagAdmin(_MoeModelAdmin):
     注意：
       - 关注实例状态与方法副作用，保持单一职责。
     """
-    #: 定义变量「list_display」，保存对应数据（集合/元组）
     list_display = ('id', 'name', 'created_at')
     search_fields = ('name',)
 
@@ -216,7 +214,6 @@ class HasCoverFilter(admin.SimpleListFilter):
 
         注意：保持函数单一职责；修改时确认调用方不受影响。
         """
-        #: 返回结果并结束当前函数
         return [('yes', '有封面'), ('no', '无封面')]
 
     def queryset(self, request, queryset):

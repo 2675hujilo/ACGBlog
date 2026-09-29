@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#: API 错误信封文案键（Bug9 任务2：统一登记在 blog/site_messages.py）
+# API 错误信封文案键（Bug9 任务2：统一登记在 blog/site_messages.py）
 _API_MSG_KEYS = {
     400: 'err.api_400',
     403: 'err.api_403',
@@ -17,7 +17,7 @@ _API_MSG_KEYS = {
     500: 'err.api_500',
 }
 
-#: 模板渲染失败时的内联兜底页文案键
+# 模板渲染失败时的内联兜底页文案键
 _INLINE_TEXT_KEYS = {
     400: 'err.400_desc',
     403: 'err.403_desc',
@@ -29,8 +29,8 @@ _INLINE_TEXT_KEYS = {
 class CuteErrorPagesMiddleware:
     """让全站（含 DEBUG=True）返回自定义萌系错误页（400/403/404/500）。"""
 
-    #: 状态码 → 用于在 HTML 中「探测」是否已被替换成自定义错误页的标记文本
-    #: （Bug9：标记文本同样取自文案表，避免这里与错误页模板文案不一致）
+    # 状态码 → 用于在 HTML 中「探测」是否已被替换成自定义错误页的标记文本
+    # （Bug9：标记文本同样取自文案表，避免这里与错误页模板文案不一致）
     _MARKS = {404: '页面被喵喵吃了', 403: '这里禁止进入',
               400: '请求有点奇怪', 500: '服务器酱宕机'}
 

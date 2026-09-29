@@ -1173,23 +1173,23 @@ MESSAGES = {
 #   · 缓存 key 带版本号（与 cache_keys 统一风格），bump 后所有进程立即失效。
 # ======================================================================
 
-#: 覆盖层缓存 key（存整表 dict）
+# 覆盖层缓存 key（存整表 dict）
 _OVERRIDE_CACHE_KEY = 'v1:site_messages:overrides'
-#: 覆盖层版本号 key（保存时 +1，用于跨进程失效）
+# 覆盖层版本号 key（保存时 +1，用于跨进程失效）
 _OVERRIDE_VERSION_KEY = 'v1:site_messages:overrides_ver'
-#: 覆盖层缓存时长（秒）
+# 覆盖层缓存时长（秒）
 _OVERRIDE_TTL = 300
 
-#: 进程内兜底缓存：Redis/LocMemCache 都不可用时，避免每次请求都查库
+# 进程内兜底缓存：Redis/LocMemCache 都不可用时，避免每次请求都查库
 _LOCAL_OVERRIDE_CACHE = {'ver': None, 'data': {}}
 
-#: 跨进程变更戳：数据库侧 MAX(updated_at) + 上次检查时间（用于节流）
-#: 为什么需要它：LocMemCache 是进程内缓存，「缓存失效」无法跨进程传播，
-#: 必须靠数据库信号让其它进程感知覆盖已变更（详见 _load_overrides 的说明）。
+# 跨进程变更戳：数据库侧 MAX(updated_at) + 上次检查时间（用于节流）
+# 为什么需要它：LocMemCache 是进程内缓存，「缓存失效」无法跨进程传播，
+# 必须靠数据库信号让其它进程感知覆盖已变更（详见 _load_overrides 的说明）。
 _DB_STAMP = {'stamp': None, 'checked_at': 0.0}
 
-#: 「验证探针」键前缀：接入状态验证脚本用它写入临时覆盖，读取时会被过滤。
-#: 用前缀而不是「清空整表」是为了让探针与真实覆盖**共存**，避免互相覆盖数据。
+# 「验证探针」键前缀：接入状态验证脚本用它写入临时覆盖，读取时会被过滤。
+# 用前缀而不是「清空整表」是为了让探针与真实覆盖**共存**，避免互相覆盖数据。
 PROBE_PREFIX = '__probe__.'
 
 

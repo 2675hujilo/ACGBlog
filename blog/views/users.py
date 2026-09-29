@@ -116,7 +116,7 @@ def _build_badge_panel(profile_user, viewer_is_owner: bool) -> dict:
         'is_owner': viewer_is_owner,
     }
 
-#: 徽章条件类型 → 进度单位（用于面板上的「12/50 篇」这类展示）
+# 徽章条件类型 → 进度单位（用于面板上的「12/50 篇」这类展示）
 _BADGE_UNITS = {
     'articles': '篇',
     'comments': '条',
@@ -125,7 +125,7 @@ _BADGE_UNITS = {
     'days': '天',
 }
 
-#: 徽章条件类型 → 兜底「如何获得」文案（后台未填写 description 时使用）
+# 徽章条件类型 → 兜底「如何获得」文案（后台未填写 description 时使用）
 _BADGE_HOW_TO = {
     'articles': '发布更多文章即可解锁喵~',
     'comments': '多和大家互动评论即可解锁喵~',

@@ -47,8 +47,8 @@ from django.contrib.auth.views import redirect_to_login
 # Django 会走 handler403，最终渲染 403.html，并把响应状态码设为 403。
 from django.core.exceptions import PermissionDenied
 
-#: 前台萌系登录页的路径。未登录用户访问员工页面时统一跳到这里，
-#: 而不是 Django Admin 自带的朴素登录页，保证整站视觉风格一致。
+# 前台萌系登录页的路径。未登录用户访问员工页面时统一跳到这里，
+# 而不是 Django Admin 自带的朴素登录页，保证整站视觉风格一致。
 LOGIN_URL = '/login/'
 
 

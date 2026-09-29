@@ -37,13 +37,13 @@ from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
-#: 兜底扫描器的最小间隔（秒）：集中在 settings.SCHEDULED_SWEEP_INTERVAL，
-#: 同一进程内两次扫描至少间隔这么久，避免每个请求都查库（高并发下退化）。
+# 兜底扫描器的最小间隔（秒）：集中在 settings.SCHEDULED_SWEEP_INTERVAL，
+# 同一进程内两次扫描至少间隔这么久，避免每个请求都查库（高并发下退化）。
 SWEEP_INTERVAL = settings.SCHEDULED_SWEEP_INTERVAL
-#: 兜底扫描器的分布式锁 key（LocMem 下即进程内，Redis 下为全局，二者语义都正确）
+# 兜底扫描器的分布式锁 key（LocMem 下即进程内，Redis 下为全局，二者语义都正确）
 SWEEP_LOCK_KEY = 'scheduled_sweep_lock'
-#: 单轮最多处理的文章数：集中在 settings.SCHEDULED_MAX_PER_ROUND，
-#: 防止异常堆积（如长时间停机）时一次性处理过多。
+# 单轮最多处理的文章数：集中在 settings.SCHEDULED_MAX_PER_ROUND，
+# 防止异常堆积（如长时间停机）时一次性处理过多。
 MAX_PER_ROUND = settings.SCHEDULED_MAX_PER_ROUND
 
 

@@ -44,6 +44,8 @@
     padding: 20px 22px;
     text-decoration: none;
     color: var(--c-text);
+    min-width: 0;        /* 窄屏 flex 网格中允许收缩，避免内部徽章把卡片撑宽 */
+    overflow: hidden;    /* 裁掉亚像素舍入造成的数像素溢出，杜绝页面横向滚动 */
 }
 .cat-card--v2 .cat-head {
     display: flex;

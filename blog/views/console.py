@@ -348,7 +348,7 @@ def site_settings_page(request: HttpRequest) -> HttpResponse:
     })
 
 # ============================ 全站文案总表（提示词）管理 ============================
-#: 文案域的中文标题，用于管理页分组展示（新增域时在此补一行）
+# 文案域的中文标题，用于管理页分组展示（新增域时在此补一行）
 MSG_DOMAIN_TITLES = {
     'brand': '站点品牌与固定标语',
     'nav': '导航与菜单',
@@ -371,10 +371,10 @@ MSG_DOMAIN_TITLES = {
     'js': '前端脚本专用（toast / 弹窗）',
 }
 
-#: 「已接入」判定结果的进程内缓存（源码在运行期不变，无需每次请求都扫盘）
+# 「已接入」判定结果的进程内缓存（源码在运行期不变，无需每次请求都扫盘）
 _WIRED_CACHE = {'stamp': None, 'keys': frozenset()}
 
-#: 后台重算去重标记（避免并发触发多次重算）
+# 后台重算去重标记（避免并发触发多次重算）
 _RUNTIME_RECOMPUTING = False
 
 def _schedule_runtime_recompute(base: str) -> None:
@@ -453,11 +453,11 @@ def _wired_message_keys() -> frozenset:
         _os.path.join(base, 'blog', '**', '*.py'),
         _os.path.join(base, 'static', 'assets', 'js', '**', '*.js'),
     ]
-    #: 指纹只取「决定文案去向」的语料：模板与前端脚本。
-    #: 为什么不含 Python：`views.py` 是最常被改动的文件，若纳入指纹，
-    #: 每改一次视图就让接入状态「过期」而回退静态扫描（实测：管理页因此
-    #: 反复显示 87 条「未接入」）。而视图改动**不影响「哪些 key 会被渲染」**
-    #: 这一事实 —— 视图改的是数据，模板才是渲染入口，因此模板指纹足够。
+    # 指纹只取「决定文案去向」的语料：模板与前端脚本。
+    # 为什么不含 Python：`views.py` 是最常被改动的文件，若纳入指纹，
+    # 每改一次视图就让接入状态「过期」而回退静态扫描（实测：管理页因此
+    # 反复显示 87 条「未接入」）。而视图改动**不影响「哪些 key 会被渲染」**
+    # 这一事实 —— 视图改的是数据，模板才是渲染入口，因此模板指纹足够。
     stamp_patterns = (
         _os.path.join(base, 'templates', '**', '*.html'),
         _os.path.join(base, 'static', 'assets', 'js', '**', '*.js'),
@@ -575,14 +575,14 @@ def _wired_message_keys() -> frozenset:
     _WIRED_CACHE.update({'stamp': stamp, 'keys': keys})
     return keys
 
-#: 只服务于「文案总表管理页」自身的 key —— 改动它们对前台没有任何影响，
-#: 因此在接入统计里必须剔除，否则会出现「显示已接入、实际前台看不到」的假象。
-#:
-#: 现状：本集合**已清空**。原先登记的是文案总表页自己的 5 条 flash 文案
-#: （moderation.msg_saved / msg_no_change / msg_save_invalid / msg_reset_one /
-#: msg_reset_domain），后来管理页文案统一迁移到 adminmsg.* 域，
-#: 这 5 条从注册表移除，集合随之失去意义。
-#: 保留这个名字是为了兼容既有调用点，避免再次改动大范围代码。
+# 只服务于「文案总表管理页」自身的 key —— 改动它们对前台没有任何影响，
+# 因此在接入统计里必须剔除，否则会出现「显示已接入、实际前台看不到」的假象。
+# 
+# 现状：本集合**已清空**。原先登记的是文案总表页自己的 5 条 flash 文案
+# （moderation.msg_saved / msg_no_change / msg_save_invalid / msg_reset_one /
+# msg_reset_domain），后来管理页文案统一迁移到 adminmsg.* 域，
+# 这 5 条从注册表移除，集合随之失去意义。
+# 保留这个名字是为了兼容既有调用点，避免再次改动大范围代码。
 PAGE_ONLY_MSG_KEYS = frozenset()
 
 @staff_required_moe

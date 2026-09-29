@@ -320,7 +320,6 @@ def _optimized_list_qs(qs):
 
     注意：保持函数单一职责；修改时确认调用方不受影响。
     """
-    #: 返回结果并结束当前函数
     return qs.only(
         'id', 'title', 'views', 'likes', 'comment_count', 'created_at',
         'updated_at', 'excerpt_field', 'cover_image', 'is_pinned', 'status',

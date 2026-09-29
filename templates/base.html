@@ -38,16 +38,14 @@
     <meta name="MobileOptimized" content="width">
     <meta name="HandheldFriendly" content="true">
     <meta property="og:locale:alternate" content="zh_CN">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="dns-prefetch" href="//fonts.gstatic.com">
-<link rel="preload" href="{% static 'assets/css/components.min.css' %}" as="style">
+{# 静态资源瘦身：已移除 fonts.gstatic 的 preconnect/dns-prefetch（全站未引用 Google Fonts，属无效开销） #}
+{# 核心样式已合并为单文件 bundle，仅 preload 该 bundle，避免多个 CSS 预载互相抢占带宽 #}
+<link rel="preload" href="{% static 'assets/css/core_bundle.min.css' %}" as="style" fetchpriority="high">
+<link rel="preload" href="{% static 'assets/css/base_inline_core.min.css' %}" as="style">
     <link rel="preload" href="{% static 'assets/js/theme.min.js' %}" as="script">
 {% if og_image %}<link rel="preload" as="image" href="{{ og_image }}" fetchpriority="high">{% endif %}
-<link rel="prefetch" href="{% url 'index' %}" as="document">
 <link rel="modulepreload" href="{% static 'assets/js/common.min.js' %}">
-<link rel="prerender" href="{% url 'search' %}">
-<link rel="preload" href="{% static 'assets/css/base.min.css' %}" as="style" fetchpriority="high">
-    <link rel="preload" href="{% static 'assets/css/blog.min.css' %}" as="style">
+{# 已移除：prefetch index（在首页自我预取，零收益）；prerender search（每个访客都会让浏览器额外完整渲染一次搜索页） #}
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"Organization",
     "name":"{{ site_name|default:'萌语博客' }}",
@@ -62,10 +60,11 @@
     "potentialAction":{"@type":"SearchAction","target":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}?q={search_term_string}","query-input":"required name=search_term_string"}
     }
     </script>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-    <link rel="preload" href="{% static 'assets/css/base.min.css' %}" as="style">
-    <link rel="preload" href="{% static 'assets/js/common.min.js' %}" as="script">
+    {% comment %}
+    已移除 cdn.jsdelivr.net 的 preconnect/dns-prefetch（全站无该 CDN 资源引用）；
+    亦移除重复的 base.min.css（已并入 core_bundle）与 common.min.js（上方已 modulepreload）预载。
+    维护提示：多行注释请用 comment 标签，单行 {# #} 跨行不会被识别，会原样输出到页面。
+    {% endcomment %}
     <link rel="apple-touch-icon" href="{% static 'assets/apple-touch-icon.png' %}">
     {# 防闪烁脚本：必须在样式表之前内联执行，首帧渲染前就根据 localStorage/系统偏好设置好 data-theme #}
     <script src="{% static 'assets/js/base_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
@@ -81,7 +80,10 @@
     <meta name="theme-color" content="#a06cd5" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#2d1f3d" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="{% static 'assets/icon-maskable-512.png' %}" sizes="512x512" purpose="maskable">
-    <link rel="shortcut" href="{% url 'article_new' %}" name="写文章" icons="{% static 'assets/apple-touch-icon.png' %}">
+    {% comment %}
+    静态资源瘦身：已移除无效标签 link rel="shortcut" href="/new/"（rel 值为非法非 icon，
+    href 指向文章编辑页而非图标资源，name 属性无实际语义）。
+    {% endcomment %}
     <meta name="share-target" content="post">
     <meta name="file-handler" content="article">
     <meta name="protocol-handler" content="web+blog">
@@ -93,25 +95,18 @@
     {% comment %}
 ===== 全站样式表：base.css 基础令牌 / components.css 组件库 / blog.css 三栏布局 =====
 {% endcomment %}
-<link rel="stylesheet" href="{% static 'assets/css/base.min.css' %}?v={{ BUILD_TOKEN }}">
-    <link rel="stylesheet" href="{% static 'assets/css/components.min.css' %}?v={{ BUILD_TOKEN }}">
-    <link rel="stylesheet" href="{% static 'assets/css/blog.min.css' %}?v={{ BUILD_TOKEN }}">
-    {# 第十七批 UI/UX 增强样式（骨架屏/涟漪/时间轴/面包屑等） #}
-    <link rel="stylesheet" href="{% static 'assets/css/enhance.min.css' %}?v={{ BUILD_TOKEN }}">
-    {# 第三十批 UI 细节打磨（项1~30：分类标题/3D标签/作者卡/樱花模式等） #}
-    <link rel="stylesheet" href="{% static 'assets/css/ui_polish.min.css' %}?v={{ BUILD_TOKEN }}">
-    {# Round5: 全站动效样式（粒子/淡入/打字机/萌系加载等，所有页面按需加载） #}
-    <link rel="stylesheet" href="{% static 'assets/css/effects.min.css' %}?v={{ BUILD_TOKEN }}">
-    {# 萌系气泡提示：替代原生 title，默认显示在按钮右侧，避免被导航栏遮挡（bug1） #}
-    <link rel="stylesheet" href="{% static 'assets/css/moe-tooltip.min.css' %}?v={{ BUILD_TOKEN }}">
-    {# Round6 修复与增强样式：粘性侧栏 / footer 重排 / FAB 快捷菜单 / 选中态对比等 #}
-    <link rel="stylesheet" href="{% static 'assets/css/round6.min.css' %}?v={{ BUILD_TOKEN }}">
-<link rel="stylesheet" href="{% static 'assets/css/inline_cleanup.min.css' %}?v={{ BUILD_TOKEN }}">
-<link rel="stylesheet" href="{% static 'assets/css/header_menus.min.css' %}?v={{ BUILD_TOKEN }}">
-    {# 看板娘 Mascot 样式（右下角悬浮互动角色） #}
-    
-    <link rel="stylesheet" href="{% static 'assets/css/base_inline_components.min.css' %}?v={{ BUILD_TOKEN }}">
+    {% comment %}
+    ===== 全站核心样式：单文件 bundle =====
+    由 `python manage.py refresh_assets --bundle-only` 按固定顺序合并生成，
+    合并顺序即层叠顺序（base → components → blog → enhance → ui_polish → effects
+    → moe-tooltip → round6 → inline_cleanup → header_menus → base_inline_components）。
+    改样式后请重跑该命令重新生成，勿手工编辑 core_bundle.min.css；
+    首屏关键样式 base_inline_core、看板娘 waifu.css、无障碍 base_inline_a11y
+    仍按各自原位置独立加载，与合并前的层叠顺序完全一致。
+    {% endcomment %}
+    <link rel="stylesheet" href="{% static 'assets/css/core_bundle.min.css' %}?v={{ BUILD_TOKEN }}">
     {% block extra_head %}{% endblock %}
+    {# 看板娘 Mascot 样式（右下角悬浮互动角色） #}
 <link rel="stylesheet" href="{% static 'assets/live2d/waifu.css' %}?v=menu_fix_20260923">
 <link rel="stylesheet" href="{% static 'assets/css/base_inline_a11y.min.css' %}?v={{ BUILD_TOKEN }}">
 </head>
@@ -460,8 +455,10 @@
 <script src="{% static 'assets/js/article_card_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# 页面级脚本：子模板通过 {% block extra_js %} 追加（detail 的评论/点赞/目录、edit 的编辑器等） #}
 {% block extra_js %}{% endblock %}
-{# Bug8：全站统一「确认弹窗」。挂在 body 末尾、脱离 main 合成层，避免被提升为合成层的
-   文章卡片视觉遮挡；弹窗 DOM 服务端预置，moeConfirm 仅填充文案并加 .show，保证可靠绘制。 #}
+{% comment %}
+Bug8：全站统一「确认弹窗」。挂在 body 末尾、脱离 main 合成层，避免被提升为合成层的
+文章卡片视觉遮挡；弹窗 DOM 服务端预置，moeConfirm 仅填充文案并加 .show，保证可靠绘制。
+{% endcomment %}
 <div class="moe-modal-overlay" id="globalConfirmModal" role="dialog" aria-modal="true" aria-labelledby="gcmTitle">
     <div class="moe-modal-card">
         <div class="moe-modal-title" id="gcmTitle">{{ MSG.js.confirm_default }}</div>

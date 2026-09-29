@@ -10,6 +10,8 @@
 {# Bug27: 400 错误请求萌系页，自包含样式不依赖 base.html，500/异常场景也能安全渲染 #}
 <script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <link rel="stylesheet" href="{% static 'assets/css/error400.min.css' %}?v={{ BUILD_TOKEN }}">
+{# 静态资源瘦身：补齐 favicon 声明，消除浏览器对 /favicon.ico 的无效请求（此前 404） #}
+<link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
 </head>
 <body>
     <span class="float" aria-hidden="true">❓</span>

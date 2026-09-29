@@ -11,6 +11,8 @@
 {# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
 <script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <link rel="stylesheet" href="{% static 'assets/css/error404.min.css' %}?v={{ BUILD_TOKEN }}">
+{# 静态资源瘦身：错误页此前无 favicon 声明，浏览器会额外请求 /favicon.ico 并得到 404（控制台报错 + 无效请求），此处补齐 #}
+<link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
 </head>
 <body>
     <span class="petal" aria-hidden="true"></span>

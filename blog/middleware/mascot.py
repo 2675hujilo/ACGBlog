@@ -23,9 +23,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#: cookie 名（值：on / off）
+# cookie 名（值：on / off）
 WAIFU_COOKIE = 'waifu_pref'
-#: cookie 有效期（秒）：一年
+# cookie 有效期（秒）：一年
 WAIFU_COOKIE_MAX_AGE = 365 * 24 * 3600
 
 

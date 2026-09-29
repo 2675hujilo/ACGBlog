@@ -30,7 +30,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.urls import get_resolver
 
-#: 视为「占位 / 无实现」的返回特征（AST 层面判断）
+# 视为「占位 / 无实现」的返回特征（AST 层面判断）
 _STUB_MARKERS = ('NotImplemented', 'not_implemented', 'TODO', 'FIXME')
 
 
