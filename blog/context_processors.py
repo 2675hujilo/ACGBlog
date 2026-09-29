@@ -379,3 +379,21 @@ def site_info_ctx(request):
         'footer_icp': info.footer_icp,
         'copyright_holder': info.copyright_holder or info.site_name,
     }
+
+
+def live2d_models_ctx(request):
+    """注入看板娘**可切换形象列表**（仅后台已启用的）。
+
+    数据源是 ``static/assets/live2d/models_registry.json``（由后台
+    「看板娘形象管理」页维护），带文件 mtime 缓存、零数据库查询；
+    前端 ``waifu-init-new.js`` 读取 ``window.LIVE2D_MODELS`` 构建模型配置，
+    因此后台开关一改、刷新页面即生效，无需改代码或重启。
+
+    任何异常都降级为空列表 —— 前端在拿不到列表时会回退到内置默认配置，
+    不会出现"没有看板娘"的情况。
+    """
+    try:
+        from .services.live2d_registry import front_payload
+        return {'LIVE2D_MODELS': front_payload()}
+    except Exception:  # noqa: BLE001 注册表异常不得阻断任何页面
+        return {'LIVE2D_MODELS': []}

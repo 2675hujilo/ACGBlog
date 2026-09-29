@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ meta_title }}{% endblock %}
+{% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
+    <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
+    <span class="crumb-sep">›</span>
+    <a href="{% url 'staff_console' %}">{{ MSG.toolbox.menu_console }}</a>
+    <span class="crumb-sep">›</span><span class="crumb-current">看板娘形象管理</span>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'assets/css/live2d_admin.min.css' %}?v={{ BUILD_TOKEN }}">
+{% endblock %}
+
+{% block content %}
+<div class="l2d-wrap">
+
+  <div class="l2d-head">
+    <h1>看板娘形象管理<span class="badge-admin-only">{{ MSG.moderation.admin_only_badge }}</span></h1>
+    <p class="l2d-sub">这里的开关决定前台看板娘「换模型」时能切到哪些形象；关闭的形象仍留在磁盘上，随时可以再打开。</p>
+  </div>
+
+  <div class="l2d-toolbar">
+    <div class="l2d-stats" id="l2d-stats"
+         data-total="{{ stats.total }}" data-enabled="{{ stats.enabled }}"
+         data-disabled="{{ stats.disabled }}">
+      共 <b>{{ stats.total }}</b> 款 · 已启用 <b class="on" id="l2d-on">{{ stats.enabled }}</b>
+      · 已关闭 <b class="off" id="l2d-off">{{ stats.disabled }}</b>
+      <span class="l2d-hint">（内置 {{ stats.builtin }} · 少女前线 {{ stats.gfl }}）</span>
+    </div>
+    <div class="l2d-bulk">
+      <button type="button" class="l2d-btn" data-bulk="1">全部开启</button>
+      <button type="button" class="l2d-btn ghost" data-bulk="0">全部关闭</button>
+    </div>
+  </div>
+
+  {% csrf_token %}
+
+  {% regroup models by group as group_list %}
+  {% for grp in group_list %}
+  <section class="l2d-group" data-group="{{ grp.grouper }}">
+    <h2>
+      {% if grp.grouper == 'gfl' %}少女前线{% elif grp.grouper == 'builtin' %}内置形象{% else %}{{ grp.grouper }}{% endif %}
+      <span class="l2d-count">{{ grp.list|length }} 款</span>
+      <span class="l2d-group-btns">
+        <button type="button" class="l2d-mini" data-bulk="1" data-group="{{ grp.grouper }}">本组全开</button>
+        <button type="button" class="l2d-mini" data-bulk="0" data-group="{{ grp.grouper }}">本组全关</button>
+      </span>
+    </h2>
+    <div class="l2d-grid">
+      {% for m in grp.list %}
+      <label class="l2d-card {% if m.enabled %}is-on{% else %}is-off{% endif %}" data-id="{{ m.id }}">
+        <span class="l2d-thumb">
+          {% if m.renderOk %}
+          <img src="{{ m.thumb }}?v={{ BUILD_TOKEN }}" alt="{{ m.name }} 形象缩略图" loading="lazy" decoding="async">
+          {% else %}
+          <span class="l2d-nothumb">无预览</span>
+          {% endif %}
+        </span>
+        <span class="l2d-meta">
+          <span class="l2d-name" title="{{ m.name }}">{{ m.name }}</span>
+          <span class="l2d-id" title="{{ m.id }}">{{ m.id }}</span>
+        </span>
+        <span class="l2d-switch">
+          <input type="checkbox" data-model-id="{{ m.id }}"
+                 {% if m.enabled %}checked{% endif %} aria-label="启用 {{ m.name }}">
+          <span class="l2d-slider" aria-hidden="true"></span>
+          <span class="l2d-state">{% if m.enabled %}已启用{% else %}已关闭{% endif %}</span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+  {% empty %}
+  <div class="l2d-toolbar">暂无形象数据（注册表为空）。</div>
+  {% endfor %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/live2d_admin.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{% endblock %}

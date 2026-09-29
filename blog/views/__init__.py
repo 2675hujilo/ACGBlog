@@ -50,6 +50,7 @@ from .common import (ARTICLE_TITLE_MAX_LENGTH, COMMENT_MAX_LENGTH, INTRODUCTION_
                      _json_ok, _stream_text, _file_download, _redirect_302, _redirect_permanent, _not_modified,
                      _bad_request, _forbidden, _not_found, _paginate_qs)
 from .console import (api_site_messages, server_status, API_ENDPOINTS, api_docs, staff_console, site_settings_page,
+                      live2d_models_page,
                       MSG_DOMAIN_TITLES, _WIRED_CACHE, _RUNTIME_RECOMPUTING, _schedule_runtime_recompute,
                       _wired_message_keys, PAGE_ONLY_MSG_KEYS, site_messages_page, api_refresh_assets, dev_sync_state,
                       debug_cache_dump)
@@ -249,6 +250,7 @@ __all__ = [
     'api_docs',
     'staff_console',
     'site_settings_page',
+    'live2d_models_page',
     'MSG_DOMAIN_TITLES',
     '_WIRED_CACHE',
     '_RUNTIME_RECOMPUTING',

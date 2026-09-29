@@ -59,7 +59,39 @@
         'zundamon': { path: '/static/assets/live2d/models/zundamon/zundamon.model3.json', name: '俊达萌', skins: 1, type: 'cubism5' }
     };
 
+    // ===== 后台「看板娘形象管理」注入的启用列表优先 =====
+    // 数据来自模板中的 json_script#live2d-models-data（后端 models_registry.json 里 enabled 的形象）。
+    // 取不到时（脚本异常、老页面缓存、注册表缺失）保留上面的内置配置，保证看板娘始终可用。
+    (function applyInjectedModels() {
+        try {
+            var el = document.getElementById('live2d-models-data');
+            if (!el) return;
+            var list = JSON.parse(el.textContent || '[]');
+            if (!list || !list.length) return;
+            var dyn = {};
+            for (var i = 0; i < list.length; i++) {
+                var m = list[i];
+                if (!m || !m.id || !m.path) continue;
+                dyn[m.id] = {
+                    path: m.path,
+                    name: m.name || m.id,
+                    skins: m.skins || 1,
+                    type: m.type || 'cubism2'
+                };
+            }
+            if (Object.keys(dyn).length) MODEL_CONFIG = dyn;
+        } catch (e) { /* 解析失败 → 沿用内置配置 */ }
+    })();
+
     var MODEL_IDS = Object.keys(MODEL_CONFIG);
+
+    // 兜底：若本地保存的形象已被后台关闭（不在启用列表中），切换到当前首个启用形象
+    if (!MODEL_CONFIG[state.modelId]) {
+        state.modelId = MODEL_IDS[0] || state.modelId;
+        state.skin = 0;
+        state.skinCount = (MODEL_CONFIG[state.modelId] || {}).skins || 1;
+        state.modelName = (MODEL_CONFIG[state.modelId] || {}).name || state.modelName;
+    }
 
     // 皮肤配置
     var SKIN_CONFIGS = {

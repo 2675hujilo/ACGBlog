@@ -113,6 +113,8 @@
 <body data-theme-color="{{ user_preferences.theme_color|default:'purple_pink' }}" data-font-size="{{ user_preferences.font_size|default:'medium' }}" data-eye-protection="{{ user_preferences.eye_protection|default:'false' }}" data-amoled="{{ user_preferences.amoled_dark|default:'false' }}" data-holiday="">
 {# Bug9 任务2：全站文案包（后端变量 → 前端）。json_script 过滤器把 SITE_MSG_JS 安全序列化到 application/json 脚本块，由 moe-messages.js 读取后挂到 window.SITE_MSG，供所有前端脚本统一取用。注意：模板注释必须写在同一行，跨行会原样输出到页面。 #}
 {{ SITE_MSG_JS|json_script:"site-messages-data" }}
+{# 看板娘可切换形象列表：由后台「看板娘形象管理」页维护，只含已启用形象；未加载看板娘脚本时该数据块无副作用 #}
+{{ LIVE2D_MODELS|json_script:"live2d-models-data" }}
 <a class="skip-link" href="#main-content" accesskey="0"></a>
 <div class="sr-only" aria-live="polite" aria-atomic="true" id="a11y-live"></div>
 <script src="{% static 'assets/js/base_user_prefs_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>

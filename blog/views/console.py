@@ -347,6 +347,52 @@ def site_settings_page(request: HttpRequest) -> HttpResponse:
         'meta_title': f'站点设置 · {info.site_name}',
     })
 
+# ============================ 看板娘形象管理 ============================
+@staff_required_moe
+def live2d_models_page(request: HttpRequest) -> HttpResponse:
+    """看板娘形象管理页（仅管理员）。
+
+    展示 :mod:`blog.services.live2d_registry` 中的全部 Live2D 形象
+    （缩略图 + 名称 + 启用开关），支持逐款切换与按组批量操作。
+    被停用的形象不会出现在前台看板娘的切换列表里 —— 前端
+    ``waifu-init-new.js`` 依据本页状态动态构建模型配置，刷新即生效。
+
+    POST 动作：
+      · ``toggle`` —— 需 ``model_id`` 与 ``enabled``(1/0)，切换单款；
+      · ``bulk``   —— 需 ``enabled``，可选 ``group``，批量启用/停用。
+
+    带 ``X-Requested-With: XMLHttpRequest`` 时返回 JSON（页面无刷新切换），
+    否则走 messages + 重定向（无 JS 环境下同样可用）。
+    """
+    from ..services import live2d_registry as reg
+
+    if request.method == 'POST':
+        ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        action = (request.POST.get('action') or '').strip()
+        enabled = (request.POST.get('enabled') or '') in ('1', 'true', 'on', 'True')
+
+        if action == 'toggle':
+            ok, note = reg.set_enabled((request.POST.get('model_id') or '').strip(), enabled)
+        elif action == 'bulk':
+            group = (request.POST.get('group') or '').strip() or None
+            _, note = reg.set_many(enabled, group)
+            ok = True
+        else:
+            ok, note = False, '未知操作'
+
+        if ajax:
+            return JsonResponse({'ok': ok, 'note': note, 'stats': reg.stats()})
+        (messages.success if ok else messages.error)(request, note)
+        return redirect('live2d_models')
+
+    return render(request, 'blog/live2d_models.html', {
+        'models': reg.models(),
+        'stats': reg.stats(),
+        'active_nav': 'live2d_models',
+        'meta_title': '看板娘形象管理 · %s' % getattr(settings, 'SITE_NAME', '萌语博客'),
+    })
+
+
 # ============================ 全站文案总表（提示词）管理 ============================
 # 文案域的中文标题，用于管理页分组展示（新增域时在此补一行）
 MSG_DOMAIN_TITLES = {
