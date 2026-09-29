@@ -3,40 +3,47 @@
 {% block title %}登录 · {{ site_name }}{% endblock %}
 {# bug8：登录页与注册页统一二次元风格，背景改为共享的浅色柔和天空（见 partials/_auth_bg.html） #}
 {% block content %}
-<noscript><div class="noscript-banner noscript-banner--auth" role="alert" >{{ MSG.form.no_js_login }}</div></noscript>
-{# 共享二次元背景层（与注册页完全一致） #}
-{% include 'partials/_auth_bg.html' %}
-<div class="auth-wrap">
-    <div class="auth-card">
-        <h1 class="auth-title">{{ MSG.auth.login_title }}</h1>
-        {% comment %}
+    <noscript>
+        <div class="noscript-banner noscript-banner--auth" role="alert">{{ MSG.form.no_js_login }}</div>
+    </noscript>
+    {# 共享二次元背景层（与注册页完全一致） #}
+    {% include 'partials/_auth_bg.html' %}
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <h1 class="auth-title">{{ MSG.auth.login_title }}</h1>
+            {% comment %}
         登录失败红色内联提示（AJAX 失败或后端重渲染时显示，不整页刷新）。
         Bug9：同时用 .is-visible 类与 [hidden] 双通道控制显隐 ——
         避免个别浏览器/脚本组合下 hidden 属性未被移除导致提示不可见。
         {% endcomment %}
-        <div class="login-error form-error-text{% if login_error %} is-visible{% endif %}"
-             id="login-error" role="alert" aria-live="assertive"
-             {% if not login_error %}hidden{% endif %}>
-            <span aria-hidden="true">😿</span><span id="login-error-text">{{ login_error|default:'用户名或密码不对呢~再试试喵' }}</span>
+            <div class="login-error form-error-text{% if login_error %} is-visible{% endif %}"
+                 id="login-error" role="alert" aria-live="assertive"
+                 {% if not login_error %}hidden{% endif %}>
+                <span aria-hidden="true">😿</span><span
+                    id="login-error-text">{{ login_error|default:'用户名或密码不对呢~再试试喵' }}</span>
+            </div>
+            <form method="post" id="login-form" autocomplete="on" aria-autocomplete="list">
+                {% csrf_token %}
+                <label for="id_login_username">{{ MSG.form.username }}</label>
+                <input type="text" id="id_login_username" name="username" required autofocus value=""
+                       autocomplete="username" aria-label="{{ MSG.form.username_aria }}" autocapitalize="none"
+                       autocorrect="off"
+                       aria-required="true">
+                <label for="id_login_password">{{ MSG.form.password }}</label>
+                <input type="password" id="id_login_password" name="password" required
+                       autocomplete="current-password" aria-label="{{ MSG.form.password_aria }}" autocapitalize="none"
+                       autocorrect="off">
+                <button type="submit" class="btn-primary" id="login-submit"
+                        aria-label="{{ MSG.form.submit_login }}">{{ MSG.nav.login }}</button>
+            </form>
+            <p class="auth-alt muted">{{ MSG.auth.no_account }}<a href="{% url 'register' %}">{{ MSG.nav.register }}</a>
+            </p>
+            {# 工单6 第7项：原第三方登录（GitHub/微信/微博）为无功能占位，已移除 #}
         </div>
-        <form method="post" id="login-form" autocomplete="on" aria-autocomplete="list">
-            {% csrf_token %}
-            <label for="id_login_username">{{ MSG.form.username }}</label>
-            <input type="text" id="id_login_username" name="username" required autofocus value=""
-                   autocomplete="username" aria-label="{{ MSG.form.username_aria }}" autocapitalize="none" autocorrect="off"
-                   aria-required="true">
-            <label for="id_login_password">{{ MSG.form.password }}</label>
-            <input type="password" id="id_login_password" name="password" required
-                   autocomplete="current-password" aria-label="{{ MSG.form.password_aria }}" autocapitalize="none" autocorrect="off">
-            <button type="submit" class="btn-primary" id="login-submit" aria-label="{{ MSG.form.submit_login }}">{{ MSG.nav.login }}</button>
-        </form>
-        <p class="auth-alt muted">{{ MSG.auth.no_account }}<a href="{% url 'register' %}">{{ MSG.nav.register }}</a></p>
-        {# 工单6 第7项：原第三方登录（GitHub/微信/微博）为无功能占位，已移除 #}
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-{# Bug8 修复：改为加载「认证表单」统一脚本（登录 + 注册共用免刷新内联红字逻辑） #}
-<script src="{% static 'assets/js/auth_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    {# Bug8 修复：改为加载「认证表单」统一脚本（登录 + 注册共用免刷新内联红字逻辑） #}
+    <script src="{% static 'assets/js/auth_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {% endblock %}

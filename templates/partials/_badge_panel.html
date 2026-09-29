@@ -39,68 +39,69 @@
 
     {# ---------- 已获得（优先展示，最亮眼） ---------- #}
     {% if badge_panel.has_any %}
-    <div class="badge-grid badge-grid--obtained" aria-label="{{ MSG.badge.obtained }}">
-        {% for b in badge_panel.obtained %}
-        <article class="badge-card badge-card--on" data-badge-id="{{ b.id }}"
-                 title="{{ b.name }}：{{ b.description }}">
-            <div class="badge-card-icon" aria-hidden="true">{{ b.icon }}</div>
-            <div class="badge-card-name">{{ b.name }}</div>
-            <div class="badge-card-desc muted">{{ b.description }}</div>
-            <div class="badge-card-foot">
-                <span class="badge-chip badge-chip--on">✅ {{ MSG.badge.obtained }}</span>
-                {% if b.earned_at %}
-                <time class="badge-card-time muted" datetime="{{ b.earned_at|date:'c' }}">
-                    {{ b.earned_at|date:'Y-m-d' }} 获得
-                </time>
-                {% endif %}
-            </div>
-        </article>
-        {% endfor %}
-    </div>
+        <div class="badge-grid badge-grid--obtained" aria-label="{{ MSG.badge.obtained }}">
+            {% for b in badge_panel.obtained %}
+                <article class="badge-card badge-card--on" data-badge-id="{{ b.id }}"
+                         title="{{ b.name }}：{{ b.description }}">
+                    <div class="badge-card-icon" aria-hidden="true">{{ b.icon }}</div>
+                    <div class="badge-card-name">{{ b.name }}</div>
+                    <div class="badge-card-desc muted">{{ b.description }}</div>
+                    <div class="badge-card-foot">
+                        <span class="badge-chip badge-chip--on">✅ {{ MSG.badge.obtained }}</span>
+                        {% if b.earned_at %}
+                            <time class="badge-card-time muted" datetime="{{ b.earned_at|date:'c' }}">
+                                {{ b.earned_at|date:'Y-m-d' }} 获得
+                            </time>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
     {% else %}
-    <div class="badge-empty">
-        <div class="badge-empty-emoji" aria-hidden="true">🌱</div>
-        <p>{{ MSG.badge.none_yet }}</p>
-    </div>
+        <div class="badge-empty">
+            <div class="badge-empty-emoji" aria-hidden="true">🌱</div>
+            <p>{{ MSG.badge.none_yet }}</p>
+        </div>
     {% endif %}
 
     {# ---------- 未获得（折叠可展开，含获取方式与实时进度） ---------- #}
     {% if badge_panel.locked_count %}
-    <details class="badge-locked" {% if not badge_panel.has_any %}open{% endif %}>
-        <summary class="badge-locked-summary">
-            <span class="badge-locked-summary-icon" aria-hidden="true">🔒</span>
-            <span class="badge-locked-summary-text">
+        <details class="badge-locked" {% if not badge_panel.has_any %}open{% endif %}>
+            <summary class="badge-locked-summary">
+                <span class="badge-locked-summary-icon" aria-hidden="true">🔒</span>
+                <span class="badge-locked-summary-text">
                 {{ MSG.badge.expand_locked }}（<b>{{ badge_panel.locked_count }}</b>）
             </span>
-            <span class="badge-locked-toggle" aria-hidden="true"></span>
-        </summary>
-        <div class="badge-grid badge-grid--locked" aria-label="{{ MSG.badge.locked }}">
-            {% for b in badge_panel.locked %}
-            <article class="badge-card badge-card--off" data-badge-id="{{ b.id }}"
-                     title="{{ b.name }}：{{ b.how_to }}">
-                <div class="badge-card-icon badge-card-icon--off" aria-hidden="true">{{ b.icon }}</div>
-                <div class="badge-card-name">{{ b.name }}</div>
-                <div class="badge-card-desc muted">{{ b.description }}</div>
-                {# 如何获得：明确写出获取条件（需求「并说明如何获得」） #}
-                <div class="badge-card-howto">
-                    <span class="badge-howto-label">{{ MSG.badge.how_to_get }}</span>
-                    <span class="badge-howto-text">{{ b.how_to }}</span>
-                </div>
-                {# 实时进度：当前值 / 目标值 + 进度条，让用户知道还差多少 #}
-                <div class="badge-progress" role="progressbar"
-                     aria-valuemin="0" aria-valuemax="{{ b.need }}" aria-valuenow="{{ b.current }}"
-                     aria-label="{{ b.name }} 进度">
-                    <span class="badge-progress-fill" style="width: {{ b.percent }}%"></span>
-                </div>
-                <div class="badge-card-foot">
-                    <span class="badge-chip badge-chip--off">🔒 {{ MSG.badge.locked }}</span>
-                    <span class="badge-card-progress-text muted">
-                        {{ b.current }}/{{ b.need }}{{ b.unit }}{% if b.remaining %} · 还差 {{ b.remaining }}{{ b.unit }}{% endif %}
+                <span class="badge-locked-toggle" aria-hidden="true"></span>
+            </summary>
+            <div class="badge-grid badge-grid--locked" aria-label="{{ MSG.badge.locked }}">
+                {% for b in badge_panel.locked %}
+                    <article class="badge-card badge-card--off" data-badge-id="{{ b.id }}"
+                             title="{{ b.name }}：{{ b.how_to }}">
+                        <div class="badge-card-icon badge-card-icon--off" aria-hidden="true">{{ b.icon }}</div>
+                        <div class="badge-card-name">{{ b.name }}</div>
+                        <div class="badge-card-desc muted">{{ b.description }}</div>
+                        {# 如何获得：明确写出获取条件（需求「并说明如何获得」） #}
+                        <div class="badge-card-howto">
+                            <span class="badge-howto-label">{{ MSG.badge.how_to_get }}</span>
+                            <span class="badge-howto-text">{{ b.how_to }}</span>
+                        </div>
+                        {# 实时进度：当前值 / 目标值 + 进度条，让用户知道还差多少 #}
+                        <div class="badge-progress" role="progressbar"
+                             aria-valuemin="0" aria-valuemax="{{ b.need }}" aria-valuenow="{{ b.current }}"
+                             aria-label="{{ b.name }} 进度">
+                            <span class="badge-progress-fill" style="width: {{ b.percent }}%"></span>
+                        </div>
+                        <div class="badge-card-foot">
+                            <span class="badge-chip badge-chip--off">🔒 {{ MSG.badge.locked }}</span>
+                            <span class="badge-card-progress-text muted">
+                        {{ b.current }}/{{ b.need }}{{ b.unit }}{% if b.remaining %} · 还差 {{ b.remaining }}
+                                {{ b.unit }}{% endif %}
                     </span>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-    </details>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </details>
     {% endif %}
 </section>

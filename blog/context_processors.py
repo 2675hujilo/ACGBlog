@@ -79,11 +79,20 @@ def lazy_public_cache(request):
 
 
 def realtime_online_count():
-    """最近 5 分钟独立 IP 访客数（实时，不走缓存）。
+    """最近 5 分钟独立 IP 访客数（优先走 Redis HyperLogLog，降级到数据库查询）。
 
     当前请求本身即代表一名在线访客，因此结果至少为 1，
-    避免出现“绿灯亮却显示 0 在线”的自相矛盾。
+    避免出现"绿灯亮却显示 0 在线"的自相矛盾。
     """
+    # 优先从 Redis 读取（由 access_log.middleware.AccessLogMiddleware 追踪）
+    try:
+        from .middleware.access_log import get_online_ip_count
+        n = get_online_ip_count()
+        if n > 0:
+            return n
+    except Exception:
+        pass
+    # 降级：查数据库（保证至少 1）
     try:
         since = timezone.now() - timedelta(minutes=ONLINE_WINDOW_MINUTES)
         n = (AccessLog.objects.filter(created_at__gte=since)

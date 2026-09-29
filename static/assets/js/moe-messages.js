@@ -149,7 +149,7 @@
             return Promise.resolve(false);
         }
         // 请求文案接口（带同源凭证）
-        return fetch('/api/site-messages/', { credentials: 'same-origin' })
+        return fetch('/api/site-messages/', {credentials: 'same-origin'})
             .then(function (r) {
                 // 仅在响应正常时解析 JSON
                 return r.ok ? r.json() : null;

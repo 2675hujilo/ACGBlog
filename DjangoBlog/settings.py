@@ -197,8 +197,14 @@ SITE_KEYWORDS = '博客,技术,二次元'
 # 在文章 / 评论变更时由视图主动 cache.delete() 失效。
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'blog-cache',
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('DJANGO_REDIS_URL', 'redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'SOCKET_CONNECT_TIMEOUT': 2,
+            'SOCKET_TIMEOUT': 2,
+        },
+        'KEY_PREFIX': 'acgblog',
         'TIMEOUT': 300,          # 默认 5 分钟过期
     }
 }
@@ -406,7 +412,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 # 传播失效，模块用「周期性查 MAX(updated_at)」作为跨进程变更信号。本项即该
 # 轮询的节流秒数：默认 1.0，做到「保存后刷新立即可见」；设为 0 则每次请求都
 # 查库（适合开发 / 极低频站点），调大可进一步降低数据库压力。
-SITE_MSG_DB_POLL_SECONDS = 1.0
+SITE_MSG_DB_POLL_SECONDS = 10.0
 
 # ---- 第 5 轮功能开关（引入文件：blog/views/features.py）----
 # 功能特性（Round5Feature）的「settings 层覆盖表」：键为 feature_id、值为

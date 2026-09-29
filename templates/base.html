@@ -5,7 +5,7 @@
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="content-language" content="zh-CN">
+    <meta http-equiv="content-language" content="zh-CN">
     <meta name="author" content="{{ site_name|default:'萌语博客' }}">
     <meta name="robots" content="index,follow,max-image-preview:large">
     <meta name="googlebot" content="index,follow">
@@ -17,19 +17,19 @@
     <meta name="application-name" content="{{ site_name|default:'萌语博客' }}">
     <meta name="msapplication-TileColor" content="#a06cd5">
     <meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="Permissions-Policy" content="camera=(),microphone=(),geolocation=(),interest-cohort=()">
-<meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="camera=(),microphone=(),geolocation=(),interest-cohort=()">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>{% block title %}{{ site_name }}{% endblock %}</title>
     {# SEO meta 块：各子模板通过 {% block seo_meta %} 填充 description/keywords/OG；未填充时输出站点默认值 #}
     {% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
     {# RSS 订阅自动发现：浏览器 / RSS 阅读器识别 #}
     <link rel="alternate" type="application/rss+xml" title="{{ site_name }} RSS" href="{% url 'rss_feed' %}">
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
-<link rel="alternate" hreflang="zh-CN" href="{{ request.build_absolute_uri }}">
+    <link rel="alternate" hreflang="zh-CN" href="{{ request.build_absolute_uri }}">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"SiteNavigationElement","name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}","position":1}
+        {"@context":"https://schema.org","@type":"SiteNavigationElement","name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}","position":1}
     </script>
     <meta name="breadcrumb-depth" content="{% block crumb_depth %}2{% endblock %}">
     <meta name="sitemap-priority" content="0.8">
@@ -38,17 +38,18 @@
     <meta name="MobileOptimized" content="width">
     <meta name="HandheldFriendly" content="true">
     <meta property="og:locale:alternate" content="zh_CN">
-{# 静态资源瘦身：已移除 fonts.gstatic 的 preconnect/dns-prefetch（全站未引用 Google Fonts，属无效开销） #}
-{# 核心样式已合并为单文件 bundle，仅 preload 该 bundle，避免多个 CSS 预载互相抢占带宽 #}
-<link rel="preload" href="{% static 'assets/css/core_bundle.min.css' %}" as="style" fetchpriority="high">
-<link rel="preload" href="{% static 'assets/css/base_inline_core.min.css' %}" as="style">
+    {# 静态资源瘦身：已移除 fonts.gstatic 的 preconnect/dns-prefetch（全站未引用 Google Fonts，属无效开销） #}
+    {# 核心样式已合并为单文件 bundle，仅 preload 该 bundle，避免多个 CSS 预载互相抢占带宽 #}
+    <link rel="preload" href="{% static 'assets/css/core_bundle.min.css' %}" as="style" fetchpriority="high">
+    <link rel="preload" href="{% static 'assets/css/base_inline_core.min.css' %}" as="style">
     <link rel="preload" href="{% static 'assets/js/theme.min.js' %}" as="script">
-{% if og_image %}<link rel="preload" as="image" href="{{ og_image }}" fetchpriority="high">{% endif %}
-<link rel="modulepreload" href="{% static 'assets/js/common.min.js' %}">
-{# 已移除：prefetch index（在首页自我预取，零收益）；prerender search（每个访客都会让浏览器额外完整渲染一次搜索页） #}
+    {% if og_image %}
+        <link rel="preload" as="image" href="{{ og_image }}" fetchpriority="high">{% endif %}
+    <link rel="modulepreload" href="{% static 'assets/js/common.min.js' %}">
+    {# 已移除：prefetch index（在首页自我预取，零收益）；prerender search（每个访客都会让浏览器额外完整渲染一次搜索页） #}
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"Organization",
-    "name":"{{ site_name|default:'萌语博客' }}",
+        {"@context":"https://schema.org","@type":"Organization",
+        "name":"{{ site_name|default:'萌语博客' }}",
     "url":"{{ request.scheme }}://{{ request.get_host }}",
     "logo":"{% static 'assets/apple-touch-icon.png' %}",
     "contactPoint":{"@type":"ContactPoint","contactType":"customer support"},
@@ -70,9 +71,9 @@
     <script src="{% static 'assets/js/base_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
     {# ===== Round5: 用户偏好注入（在所有 JS 之前，供 features/*.min.js 读取） ===== #}
     <script>window.USER_PREFERENCES = {{ user_preferences_json|default:"{}"|safe }};</script>
-<link rel="stylesheet" href="{% static 'assets/css/base_inline_core.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/base_inline_core.min.css' %}?v={{ BUILD_TOKEN }}">
     <link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
-<link rel="shortcut icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
+    <link rel="shortcut icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
     {# 61. PWA：应用清单 + 主题色 #}
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#a06cd5">
@@ -91,7 +92,7 @@
     <meta name="display-override" content="standalone">
     <meta name="window-controls-overlay" content="true">
     {# 60. 打印专用样式表：仅在打印时生效 #}
-<link rel="stylesheet" href="{% static 'assets/css/print.min.css' %}" media="print">
+    <link rel="stylesheet" href="{% static 'assets/css/print.min.css' %}" media="print">
     {% comment %}
 ===== 全站样式表：base.css 基础令牌 / components.css 组件库 / blog.css 三栏布局 =====
 {% endcomment %}
@@ -107,10 +108,13 @@
     <link rel="stylesheet" href="{% static 'assets/css/core_bundle.min.css' %}?v={{ BUILD_TOKEN }}">
     {% block extra_head %}{% endblock %}
     {# 看板娘 Mascot 样式（右下角悬浮互动角色） #}
-<link rel="stylesheet" href="{% static 'assets/live2d/waifu.css' %}?v=menu_fix_20260923">
-<link rel="stylesheet" href="{% static 'assets/css/base_inline_a11y.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/live2d/waifu.css' %}?v=menu_fix_20260923">
+    <link rel="stylesheet" href="{% static 'assets/css/base_inline_a11y.min.css' %}?v={{ BUILD_TOKEN }}">
 </head>
-<body data-theme-color="{{ user_preferences.theme_color|default:'purple_pink' }}" data-font-size="{{ user_preferences.font_size|default:'medium' }}" data-eye-protection="{{ user_preferences.eye_protection|default:'false' }}" data-amoled="{{ user_preferences.amoled_dark|default:'false' }}" data-holiday="">
+<body data-theme-color="{{ user_preferences.theme_color|default:'purple_pink' }}"
+      data-font-size="{{ user_preferences.font_size|default:'medium' }}"
+      data-eye-protection="{{ user_preferences.eye_protection|default:'false' }}"
+      data-amoled="{{ user_preferences.amoled_dark|default:'false' }}" data-holiday="">
 {# Bug9 任务2：全站文案包（后端变量 → 前端）。json_script 过滤器把 SITE_MSG_JS 安全序列化到 application/json 脚本块，由 moe-messages.js 读取后挂到 window.SITE_MSG，供所有前端脚本统一取用。注意：模板注释必须写在同一行，跨行会原样输出到页面。 #}
 {{ SITE_MSG_JS|json_script:"site-messages-data" }}
 {# 看板娘可切换形象列表：由后台「看板娘形象管理」页维护，只含已启用形象；未加载看板娘脚本时该数据块无副作用 #}
@@ -119,9 +123,11 @@
 <div class="sr-only" aria-live="polite" aria-atomic="true" id="a11y-live"></div>
 <script src="{% static 'assets/js/base_user_prefs_fallback.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# 阅读进度条：由 common.js 随滚动更新宽度百分比 #}
-<div class="reading-progress" id="reading-progress" role="progressbar" aria-label="{{ MSG.a11y.reading_progress }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div class="reading-progress" id="reading-progress" role="progressbar" aria-label="{{ MSG.a11y.reading_progress }}"
+     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
 {# 页面顶部加载进度条：内联脚本控制宽度，load 后淡出 #}
-<div id="page-loader" role="progressbar" aria-label="{{ MSG.a11y.page_progress }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div id="page-loader" role="progressbar" aria-label="{{ MSG.a11y.page_progress }}" aria-valuemin="0" aria-valuemax="100"
+     aria-valuenow="0"></div>
 {# 樱花飘落装饰：5 个固定位置的纯 CSS 动画花瓣，pointer-events:none 不影响交互 #}
 <span class="sakura-deco sd1" aria-hidden="true"></span>
 <span class="sakura-deco sd2" aria-hidden="true"></span>
@@ -136,31 +142,47 @@
 <header class="site-header" role="banner" data-scroll-header>
     <nav class="nav-bar container" role="navigation" aria-label="{{ MSG.a11y.main_nav }}">
         {# 品牌：Logo + 站点名称（工单15 起，名称/Logo 来自数据库 SiteInfo，可在站点设置修改） #}
-<a class="nav-brand" href="{% url 'index' %}" aria-label="{{ site_name }} 返回首页">{{ site_logo }} {{ site_name }}</a>
+        <a class="nav-brand" href="{% url 'index' %}"
+           aria-label="{{ site_name }} 返回首页">{{ site_logo }} {{ site_name }}</a>
         {# 导航链接组：首页/文章/笔记/独立页面/分类/标签/归档/系列/随机喵，active_kind 与 active_nav 控制高亮 #}
-<div class="nav-links" role="menubar">
-<a class="nav-link {% if active_nav == 'home' and not active_kind %}active{% endif %}" href="{% url 'index' %}" accesskey="h"><img src="{% static 'assets/icons/home.svg' %}" alt="" class="icon">{{ MSG.nav.home }}</a>
-            <a class="nav-link {% if active_kind == 'article' %}active{% endif %}" href="{% url 'index' %}?kind=article"><img src="{% static 'assets/icons/article.svg' %}" alt="" class="icon">{{ MSG.nav.articles }}{% if nav_article_count %}<span class="nav-count-badge">{{ nav_article_count }}</span>{% endif %}</a>
-            <a class="nav-link {% if active_kind == 'note' %}active{% endif %}" href="{% url 'index' %}?kind=note">{{ MSG.nav.notes }}</a>
-            <a class="nav-link {% if active_kind == 'page' %}active{% endif %}" href="{% url 'index' %}?kind=page">{{ MSG.nav.pages }}</a>
-            <a class="nav-link {% if active_nav == 'categories' %}active{% endif %}" href="{% url 'categories' %}"><img src="{% static 'assets/icons/category.svg' %}" alt="" class="icon">{{ MSG.nav.categories }}</a>
-            <a class="nav-link {% if active_nav == 'tags' %}active{% endif %}" href="{% url 'tags' %}"><img src="{% static 'assets/icons/tag.svg' %}" alt="" class="icon">{{ MSG.nav.tags }}</a>
-            <a class="nav-link {% if active_nav == 'archive' %}active{% endif %}" href="{% url 'archive' %}"><img src="{% static 'assets/icons/archive.svg' %}" alt="" class="icon">{{ MSG.nav.archive }}</a>
-            <a class="nav-link {% if active_nav == 'series' %}active{% endif %}" href="{% url 'series_list' %}">{{ MSG.nav.series }}</a>
+        <div class="nav-links" role="menubar">
+            <a class="nav-link {% if active_nav == 'home' and not active_kind %}active{% endif %}"
+               href="{% url 'index' %}" accesskey="h"><img src="{% static 'assets/icons/home.svg' %}" alt=""
+                                                           class="icon">{{ MSG.nav.home }}</a>
+            <a class="nav-link {% if active_kind == 'article' %}active{% endif %}"
+               href="{% url 'index' %}?kind=article"><img src="{% static 'assets/icons/article.svg' %}" alt=""
+                                                          class="icon">{{ MSG.nav.articles }}{% if nav_article_count %}
+                <span class="nav-count-badge">{{ nav_article_count }}</span>{% endif %}</a>
+            <a class="nav-link {% if active_kind == 'note' %}active{% endif %}"
+               href="{% url 'index' %}?kind=note">{{ MSG.nav.notes }}</a>
+            <a class="nav-link {% if active_kind == 'page' %}active{% endif %}"
+               href="{% url 'index' %}?kind=page">{{ MSG.nav.pages }}</a>
+            <a class="nav-link {% if active_nav == 'categories' %}active{% endif %}" href="{% url 'categories' %}"><img
+                    src="{% static 'assets/icons/category.svg' %}" alt="" class="icon">{{ MSG.nav.categories }}</a>
+            <a class="nav-link {% if active_nav == 'tags' %}active{% endif %}" href="{% url 'tags' %}"><img
+                    src="{% static 'assets/icons/tag.svg' %}" alt="" class="icon">{{ MSG.nav.tags }}</a>
+            <a class="nav-link {% if active_nav == 'archive' %}active{% endif %}" href="{% url 'archive' %}"><img
+                    src="{% static 'assets/icons/archive.svg' %}" alt="" class="icon">{{ MSG.nav.archive }}</a>
+            <a class="nav-link {% if active_nav == 'series' %}active{% endif %}"
+               href="{% url 'series_list' %}">{{ MSG.nav.series }}</a>
             {# ===== Round5 D7: 随机一篇文章喵 ===== #}
             <a class="nav-link" href="/random/" aria-label="{{ MSG.a11y.random_article }}">{{ MSG.nav.random }}</a>
         </div>
         {# 全局搜索框：GET 提交到 search 视图（工单16 要求保持不变） #}
-<div class="search-suggest-box">
-<form class="nav-search" action="{% url 'search' %}" method="get" role="search" aria-label="{{ MSG.a11y.site_search }}">
-            <input type="search" id="nav-search-input" name="q" value="{{ q|default:'' }}" placeholder="{{ MSG.nav.search_placeholder }}" aria-label="{{ MSG.a11y.global_search }}" inputmode="search" spellcheck="false" enterkeyhint="search" autocomplete="off">
-            <button type="submit" aria-label="{{ MSG.a11y.submit_search }}">{{ MSG.nav.search_btn }}</button>
-        </form>
-        {# ===== Round5 D1/D2: 搜索建议下拉 + 搜索历史 ===== #}
-        <div class="search-suggest-dropdown" id="search-suggest-dropdown" hidden role="listbox" aria-label="{{ MSG.a11y.search_suggest }}">
-            <div class="search-history-label" id="search-history-label" hidden>{{ MSG.a11y.search_history }}</div>
-            <div id="search-suggest-items"></div>
-        </div>
+        <div class="search-suggest-box">
+            <form class="nav-search" action="{% url 'search' %}" method="get" role="search"
+                  aria-label="{{ MSG.a11y.site_search }}">
+                <input type="search" id="nav-search-input" name="q" value="{{ q|default:'' }}"
+                       placeholder="{{ MSG.nav.search_placeholder }}" aria-label="{{ MSG.a11y.global_search }}"
+                       inputmode="search" spellcheck="false" enterkeyhint="search" autocomplete="off">
+                <button type="submit" aria-label="{{ MSG.a11y.submit_search }}">{{ MSG.nav.search_btn }}</button>
+            </form>
+            {# ===== Round5 D1/D2: 搜索建议下拉 + 搜索历史 ===== #}
+            <div class="search-suggest-dropdown" id="search-suggest-dropdown" hidden role="listbox"
+                 aria-label="{{ MSG.a11y.search_suggest }}">
+                <div class="search-history-label" id="search-history-label" hidden>{{ MSG.a11y.search_history }}</div>
+                <div id="search-suggest-items"></div>
+            </div>
         </div>
         {# ===== 右侧操作区（工单16 重构为单行）：工具箱下拉 / 通知铃铛 / 用户头像下拉 ===== #}
         <div class="nav-user">
@@ -169,54 +191,76 @@
                     aria-haspopup="true" aria-expanded="false" title="{{ MSG.a11y.toolbox_tip }}">
                 🧰 <span class="chev">▾</span>
             </button>
-            <div class="header-menu-panel tools-panel" id="tools-menu-panel" hidden role="dialog" aria-label="{{ MSG.a11y.toolbox }}">
+            <div class="header-menu-panel tools-panel" id="tools-menu-panel" hidden role="dialog"
+                 aria-label="{{ MSG.a11y.toolbox }}">
                 <div class="panel-head">{{ MSG.a11y.toolbox_head }}</div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="theme-toggle" type="button" title="{{ MSG.a11y.theme_toggle }}" aria-label="{{ MSG.a11y.theme_toggle }}" aria-pressed="false">🌙</button>
+                    <button class="theme-toggle" id="theme-toggle" type="button" title="{{ MSG.a11y.theme_toggle }}"
+                            aria-label="{{ MSG.a11y.theme_toggle }}" aria-pressed="false">🌙
+                    </button>
                     <span class="tool-label">{{ MSG.toolbox.theme_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="mouse-effect-toggle" type="button" title="{{ MSG.a11y.mouse_effect }}" aria-label="{{ MSG.a11y.mouse_effect_aria }}" aria-pressed="false">🌸</button>
+                    <button class="theme-toggle" id="mouse-effect-toggle" type="button"
+                            title="{{ MSG.a11y.mouse_effect }}" aria-label="{{ MSG.a11y.mouse_effect_aria }}"
+                            aria-pressed="false">🌸
+                    </button>
                     <span class="tool-label">{{ MSG.toolbox.mouse_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="sakura-mode-toggle" type="button" title="{{ MSG.a11y.sakura_mode }}" aria-label="{{ MSG.a11y.sakura_mode_aria }}" aria-haspopup="true">🌺</button>
+                    <button class="theme-toggle" id="sakura-mode-toggle" type="button"
+                            title="{{ MSG.a11y.sakura_mode }}" aria-label="{{ MSG.a11y.sakura_mode_aria }}"
+                            aria-haspopup="true">🌺
+                    </button>
                     <span class="tool-label">{{ MSG.toolbox.sakura_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="sound-toggle" type="button" title="{{ MSG.a11y.sound_toggle }}" aria-label="{{ MSG.a11y.sound_toggle }}" aria-pressed="false">🔊</button>
+                    <button class="theme-toggle" id="sound-toggle" type="button" title="{{ MSG.a11y.sound_toggle }}"
+                            aria-label="{{ MSG.a11y.sound_toggle }}" aria-pressed="false">🔊
+                    </button>
                     <span class="tool-label">{{ MSG.toolbox.sound_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="contrast-toggle" type="button" title="{{ MSG.a11y.contrast_toggle }}" aria-label="{{ MSG.a11y.contrast_toggle }}" aria-pressed="false">◐</button>
+                    <button class="theme-toggle" id="contrast-toggle" type="button"
+                            title="{{ MSG.a11y.contrast_toggle }}" aria-label="{{ MSG.a11y.contrast_toggle }}"
+                            aria-pressed="false">◐
+                    </button>
                     <span class="tool-label">{{ MSG.toolbox.contrast_label }}</span>
                 </div>
                 <div class="tool-row">
-                    <button class="theme-toggle" id="shortcut-help-toggle" type="button" title="{{ MSG.a11y.shortcut_help }}" aria-label="{{ MSG.a11y.shortcut_help_aria }}" aria-haspopup="true">⌨</button>
+                    <button class="theme-toggle" id="shortcut-help-toggle" type="button"
+                            title="{{ MSG.a11y.shortcut_help }}" aria-label="{{ MSG.a11y.shortcut_help_aria }}"
+                            aria-haspopup="true">⌨
+                    </button>
                     <span class="tool-label">{{ MSG.toolbox.shortcut_label }}</span>
                 </div>
             </div>
 
             {% if user.is_authenticated %}
                 {# ===== Round5 F8: 通知中心铃铛 + 未读红点 ===== #}
-<div class="nav-notification" id="notification-wrapper">
+                <div class="nav-notification" id="notification-wrapper">
                     <button class="theme-toggle nav-notification-bell" id="notification-bell" type="button"
-                            title="{{ MSG.nav.notifications }}" aria-label="{{ MSG.a11y.notification_open }}" aria-haspopup="true" aria-expanded="false">
+                            title="{{ MSG.nav.notifications }}" aria-label="{{ MSG.a11y.notification_open }}"
+                            aria-haspopup="true" aria-expanded="false">
                         🔔
                         {% if unread_notification_count and unread_notification_count > 0 %}
-                        <span class="notification-badge" id="notification-badge" aria-label="未读通知 {{ unread_notification_count }} 条">{{ unread_notification_count }}</span>
+                            <span class="notification-badge" id="notification-badge"
+                                  aria-label="未读通知 {{ unread_notification_count }} 条">{{ unread_notification_count }}</span>
                         {% endif %}
                     </button>
                     {# 通知下拉面板（默认隐藏，由 common.js 展开） #}
-                    <div class="notification-panel" id="notification-panel" hidden role="dialog" aria-label="{{ MSG.a11y.notification_panel }}">
+                    <div class="notification-panel" id="notification-panel" hidden role="dialog"
+                         aria-label="{{ MSG.a11y.notification_panel }}">
                         <div class="notification-panel-head">
                             <strong>{{ MSG.toolbox.notification_head }}</strong>
-                            <button type="button" class="notification-mark-all" id="notification-mark-all" aria-label="{{ MSG.a11y.notification_mark_all }}">{{ MSG.notify.mark_all_read }}</button>
+                            <button type="button" class="notification-mark-all" id="notification-mark-all"
+                                    aria-label="{{ MSG.a11y.notification_mark_all }}">{{ MSG.notify.mark_all_read }}</button>
                         </div>
                         <ul class="notification-list" id="notification-list">
                             <li class="notification-item muted">{{ MSG.toolbox.notification_empty }}</li>
                         </ul>
-                        <a class="notification-panel-footer" href="/notifications/" aria-label="{{ MSG.a11y.notification_footer }}">{{ MSG.toolbox.notification_all }}</a>
+                        <a class="notification-panel-footer" href="/notifications/"
+                           aria-label="{{ MSG.a11y.notification_footer }}">{{ MSG.toolbox.notification_all }}</a>
                     </div>
                 </div>
 
@@ -224,34 +268,48 @@
                 <button class="header-menu-btn" id="user-menu-btn" type="button"
                         aria-haspopup="true" aria-expanded="false" title="{{ MSG.toolbox.menu_head }}">
                     {% if user.avatar %}
-                    <img class="um-avatar" src="{{ user.avatar.url }}" alt="" width="26" height="26" loading="lazy" decoding="async">
+                        <img class="um-avatar" src="{{ user.avatar.url }}" alt="" width="26" height="26" loading="lazy"
+                             decoding="async">
                     {% else %}
-                    <span class="um-avatar-fallback">{{ user.nickname|default:user.username|slice:":1" }}</span>
+                        <span class="um-avatar-fallback">{{ user.nickname|default:user.username|slice:":1" }}</span>
                     {% endif %}
                     <span class="um-name">{{ user.nickname|default:user.username }}</span>
                     <span class="chev">▾</span>
                 </button>
-                <div class="header-menu-panel" id="user-menu-panel" hidden role="dialog" aria-label="{{ MSG.a11y.user_menu }}">
+                <div class="header-menu-panel" id="user-menu-panel" hidden role="dialog"
+                     aria-label="{{ MSG.a11y.user_menu }}">
                     <div class="panel-head">{{ MSG.toolbox.menu_head }}</div>
-                    <a class="user-menu-item" href="{% url 'user_settings' %}"><span class="umi-icon">⚙️</span>{{ MSG.toolbox.menu_settings }}</a>
+                    <a class="user-menu-item" href="{% url 'user_settings' %}"><span
+                            class="umi-icon">⚙️</span>{{ MSG.toolbox.menu_settings }}</a>
                     {# Bug9：徽章成就面板入口（直达设置页的徽章区块） #}
-                    <a class="user-menu-item" href="{% url 'user_settings' %}#my-badges"><span class="umi-icon">🏅</span>{{ MSG.toolbox.menu_badges }}</a>
-                    <a class="user-menu-item" href="/notifications/"><span class="umi-icon">🔔</span>{{ MSG.toolbox.menu_notifications }}</a>
-                    <a class="user-menu-item" href="{% url 'my_favorites' %}"><span class="umi-icon">⭐</span>{{ MSG.toolbox.menu_favorites }}</a>
-                    <a class="user-menu-item" href="{% url 'reading_history_page' %}"><span class="umi-icon">🕐</span>{{ MSG.toolbox.menu_history }}</a>
-                    <a class="user-menu-item" href="{% url 'my_liked' %}"><span class="umi-icon">👍</span>{{ MSG.toolbox.menu_liked }}</a>
-                    <a class="user-menu-item" href="{% url 'my_comments' %}"><span class="umi-icon">💬</span>{{ MSG.toolbox.menu_comments }}</a>
-                    <a class="user-menu-item" href="{% url 'my_articles' %}"><span class="umi-icon">📝</span>{{ MSG.toolbox.menu_articles }}</a>
+                    <a class="user-menu-item" href="{% url 'user_settings' %}#my-badges"><span
+                            class="umi-icon">🏅</span>{{ MSG.toolbox.menu_badges }}</a>
+                    <a class="user-menu-item" href="/notifications/"><span
+                            class="umi-icon">🔔</span>{{ MSG.toolbox.menu_notifications }}</a>
+                    <a class="user-menu-item" href="{% url 'my_favorites' %}"><span
+                            class="umi-icon">⭐</span>{{ MSG.toolbox.menu_favorites }}</a>
+                    <a class="user-menu-item" href="{% url 'reading_history_page' %}"><span
+                            class="umi-icon">🕐</span>{{ MSG.toolbox.menu_history }}</a>
+                    <a class="user-menu-item" href="{% url 'my_liked' %}"><span
+                            class="umi-icon">👍</span>{{ MSG.toolbox.menu_liked }}</a>
+                    <a class="user-menu-item" href="{% url 'my_comments' %}"><span
+                            class="umi-icon">💬</span>{{ MSG.toolbox.menu_comments }}</a>
+                    <a class="user-menu-item" href="{% url 'my_articles' %}"><span
+                            class="umi-icon">📝</span>{{ MSG.toolbox.menu_articles }}</a>
                     {% if user.is_staff %}
-                    <div class="panel-divider"></div>
-                    <a class="user-menu-item" href="{% url 'staff_console' %}"><span class="umi-icon">🎛</span>{{ MSG.toolbox.menu_console }}</a>
-                    <a class="user-menu-item" href="{% url 'site_settings' %}"><span class="umi-icon">🪄</span>{{ MSG.toolbox.menu_site_settings }}</a>
+                        <div class="panel-divider"></div>
+                        <a class="user-menu-item" href="{% url 'staff_console' %}"><span
+                                class="umi-icon">🎛</span>{{ MSG.toolbox.menu_console }}</a>
+                        <a class="user-menu-item" href="{% url 'site_settings' %}"><span
+                                class="umi-icon">🪄</span>{{ MSG.toolbox.menu_site_settings }}</a>
                     {% endif %}
                     <div class="panel-divider"></div>
-                    <a class="user-menu-item" href="{% url 'article_new' %}"><span class="umi-icon">✍</span>{{ MSG.toolbox.menu_write }}</a>
+                    <a class="user-menu-item" href="{% url 'article_new' %}"><span
+                            class="umi-icon">✍</span>{{ MSG.toolbox.menu_write }}</a>
                     <form method="post" action="{% url 'logout' %}" class="logout-menu-form">
                         {% csrf_token %}
-                        <button type="submit" class="logout-menu-btn"><span class="umi-icon">🚪</span>{{ MSG.nav.logout }}</button>
+                        <button type="submit" class="logout-menu-btn"><span
+                                class="umi-icon">🚪</span>{{ MSG.nav.logout }}</button>
                     </form>
                 </div>
             {% else %}
@@ -266,22 +324,25 @@
 {# 第4轮迭代#98: 条件渲染——无公告时公告条整块不输出（{% if site_notice %} 守卫） #}
 {# 第4轮 Round4-C9: 迁移为跨Agent接口 .announcement-banner / .announcement-close，data-notice-id 供 announcement.min.js 使用 #}
 {% if site_notice %}
-<div class="announcement-banner" id="announcementBanner" data-notice-id="{{ site_notice.id }}" role="status" aria-live="polite">
-    <span class="announcement-icon" aria-hidden="true">🌸</span>
-    <span class="announcement-content typewriter-text">{{ site_notice.content|safe }}</span>
-    <button type="button" class="announcement-close" id="announcementClose" aria-label="{{ MSG.a11y.close_notice }}">✕</button>
-</div>
+    <div class="announcement-banner" id="announcementBanner" data-notice-id="{{ site_notice.id }}" role="status"
+         aria-live="polite">
+        <span class="announcement-icon" aria-hidden="true">🌸</span>
+        <span class="announcement-content typewriter-text">{{ site_notice.content|safe }}</span>
+        <button type="button" class="announcement-close" id="announcementClose"
+                aria-label="{{ MSG.a11y.close_notice }}">✕
+        </button>
+    </div>
 {% endif %}
 {% comment %}
 ===== 主内容区：先渲染服务端 Flash 消息，再由子模板 block content 填充 =====
 {% endcomment %}
 <main class="site-main container scroll-fade-in" role="main" id="main-content">
     {% if messages %}
-<div class="flash-stack" role="status" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
-        {% for m in messages %}
-        <div class="flash flash-{{ m.tags|default:'info' }}">{{ m }}</div>
-        {% endfor %}
-    </div>
+        <div class="flash-stack" role="status" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
+            {% for m in messages %}
+                <div class="flash flash-{{ m.tags|default:'info' }}">{{ m }}</div>
+            {% endfor %}
+        </div>
     {% endif %}
     {# 39. 面包屑导航：子模板通过 {% block breadcrumb %} 填充；未填充时不渲染 #}
     {% block breadcrumb %}{% endblock %}
@@ -303,8 +364,8 @@
                     <p>{% if footer_about %}{{ footer_about }}{% else %}{{ site_tagline }}{% endif %}</p>
                 </div>
                 {% if user.is_staff %}
-                {# 工单13：站点状态仅管理员可见（含下方订阅列同名链接） #}
-                <a class="btn-primary" href="{% url 'server_status' %}">{{ MSG.brand.status_link }}</a>
+                    {# 工单13：站点状态仅管理员可见（含下方订阅列同名链接） #}
+                    <a class="btn-primary" href="{% url 'server_status' %}">{{ MSG.brand.status_link }}</a>
                 {% endif %}
             </div>
             {# ② 中间三竖列：快速导航 | 友情链接 | {{ MSG.user.following }}订阅 #}
@@ -324,12 +385,14 @@
                     <h4>{{ MSG.footer.friendly_links }}</h4>
                     <ul aria-label="{{ MSG.footer.friend_aria }}">
                         {% for link in friendly_links %}
-                        <li><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer nofollow" class="ext-link">{{ link.icon }} {{ link.name }}</a></li>
+                            <li><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer nofollow"
+                                   class="ext-link">{{ link.icon }} {{ link.name }}</a></li>
                         {% empty %}
-                        <li class="muted">{{ MSG.empty.friendly_links }}</li>
+                            <li class="muted">{{ MSG.empty.friendly_links }}</li>
                         {% endfor %}
                     </ul>
-                    <p class="footer-apply-note">{{ MSG.footer.friend_apply }}<a href="mailto:admin@example.com">{{ MSG.footer.friend_mail }}</a></p>
+                    <p class="footer-apply-note">{{ MSG.footer.friend_apply }}<a
+                            href="mailto:admin@example.com">{{ MSG.footer.friend_mail }}</a></p>
                 </div>
                 <div class="footer-col-vertical">
                     <h4>{{ MSG.footer.subscribe }}</h4>
@@ -337,43 +400,54 @@
                         <li><a href="{% url 'rss_feed' %}">{{ MSG.footer.rss }}</a></li>
                         <li><a href="{% url 'api:api_docs' %}">{{ MSG.footer.api_docs }}</a></li>
                         {% if user.is_staff %}
-                        {# 工单13：站点状态仅管理员可见 #}
-                        <li><a href="{% url 'server_status' %}">{{ MSG.brand.status_link }}</a></li>
+                            {# 工单13：站点状态仅管理员可见 #}
+                            <li><a href="{% url 'server_status' %}">{{ MSG.brand.status_link }}</a></li>
                         {% endif %}
                         {% if user.is_authenticated %}
-                        {# 已登录用户不再显示登录/注册，改为写文章入口 #}
-                        <li><a href="{% url 'article_new' %}">{{ MSG.nav.write }}</a></li>
+                            {# 已登录用户不再显示登录/注册，改为写文章入口 #}
+                            <li><a href="{% url 'article_new' %}">{{ MSG.nav.write }}</a></li>
                         {% else %}
-                        <li><a href="{% url 'login' %}">{{ MSG.nav.login }}</a></li>
-                        <li><a href="{% url 'register' %}">{{ MSG.nav.register }}</a></li>
+                            <li><a href="{% url 'login' %}">{{ MSG.nav.login }}</a></li>
+                            <li><a href="{% url 'register' %}">{{ MSG.nav.register }}</a></li>
                         {% endif %}
                     </ul>
                 </div>
             </div>
             {# ③ 横向带：网站统计 #}
             <div class="footer-band footer-stats-band" aria-label="{{ MSG.brand.stats_aria }}">
-                <div class="footer-stat-pill"><b data-count="{{ footer_article_count }}">0</b><span>{{ MSG.brand.stats_articles }}</span></div>
-                <div class="footer-stat-pill"><b data-count="{{ footer_comment_count }}">0</b><span>{{ MSG.brand.stats_comments }}</span></div>
-                <div class="footer-stat-pill"><b data-count="{{ footer_views_total }}">0</b><span>{{ MSG.brand.stats_views }}</span></div>
-                <div class="footer-stat-pill"><b data-count="{{ footer_days }}">0</b><span>{{ MSG.brand.stats_days }}</span></div>
+                <div class="footer-stat-pill"><b
+                        data-count="{{ footer_article_count }}">0</b><span>{{ MSG.brand.stats_articles }}</span></div>
+                <div class="footer-stat-pill"><b
+                        data-count="{{ footer_comment_count }}">0</b><span>{{ MSG.brand.stats_comments }}</span></div>
+                <div class="footer-stat-pill"><b
+                        data-count="{{ footer_views_total }}">0</b><span>{{ MSG.brand.stats_views }}</span></div>
+                <div class="footer-stat-pill"><b
+                        data-count="{{ footer_days }}">0</b><span>{{ MSG.brand.stats_days }}</span></div>
             </div>
         </div>
-{# 版权信息（© 动态年份；工单15 起版权归属来自数据库，可在站点设置修改） #}
-<p class="footer-copy"><img src="{% static 'assets/icons/paw.svg' %}" alt="" class="icon"> © {% now "Y" %} {{ copyright_holder }} · {{ MSG.brand.slogan }} <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon"> 🐾</p>
+        {# 版权信息（© 动态年份；工单15 起版权归属来自数据库，可在站点设置修改） #}
+        <p class="footer-copy"><img src="{% static 'assets/icons/paw.svg' %}" alt="" class="icon">
+            © {% now "Y" %} {{ copyright_holder }} · {{ MSG.brand.slogan }} <img
+                    src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon"> 🐾</p>
         {% if footer_icp %}
-        {# 工单15：备案号（站点设置中填写） #}
-        <p class="footer-icp">{{ footer_icp }}</p>
+            {# 工单15：备案号（站点设置中填写） #}
+            <p class="footer-icp">{{ footer_icp }}</p>
         {% endif %}
     </div>
 </footer>
 {# ===== Round5 A6: 侧栏折叠全局按钮（移动端/窄屏隐藏侧栏） ===== #}
-<button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="{{ MSG.a11y.quick_menu }}" aria-haspopup="true" aria-expanded="false">☰</button>
+<button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="{{ MSG.a11y.quick_menu }}"
+        aria-haspopup="true" aria-expanded="false">☰
+</button>
 {# ===== Round5 A8: 键盘快捷键帮助面板（按 ? 或 ⌨ 按钮呼出） ===== #}
-<div class="shortcut-help-mask" id="shortcut-help-mask" hidden role="dialog" aria-modal="true" aria-labelledby="shortcut-help-title">
+<div class="shortcut-help-mask" id="shortcut-help-mask" hidden role="dialog" aria-modal="true"
+     aria-labelledby="shortcut-help-title">
     <div class="shortcut-help-panel" role="document">
         <div class="shortcut-help-head">
             <strong id="shortcut-help-title">{{ MSG.toolbox.shortcut_title }}</strong>
-            <button type="button" class="shortcut-help-close" id="shortcut-help-close" aria-label="{{ MSG.a11y.close_shortcut_panel }}">✕</button>
+            <button type="button" class="shortcut-help-close" id="shortcut-help-close"
+                    aria-label="{{ MSG.a11y.close_shortcut_panel }}">✕
+            </button>
         </div>
         <ul class="shortcut-list" aria-label="{{ MSG.a11y.shortcut_list }}">
             <li><kbd>/</kbd><span>{{ MSG.toolbox.shortcut_search }}</span></li>
@@ -393,30 +467,41 @@
     <div class="moe-loading-cat">🐱</div>
     <div class="moe-loading-text">{{ MSG.offline.loading }}</div>
 </div>
-<div id="offline-banner" role="alert" aria-label="{{ MSG.a11y.offline_hint }}" hidden >{{ MSG.offline.disconnected }}</div>
-<div id="online-status" role="status" aria-live="polite"  title="{{ MSG.a11y.online_status }}"></div>
+<div id="offline-banner" role="alert" aria-label="{{ MSG.a11y.offline_hint }}"
+     hidden>{{ MSG.offline.disconnected }}</div>
+<div id="online-status" role="status" aria-live="polite" title="{{ MSG.a11y.online_status }}"></div>
 <span id="last-saved" hidden role="status"></span>
 <button type="button" id="sync-button" hidden aria-label="{{ MSG.a11y.sync_offline }}">{{ MSG.offline.sync }}</button>
 <ul id="offline-articles" hidden aria-label="{{ MSG.a11y.offline_articles }}"></ul>
 <span id="queue-count" hidden aria-label="{{ MSG.a11y.pending_sync }}">0</span>
 <button type="button" id="retry-all" hidden aria-label="{{ MSG.a11y.retry_all }}">{{ MSG.offline.retry_all }}</button>
-<button type="button" id="clear-queue" hidden aria-label="{{ MSG.a11y.clear_queue }}">{{ MSG.offline.clear_queue }}</button>
+<button type="button" id="clear-queue" hidden
+        aria-label="{{ MSG.a11y.clear_queue }}">{{ MSG.offline.clear_queue }}</button>
 <span id="storage-usage" hidden aria-label="{{ MSG.a11y.storage_used }}">0 MB</span>
 <span id="storage-limit" hidden aria-label="{{ MSG.a11y.storage_limit }}">50 MB</span>
-<button class="back-to-top" id="back-to-top" type="button" aria-label="{{ MSG.nav.back_top }}" data-tooltip="{{ MSG.nav.back_top }}" tabindex="0">
-<svg class="btt-ring" width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="{{ MSG.a11y.reading_ring }}">
-<title>{{ MSG.a11y.reading_ring }}</title><desc>{{ MSG.a11y.reading_ring_desc }}</desc>
+<button class="back-to-top" id="back-to-top" type="button" aria-label="{{ MSG.nav.back_top }}"
+        data-tooltip="{{ MSG.nav.back_top }}" tabindex="0">
+    <svg class="btt-ring" width="52" height="52" viewBox="0 0 52 52" role="img"
+         aria-label="{{ MSG.a11y.reading_ring }}">
+        <title>{{ MSG.a11y.reading_ring }}</title>
+        <desc>{{ MSG.a11y.reading_ring_desc }}</desc>
         <circle class="btt-ring-bg" cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="4"/>
         <circle class="btt-ring-fg" cx="26" cy="26" r="22" fill="none"
                 stroke="url(#bttGrad)" stroke-width="4" stroke-linecap="round"
                 transform="rotate(-90 26 26)"/>
         <defs>
             <linearGradient id="bttGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#ff8fb1"/><stop offset=".5" stop-color="#a06cd5"/><stop offset="1" stop-color="#6ea8fe"/>
+                <stop offset="0" stop-color="#ff8fb1"/>
+                <stop offset=".5" stop-color="#a06cd5"/>
+                <stop offset="1" stop-color="#6ea8fe"/>
             </linearGradient>
         </defs>
     </svg>
-<svg class="btt-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></svg>
+    <svg class="btt-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 19V5"/>
+        <path d="m6 11 6-6 6 6"/>
+    </svg>
 </button>
 {% comment %}
 ===== 全局脚本：defer 异步加载，DOM 解析完成后执行 =====
@@ -441,15 +526,12 @@
 <script defer src="{% static 'assets/js/round6.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# analytics onerror 保留：script 加载失败须在标签上兜底移除，无法外移 #}
 <script async src="{% static 'assets/js/analytics.js' %}" onerror="this.remove()"></script>
-    <script src="{% static 'assets/js/base_page_progress.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-    <script src="{% static 'assets/js/base_service_worker.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-<script src="{% static 'assets/js/base_announcement_banner.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/base_page_progress.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/base_service_worker.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/base_announcement_banner.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 
-<script src="{% static 'assets/live2d/engine/pixi.min.js' %}?v=20260923"></script>
-<script src="{% static 'assets/live2d/engine/live2d.core.min.js' %}?v=20260923"></script>
-<script src="{% static 'assets/live2d/engine/live2dcubismcore.min.js' %}?v=20260923"></script>
-<script src="{% static 'assets/live2d/engine/pixi-live2d-display.min.js' %}?v=20260923"></script>
-<script src="{% static 'assets/live2d/engine/renderer.js' %}?v=20260923"></script>
+{# live2d 引擎合并 bundle（pixi→core→cubismcore→display→renderer），由 refresh_assets --bundle-only 生成 #}
+<script src="{% static 'assets/js/live2d_engine_bundle.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <script src="{% static 'assets/live2d/waifu-init-new.js' %}?v=20260923"></script>
 <script src="{% static 'assets/js/waifu-footer-avoid.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 <script src="{% static 'assets/js/waifu-mobile.min.js' %}?v={{ BUILD_TOKEN }}"></script>

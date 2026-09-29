@@ -58,7 +58,7 @@ class Command(BaseCommand):
 
         def walk(patterns, prefix=''):
             for p in patterns:
-                if hasattr(p, 'url_patterns'):     # include() 进来的子路由
+                if hasattr(p, 'url_patterns'):  # include() 进来的子路由
                     walk(p.url_patterns, prefix + str(p.pattern))
                     continue
                 view = getattr(p, 'callback', None)
@@ -177,11 +177,11 @@ class Command(BaseCommand):
         """
         body = [n for n in node.body
                 if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant)
-                        and isinstance(n.value.value, str))]   # 去掉 docstring
+                        and isinstance(n.value.value, str))]  # 去掉 docstring
         if not body:
-            return True                                        # 只有 docstring
+            return True  # 只有 docstring
         if len(body) == 1 and isinstance(body[0], ast.Pass):
-            return True                                        # 只有 pass
+            return True  # 只有 pass
         # 只有一句 return，且返回空值 / 空容器
         if len(body) == 1 and isinstance(body[0], ast.Return):
             val = body[0].value
@@ -224,7 +224,7 @@ class Command(BaseCommand):
                 '== 未挂路由的函数（%d 个）==' % len(unrouted)))
             self.stdout.write(self.style.SUCCESS(
                 '  ├─ 内部工具函数（被其它代码调用，%d 个）：正常，无需处理' % len(internal_only)))
-            for name in internal_only[:0]:        # 数量多时默认折叠，避免刷屏
+            for name in internal_only[:0]:  # 数量多时默认折叠，避免刷屏
                 self.stdout.write('  │   L%-5d %s()' % (funcs[name]['line'], name))
             if unreferenced:
                 self.stdout.write(self.style.ERROR(
@@ -257,8 +257,8 @@ class Command(BaseCommand):
         ok = not stubs and not unreferenced
         self.stdout.write(self.style.SUCCESS(
             '  结论：%s' % ('所有路由均有真实实现、无零引用死代码 [OK]' if ok else
-                          '存在 %d 个占位视图 / %d 个零引用函数，需归档或清理'
-                          % (len(stubs), len(unreferenced)))))
+                           '存在 %d 个占位视图 / %d 个零引用函数，需归档或清理'
+                           % (len(stubs), len(unreferenced)))))
 
         if options['json']:
             out_dir = os.path.join(settings.BASE_DIR, 'docs', 'bugfix_20260926_bug9')

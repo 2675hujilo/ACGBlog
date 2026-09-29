@@ -66,8 +66,12 @@
         toggle.textContent = '展开全部域';
         toggle.addEventListener('click', function () {
             var blocks = form.querySelectorAll('details.msgs-domain');
-            var anyClosed = Array.prototype.some.call(blocks, function (d) { return !d.open; });
-            Array.prototype.forEach.call(blocks, function (d) { d.open = anyClosed; });
+            var anyClosed = Array.prototype.some.call(blocks, function (d) {
+                return !d.open;
+            });
+            Array.prototype.forEach.call(blocks, function (d) {
+                d.open = anyClosed;
+            });
             toggle.textContent = anyClosed ? '折叠全部域' : '展开全部域';
         });
         bar.appendChild(toggle);
@@ -86,7 +90,9 @@
 
     /* ---- 3. 有未保存改动时离开提示 ---- */
     var submitting = false;
-    form.addEventListener('submit', function () { submitting = true; });
+    form.addEventListener('submit', function () {
+        submitting = true;
+    });
     window.addEventListener('beforeunload', function (e) {
         if (submitting) return undefined;
         if (refresh() > 0) {

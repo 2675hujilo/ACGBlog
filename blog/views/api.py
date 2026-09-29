@@ -167,15 +167,30 @@ class ImageUploadView(APIView):
         except OSError as os_exc:
             logger.error('上传目录创建失败: %s', os_exc)
             return respond(False, message='服务器存储错误')
-        filename = f'{uuid.uuid4().hex}{ext}'
-        # 迭代#222: ImageUploadView中文件写入异常处理
+
+        # 图片转 WebP（体积减 60-80%）；保留 PNG 透明通道，其他转 RGB
         try:
+            upload.seek(0)
+            img = Image.open(upload)
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            elif img.mode in ('CMYK', 'YCbCr'):
+                img = img.convert('RGB')
+            # 去掉 EXIF 方向标记（部分手机照片有旋转信息）
+            img = ImageOps.exif_transpose(img) if hasattr(Image, 'Ops') else img
+            # WebP 质量 85（视觉无损，体积减半以上）
+            ext = '.webp'
+            filename = f'{uuid.uuid4().hex}{ext}'
+            img.save(os.path.join(abs_dir, filename), 'WEBP', quality=85, method=4)
+        except Exception as conv_exc:
+            # WebP 转换失败时降级为原格式保存（不阻断上传）
+            logger.warning('WebP 转换失败，降级保存原格式: %s', conv_exc)
+            ext = os.path.splitext(upload.name)[1].lower()
+            filename = f'{uuid.uuid4().hex}{ext}'
+            upload.seek(0)
             with open(os.path.join(abs_dir, filename), 'wb') as fp:
                 for chunk in upload.chunks():
                     fp.write(chunk)
-        except OSError as wr_exc:
-            logger.error('上传文件写入失败: %s', wr_exc)
-            return respond(False, message='文件保存失败')
         # 迭代#223: 图片上传日志
         logger.info('图片上传: %s by %s', upload.name, request.user.username)
         url = request.build_absolute_uri(f'{settings.MEDIA_URL}uploads/{year}/{month}/{filename}')

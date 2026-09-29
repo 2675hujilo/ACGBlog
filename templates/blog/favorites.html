@@ -2,25 +2,26 @@
 {% load static %}
 {% block title %}{{ MSG.user.my_collection }} · {{ site_name }}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
-    <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
-    <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.toolbox.menu_favorites }}</span>
-</nav>
+    <nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
+        <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
+        <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.toolbox.menu_favorites }}</span>
+    </nav>
 {% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'assets/css/profile.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/profile.min.css' %}">
 {% endblock %}
 {% block content %}
-<h1 class="settings-page-title">{{ MSG.toolbox.menu_favorites }}</h1>
-<div class="article-list" aria-label="{{ MSG.auto.收藏的文章 }}">
-    {% for article in page_obj %}
-    {% include 'partials/_article_card.html' %}
-    {% empty %}
-    <div class="empty-state">
-        <img src="{% static 'assets/images/empty-state.svg' %}" alt="{{ MSG.auto.暂无收藏 }}" class="empty-illust">
-        <p>{{ MSG.empty.favorites }}</p>
+    <h1 class="settings-page-title">{{ MSG.toolbox.menu_favorites }}</h1>
+    <div class="article-list" aria-label="{{ MSG.auto.收藏的文章 }}">
+        {% for article in page_obj %}
+            {% include 'partials/_article_card.html' %}
+        {% empty %}
+            <div class="empty-state">
+                <img src="{% static 'assets/images/empty-state.svg' %}" alt="{{ MSG.auto.暂无收藏 }}"
+                     class="empty-illust">
+                <p>{{ MSG.empty.favorites }}</p>
+            </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-{% include 'partials/_pagination.html' %}
+    {% include 'partials/_pagination.html' %}
 {% endblock %}

@@ -6,41 +6,50 @@
 {# 第4轮迭代#126: include 优化——{{ block.super }} 在覆写 block 时追加父模板内容 #}
 {# SEO meta：详情页用文章标题/摘要/标签，og:type=article #}
 {% block seo_meta %}
-{% include 'partials/_seo_meta.html' %}
-<meta property="article:published_time" content="{{ article.created_at|date:'c' }}">
-<meta property="article:modified_time" content="{{ article.updated_at|date:'c' }}">
-<meta property="article:author" content="{{ article.author.nickname|default:article.author.username }}">
-{% for tag in article.tags.all %}<meta property="article:tag" content="{{ tag.name }}">
-{% endfor %}
-{% if article.category %}<meta property="article:section" content="{{ article.category.name }}">{% endif %}
-{% if article.cover_image %}<meta property="og:image:width" content="1200">{% endif %}
-{% if article.cover_image %}<meta property="og:image:height" content="630">{% endif %}
-{% if article.cover_image %}<meta property="og:image:type" content="image/jpeg">{% endif %}
-{% if article.cover_image %}<meta name="twitter:image:width" content="1200">{% endif %}
-{% if article.cover_image %}<meta name="twitter:image:height" content="630">{% endif %}
+    {% include 'partials/_seo_meta.html' %}
+    <meta property="article:published_time" content="{{ article.created_at|date:'c' }}">
+    <meta property="article:modified_time" content="{{ article.updated_at|date:'c' }}">
+    <meta property="article:author" content="{{ article.author.nickname|default:article.author.username }}">
+    {% for tag in article.tags.all %}
+        <meta property="article:tag" content="{{ tag.name }}">
+    {% endfor %}
+    {% if article.category %}
+        <meta property="article:section" content="{{ article.category.name }}">{% endif %}
+    {% if article.cover_image %}
+        <meta property="og:image:width" content="1200">{% endif %}
+    {% if article.cover_image %}
+        <meta property="og:image:height" content="630">{% endif %}
+    {% if article.cover_image %}
+        <meta property="og:image:type" content="image/jpeg">{% endif %}
+    {% if article.cover_image %}
+        <meta name="twitter:image:width" content="1200">{% endif %}
+    {% if article.cover_image %}
+        <meta name="twitter:image:height" content="630">{% endif %}
 {% endblock %}
 {# 文章结构化数据（Schema.org Article）：article_jsonld 已在视图中安全转义 #}
 {% block extra_head %}
-{# 修复：snapshot-modal-mask的display:flex覆盖hidden属性，强制[hidden]为display:none，仅按钮点击触发 #}
-<link rel="stylesheet" href="{% static 'assets/css/detail_inline.min.css' %}?v={{ BUILD_TOKEN }}">
-{# ===== Round5: 详情页按需加载阅读/交互/工具样式（全站 effects.min.css 已在 base.html 加载） ===== #}
-<link rel="stylesheet" href="{% static 'assets/css/reading.min.css' %}?v={{ BUILD_TOKEN }}">
-<link rel="stylesheet" href="{% static 'assets/css/interaction.min.css' %}?v={{ BUILD_TOKEN }}">
-<link rel="stylesheet" href="{% static 'assets/css/tools.min.css' %}?v={{ BUILD_TOKEN }}">
-<link rel="stylesheet" href="{% static 'assets/css/detail_inline.min.css' %}?v={{ BUILD_TOKEN }}">
-<script type="application/ld+json">{{ article_jsonld|safe }}</script>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
-{"@type":"ListItem","position":1,"name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}"}{% if article.category %},
-{"@type":"ListItem","position":2,"name":"{{ article.category.name }}","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'category_detail' article.category.pk %}"},
+    {# 修复：snapshot-modal-mask的display:flex覆盖hidden属性，强制[hidden]为display:none，仅按钮点击触发 #}
+    <link rel="stylesheet" href="{% static 'assets/css/detail_inline.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# ===== Round5: 详情页按需加载阅读/交互/工具样式（全站 effects.min.css 已在 base.html 加载） ===== #}
+    <link rel="stylesheet" href="{% static 'assets/css/reading.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/interaction.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/tools.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/detail_inline.min.css' %}?v={{ BUILD_TOKEN }}">
+    <script type="application/ld+json">{{ article_jsonld|safe }}</script>
+    <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+        {"@type":"ListItem","position":1,"name":"首页","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'index' %}"}
+        {% if article.category %},
+{"@type":"ListItem","position":2,"name":"{{ article.category.name }}","url":"{{ request.scheme }}://
+            {{ request.get_host }}{% url 'category_detail' article.category.pk %}"},
 {"@type":"ListItem","position":3,"name":"{{ article.title }}","url":"{{ request.build_absolute_uri }}"}{% else %},
 {"@type":"ListItem","position":2,"name":"{{ article.title }}","url":"{{ request.build_absolute_uri }}"}{% endif %}
-]}
-</script>
-{% if article.rating_count %}
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Article",
-"name":"{{ article.title }}",
+        ]}
+    </script>
+    {% if article.rating_count %}
+        <script type="application/ld+json">
+            {"@context":"https://schema.org","@type":"Article",
+            "name":"{{ article.title }}",
 "aggregateRating":{"@type":"AggregateRating",
 "ratingValue":"{{ article.rating_avg }}",
 "reviewCount":{{ article.rating_count }},
@@ -50,183 +59,225 @@
 "datePublished":"{{ article.created_at|date:'c' }}",
 "review":{"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":"{{ article.rating_avg }}"}},
 "publisher":{"@type":"Organization","name":"{{ site_name|default:'萌语博客' }}"}}
-</script>
-{% endif %}
+        </script>
+    {% endif %}
 {% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope itemtype="https://schema.org/BreadcrumbList">
-    <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span><meta itemprop="position" content="1"></a>
-    {% if article.category %}
-    <span class="crumb-sep">›</span><a href="{% url 'category_detail' article.category.pk %}" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ article.category.name }}</span><meta itemprop="position" content="2"></a>
-    {% endif %}
-    <span class="crumb-sep">›</span>
-    <span class="crumb-current" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ article.title }}</span><meta itemprop="position" content="{% if article.category %}3{% else %}2{% endif %}"></span>
-</nav>
+    <nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope
+         itemtype="https://schema.org/BreadcrumbList">
+        <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span>
+            <meta itemprop="position" content="1">
+        </a>
+        {% if article.category %}
+            <span class="crumb-sep">›</span>
+            <a href="{% url 'category_detail' article.category.pk %}" itemprop="itemListElement" itemscope
+               itemtype="https://schema.org/ListItem"><span itemprop="name">{{ article.category.name }}</span>
+                <meta itemprop="position" content="2">
+            </a>
+        {% endif %}
+        <span class="crumb-sep">›</span>
+        <span class="crumb-current" aria-current="page" itemprop="itemListElement" itemscope
+              itemtype="https://schema.org/ListItem"><span itemprop="name">{{ article.title }}</span><meta
+                itemprop="position" content="{% if article.category %}3{% else %}2{% endif %}"></span>
+    </nav>
 {% endblock %}
 {% block content %}
-<noscript><div class="noscript-banner noscript-banner--bordered" role="alert" >{{ MSG.auto.检测到_javascript_已禁用_本文目录_ }}</div></noscript>
-{# ---------- 三栏网格：左sidebar + 中正文 + 右TOC目录 ---------- #}
-<div class="three-col-grid">
-    {# ---------- 左栏：热门文章 / 分类导航 / 站点统计 / 标签云（与首页右栏错位展示） ---------- #}
-    <aside class="col-left" role="complementary" aria-label="{{ MSG.index.sidebar_aria }}">
-        <div class="widget">
-<div class="widget-title">{{ MSG.index.hot_articles }}</div>
-<ol class="hot-list">
-                {# 第4轮迭代#101: 自定义标签——{% recent_articles %} 等价于下方最新文章循环（视图注入 hot_articles） #}
-                {# 第4轮迭代#102: 自定义标签——{% popular_articles %} 等价于下方热门文章循环（按阅读量排序） #}
-                {% for hot in hot_articles %}
-                <li>
-                    <a href="{{ hot.get_absolute_url }}" title="{{ hot.title }}">{{ hot.title }}</a>
-                    {# 13. 热度趋势箭头：前三名火焰递增，4-10 名平稳 #}
-                    <div class="hot-meta">
-                        {% if forloop.counter == 1 %}<span class="hot-trend up">🔥🔥🔥</span>
-                        {% elif forloop.counter == 2 %}<span class="hot-trend up">🔥🔥</span>
-                        {% elif forloop.counter == 3 %}<span class="hot-trend up">🔥</span>
-                        {% else %}<span class="hot-trend flat">→</span>{% endif %}
-                        👁 {{ hot.views }} · 🕒 {{ hot.created_at|date:"m-d" }}
-                    </div>
-                </li>
-                {% empty %}
-                <li class="muted">{{ MSG.index.empty }}</li>
-                {% endfor %}
-            </ol>
-        </div>
-        <div class="widget">
-<div class="widget-title">{{ MSG.index.cat_nav }}</div>
-            {# 第4轮迭代#105: 自定义标签——{% category_list %} 等价于下方 nav_categories 分类列表循环 #}
-            <ul class="cat-nav-list">
-                {% for c in nav_categories %}
-                <li>
-                    <a href="{% url 'category_detail' c.pk %}">{{ c.icon|default:'📁' }} {{ c.name }}</a>
-                    <span class="n">{{ c.n }}</span>
-                </li>
-                {% empty %}
-                <li class="muted">{{ MSG.index.cat_empty }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="widget">
-<div class="widget-title">{{ MSG.reading.sidebar_stats }}</div>
-            {# 第4轮迭代#107: 自定义标签——{% site_stats %} 等价于下方 stat-grid 站点统计循环 #}
-            <div class="stat-grid">
-                <div class="stat-item"><span class="num" data-count="{{ stats.article_count }}">0</span><span class="label">{{ MSG.brand.stats_articles }}</span></div>
-                <div class="stat-item"><span class="num" data-count="{{ stats.views_total }}">0</span><span class="label">{{ MSG.reading.stats_views_total }}</span></div>
-                <div class="stat-item"><span class="num" data-count="{{ stats.category_count }}">0</span><span class="label">{{ MSG.footer.nav_categories }}</span></div>
-                <div class="stat-item"><span class="num" data-count="{{ stats.tag_count }}">0</span><span class="label">{{ MSG.footer.nav_tags }}</span></div>
-                {# 9. 今日访问量 #}
-                {# 第4轮迭代#109: 自定义标签——{% today_views %} 等价于 stats.today_views 今日访问项 #}
-<div class="stat-item stat-today"><span class="num" data-count="{{ stats.today_views }}">0</span><span class="label">{{ MSG.reading.stats_today }}</span></div>
-                {# 10. 在线人数（最近5分钟去重IP） #}
-                {# 第4轮迭代#108: 自定义标签——{% online_users %} 等价于 stats.online_count 在线人数项 #}
-<div class="stat-item stat-online"><span class="num" data-count="{{ stats.online_count }}">0</span><span class="label" title="{{ MSG.reading.online_tip }}">{{ MSG.a11y.online_status }}</span></div>
+    <noscript>
+        <div class="noscript-banner noscript-banner--bordered"
+             role="alert">{{ MSG.auto.检测到_javascript_已禁用_本文目录_ }}</div>
+    </noscript>
+    {# ---------- 三栏网格：左sidebar + 中正文 + 右TOC目录 ---------- #}
+    <div class="three-col-grid">
+        {# ---------- 左栏：热门文章 / 分类导航 / 站点统计 / 标签云（与首页右栏错位展示） ---------- #}
+        <aside class="col-left" role="complementary" aria-label="{{ MSG.index.sidebar_aria }}">
+            <div class="widget">
+                <div class="widget-title">{{ MSG.index.hot_articles }}</div>
+                <ol class="hot-list">
+                    {# 第4轮迭代#101: 自定义标签——{% recent_articles %} 等价于下方最新文章循环（视图注入 hot_articles） #}
+                    {# 第4轮迭代#102: 自定义标签——{% popular_articles %} 等价于下方热门文章循环（按阅读量排序） #}
+                    {% for hot in hot_articles %}
+                        <li>
+                            <a href="{{ hot.get_absolute_url }}" title="{{ hot.title }}">{{ hot.title }}</a>
+                            {# 13. 热度趋势箭头：前三名火焰递增，4-10 名平稳 #}
+                            <div class="hot-meta">
+                                {% if forloop.counter == 1 %}<span class="hot-trend up">🔥🔥🔥</span>
+                                {% elif forloop.counter == 2 %}<span class="hot-trend up">🔥🔥</span>
+                                {% elif forloop.counter == 3 %}<span class="hot-trend up">🔥</span>
+                                {% else %}<span class="hot-trend flat">→</span>{% endif %}
+                                👁 {{ hot.views }} · 🕒 {{ hot.created_at|date:"m-d" }}
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="muted">{{ MSG.index.empty }}</li>
+                    {% endfor %}
+                </ol>
             </div>
-        </div>
-<div class="widget tag-cloud">
-            <div class="widget-title">{{ MSG.reading.tag_cloud }}</div>
-            {# 第4轮迭代#104: 自定义标签——{% tag_cloud %} 等价于下方 cloud_tags 标签云循环 #}
-            {% for t in cloud_tags %}
-            <a class="chip tag-color-{% cycle '1' '2' '3' '4' '5' %}" href="{% url 'tag_detail' t.pk %}">{{ t.name }}<span class="count">{{ t.n }}</span></a>
-            {% empty %}
-            <span class="muted">{{ MSG.index.tag_empty }}</span>
-            {% endfor %}
-        </div>
-        {# 64. 最近阅读：纯前端 localStorage 渲染，由 reading_history.js 填充 #}
-<div class="widget" id="reading-history-widget">
-            <div class="widget-title">
-                📚 最近阅读
-                <button type="button" class="rh-clear" id="rh-clear" title="{{ MSG.reading.clear_history_title }}">🗑</button>
+            <div class="widget">
+                <div class="widget-title">{{ MSG.index.cat_nav }}</div>
+                {# 第4轮迭代#105: 自定义标签——{% category_list %} 等价于下方 nav_categories 分类列表循环 #}
+                <ul class="cat-nav-list">
+                    {% for c in nav_categories %}
+                        <li>
+                            <a href="{% url 'category_detail' c.pk %}">{{ c.icon|default:'📁' }} {{ c.name }}</a>
+                            <span class="n">{{ c.n }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="muted">{{ MSG.index.cat_empty }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-            {# 第4轮迭代#110: 自定义标签——{% reading_history %} 等价于下方 rh-list（localStorage 渲染） #}
-            <ul class="rh-list" id="rh-list"></ul>
-        </div>
-    </aside>
-    {# ---------- 中栏：文章正文（玻璃拟态文章卡片） ---------- #}
-    <div class="col-center">
-<article class="article-main" role="article" aria-labelledby="article-title" itemscope itemtype="https://schema.org/Article">
-            <div class="article-paper">
-                {# 文章封面横幅：有封面图显示图片，无封面用粉紫蓝渐变占位 #}
-                {% if article.cover_image %}
-                <div class="article-cover">
-<figure style="margin:0;">
-<img src="{{ article.cover_image.url }}" alt="{{ article.title }} 封面" loading="eager" itemprop="image" fetchpriority="high" decoding="async" width="1200" height="630">
-<figcaption class="sr-only">{{ article.title }} 的封面图</figcaption></figure>
+            <div class="widget">
+                <div class="widget-title">{{ MSG.reading.sidebar_stats }}</div>
+                {# 第4轮迭代#107: 自定义标签——{% site_stats %} 等价于下方 stat-grid 站点统计循环 #}
+                <div class="stat-grid">
+                    <div class="stat-item"><span class="num" data-count="{{ stats.article_count }}">0</span><span
+                            class="label">{{ MSG.brand.stats_articles }}</span></div>
+                    <div class="stat-item"><span class="num" data-count="{{ stats.views_total }}">0</span><span
+                            class="label">{{ MSG.reading.stats_views_total }}</span></div>
+                    <div class="stat-item"><span class="num" data-count="{{ stats.category_count }}">0</span><span
+                            class="label">{{ MSG.footer.nav_categories }}</span></div>
+                    <div class="stat-item"><span class="num" data-count="{{ stats.tag_count }}">0</span><span
+                            class="label">{{ MSG.footer.nav_tags }}</span></div>
+                    {# 9. 今日访问量 #}
+                    {# 第4轮迭代#109: 自定义标签——{% today_views %} 等价于 stats.today_views 今日访问项 #}
+                    <div class="stat-item stat-today"><span class="num"
+                                                            data-count="{{ stats.today_views }}">0</span><span
+                            class="label">{{ MSG.reading.stats_today }}</span></div>
+                    {# 10. 在线人数（最近5分钟去重IP） #}
+                    {# 第4轮迭代#108: 自定义标签——{% online_users %} 等价于 stats.online_count 在线人数项 #}
+                    <div class="stat-item stat-online"><span class="num"
+                                                             data-count="{{ stats.online_count }}">0</span><span
+                            class="label" title="{{ MSG.reading.online_tip }}">{{ MSG.a11y.online_status }}</span></div>
                 </div>
-                {% else %}
-                <div class="article-cover article-cover--placeholder" aria-hidden="true">
-                    <img src="{% static 'assets/images/cover-placeholder.svg' %}" alt="{{ MSG.article.cover_placeholder_alt }}" class="cover-placeholder">
+            </div>
+            <div class="widget tag-cloud">
+                <div class="widget-title">{{ MSG.reading.tag_cloud }}</div>
+                {# 第4轮迭代#104: 自定义标签——{% tag_cloud %} 等价于下方 cloud_tags 标签云循环 #}
+                {% for t in cloud_tags %}
+                    <a class="chip tag-color-{% cycle '1' '2' '3' '4' '5' %}"
+                       href="{% url 'tag_detail' t.pk %}">{{ t.name }}<span class="count">{{ t.n }}</span></a>
+                {% empty %}
+                    <span class="muted">{{ MSG.index.tag_empty }}</span>
+                {% endfor %}
+            </div>
+            {# 64. 最近阅读：纯前端 localStorage 渲染，由 reading_history.js 填充 #}
+            <div class="widget" id="reading-history-widget">
+                <div class="widget-title">
+                    📚 最近阅读
+                    <button type="button" class="rh-clear" id="rh-clear" title="{{ MSG.reading.clear_history_title }}">
+                        🗑
+                    </button>
                 </div>
-                {% endif %}
-                {# 文章头部：类型/状态徽章 + 标题 + 作者/时间/阅读量/阅读时长/字数元信息 + 作者本人可见的编辑/删除按钮 #}
-                {% if article.status == 'pending' %}
-                <div class="pending-banner" role="note">
-                    <span class="pending-banner-ico" aria-hidden="true">⏳</span>
-                    <span class="pending-banner-txt">{{ MSG.article.pending_author_note }}<strong>{{ MSG.article.pending_author_note2 }}</strong>{{ MSG.article.pending_author_note3 }}</span>
-                </div>
-                {% endif %}
-                {# Bug9-1/Bug9-2：定时投稿预览提示（仅作者 / 管理员可见） #}
-                {% if scheduled_notice %}
-                <div class="scheduled-banner scheduled-banner--{{ scheduled_notice.kind }}" role="note">
-                    <span class="scheduled-banner-ico" aria-hidden="true">{% if scheduled_notice.kind == 'due' %}⏰{% else %}🕐{% endif %}</span>
-                    <span class="scheduled-banner-txt">
+                {# 第4轮迭代#110: 自定义标签——{% reading_history %} 等价于下方 rh-list（localStorage 渲染） #}
+                <ul class="rh-list" id="rh-list"></ul>
+            </div>
+        </aside>
+        {# ---------- 中栏：文章正文（玻璃拟态文章卡片） ---------- #}
+        <div class="col-center">
+            <article class="article-main" role="article" aria-labelledby="article-title" itemscope
+                     itemtype="https://schema.org/Article">
+                <div class="article-paper">
+                    {# 文章封面横幅：有封面图显示图片，无封面用粉紫蓝渐变占位 #}
+                    {% if article.cover_image %}
+                        <div class="article-cover">
+                            <figure style="margin:0;">
+                                <img src="{{ article.cover_image.url }}" alt="{{ article.title }} 封面" loading="eager"
+                                     itemprop="image" fetchpriority="high" decoding="async" width="1200" height="630">
+                                <figcaption class="sr-only">{{ article.title }} 的封面图</figcaption>
+                            </figure>
+                        </div>
+                    {% else %}
+                        <div class="article-cover article-cover--placeholder" aria-hidden="true">
+                            <img src="{% static 'assets/images/cover-placeholder.svg' %}"
+                                 alt="{{ MSG.article.cover_placeholder_alt }}" class="cover-placeholder">
+                        </div>
+                    {% endif %}
+                    {# 文章头部：类型/状态徽章 + 标题 + 作者/时间/阅读量/阅读时长/字数元信息 + 作者本人可见的编辑/删除按钮 #}
+                    {% if article.status == 'pending' %}
+                        <div class="pending-banner" role="note">
+                            <span class="pending-banner-ico" aria-hidden="true">⏳</span>
+                            <span class="pending-banner-txt">{{ MSG.article.pending_author_note }}<strong>{{ MSG.article.pending_author_note2 }}</strong>{{ MSG.article.pending_author_note3 }}</span>
+                        </div>
+                    {% endif %}
+                    {# Bug9-1/Bug9-2：定时投稿预览提示（仅作者 / 管理员可见） #}
+                    {% if scheduled_notice %}
+                        <div class="scheduled-banner scheduled-banner--{{ scheduled_notice.kind }}" role="note">
+                            <span class="scheduled-banner-ico"
+                                  aria-hidden="true">{% if scheduled_notice.kind == 'due' %}⏰{% else %}
+                                🕐{% endif %}</span>
+                            <span class="scheduled-banner-txt">
                         {% if scheduled_notice.kind == 'scheduled' %}
-                        这是一篇<strong>{{ MSG.auto.定时投稿 }}</strong>：当前状态为「{{ scheduled_notice.status }}」，
-                        计划于 <strong>{{ scheduled_notice.at|date:"Y-m-d H:i" }}</strong> 自动发布
-                        （约 {{ scheduled_notice.left|time_until }}）。
-                        只有<strong>{{ MSG.article.scheduled_visibility }}</strong>能看到，到点后按站点审核设置转为「待审核」或「已发布」喵~
+                            这是一篇<strong>{{ MSG.auto.定时投稿 }}</strong>：当前状态为「{{ scheduled_notice.status }}」，
+                            计划于 <strong>{{ scheduled_notice.at|date:"Y-m-d H:i" }}</strong> 自动发布
+                            （约 {{ scheduled_notice.left|time_until }}）。
+                            只有<strong>{{ MSG.article.scheduled_visibility }}</strong>能看到，到点后按站点审核设置转为「待审核」或「已发布」喵~
                         {% else %}
-                        这篇定时投稿已到发布时间（{{ scheduled_notice.at|date:"Y-m-d H:i" }}），
-                        系统将在 30 秒内自动流转为「待审核 / 已发布」，稍后刷新即可；
-                        当前仍为「{{ scheduled_notice.status }}」，只有<strong>你本人与管理员</strong>可见喵~
+                            这篇定时投稿已到发布时间（{{ scheduled_notice.at|date:"Y-m-d H:i" }}），
+                            系统将在 30 秒内自动流转为「待审核 / 已发布」，稍后刷新即可；
+                            当前仍为「{{ scheduled_notice.status }}」，只有<strong>你本人与管理员</strong>可见喵~
                         {% endif %}
                     </span>
-                </div>
-                {% endif %}
-                <header class="article-head">
-                    <div>
-                        {% if article.kind == 'note' %}<span class="badge badge-note">笔记</span>{% endif %}
-                        {% if article.kind == 'page' %}<span class="badge badge-page">独立页面</span>{% endif %}
-                        {% if article.status == 'draft' %}<span class="badge badge-draft">草稿</span>{% endif %}
-                        {% if article.status == 'pending' %}<span class="badge badge-pending">⏳ 待审核</span>{% endif %}
-                        {% if article.is_pinned %}<span class="badge badge-pinned">📌 置顶</span>{% endif %}
-                        {# Bug4：标题区补齐精华/热门徽章，与卡片/归档角标联动 #}
-                        {% if article.is_featured %}<span class="badge badge-featured">⭐ 精华</span>{% endif %}
-                        {% if article.is_hot %}<span class="badge badge-hot">🔥 热门</span>{% endif %}
-                        {% if article.is_scheduled %}<span class="badge badge-scheduled">🕐 {{ article.published_at|date:"m-d H:i" }} 定时</span>{% endif %}
-                        {% if article.is_protected %}<span class="badge badge-protected">🔒 已加密</span>{% endif %}
-{% if article.category %}<span class="badge badge-category">{{ article.category.icon|default:'📁' }} {{ article.category.name }}</span>{% endif %}
-                        {# 67. 所属系列徽章，点击跳转系列详情 #}
-                        {% if article.series %}<a class="badge badge-series" href="{% url 'series_detail' article.series.pk %}">📚 {{ article.series.title }}</a>{% endif %}
-                    </div>
-                    <h1 class="article-title" id="article-title" itemprop="headline">{{ article.title }}</h1>
-                    <div class="article-meta">
-                        {# 作者头像+昵称：点击链接到作者{{ MSG.nav.profile }} #}
-<a class="author-link" href="{% url 'user_profile' article.author.username %}" itemprop="author">
+                        </div>
+                    {% endif %}
+                    <header class="article-head">
+                        <div>
+                            {% if article.kind == 'note' %}<span class="badge badge-note">笔记</span>{% endif %}
+                            {% if article.kind == 'page' %}<span class="badge badge-page">独立页面</span>{% endif %}
+                            {% if article.status == 'draft' %}<span class="badge badge-draft">草稿</span>{% endif %}
+                            {% if article.status == 'pending' %}
+                                <span class="badge badge-pending">⏳ 待审核</span>{% endif %}
+                            {% if article.is_pinned %}<span class="badge badge-pinned">📌 置顶</span>{% endif %}
+                            {# Bug4：标题区补齐精华/热门徽章，与卡片/归档角标联动 #}
+                            {% if article.is_featured %}<span class="badge badge-featured">⭐ 精华</span>{% endif %}
+                            {% if article.is_hot %}<span class="badge badge-hot">🔥 热门</span>{% endif %}
+                            {% if article.is_scheduled %}
+                                <span class="badge badge-scheduled">🕐 {{ article.published_at|date:"m-d H:i" }} 定时</span>{% endif %}
+                            {% if article.is_protected %}<span class="badge badge-protected">🔒 已加密</span>{% endif %}
+                            {% if article.category %}
+                                <span class="badge badge-category">{{ article.category.icon|default:'📁' }} {{ article.category.name }}</span>{% endif %}
+                            {# 67. 所属系列徽章，点击跳转系列详情 #}
+                            {% if article.series %}<a class="badge badge-series"
+                                                      href="{% url 'series_detail' article.series.pk %}">📚 {{ article.series.title }}</a>{% endif %}
+                        </div>
+                        <h1 class="article-title" id="article-title" itemprop="headline">{{ article.title }}</h1>
+                        <div class="article-meta">
+                            {# 作者头像+昵称：点击链接到作者{{ MSG.nav.profile }} #}
+                            <a class="author-link" href="{% url 'user_profile' article.author.username %}"
+                               itemprop="author">
                             <span class="avatar-circle avatar-md">
                                 {% if article.author.avatar %}
-                                <img src="{{ article.author.avatar.url }}" alt="{{ article.author.nickname|default:article.author.username }}" loading="lazy" decoding="async" fetchpriority="low" width="48" height="48">
+                                    <img src="{{ article.author.avatar.url }}"
+                                         alt="{{ article.author.nickname|default:article.author.username }}"
+                                         loading="lazy" decoding="async" fetchpriority="low" width="48" height="48">
                                 {% else %}
-                                <span class="avatar-initial">{{ article.author.nickname|default:article.author.username|slice:":1" }}</span>
+                                    <span class="avatar-initial">{{ article.author.nickname|default:article.author.username|slice:":1" }}</span>
                                 {% endif %}
                             </span>
-                            <span>✍ {{ article.author.nickname|default:article.author.username }}</span>
-                        </a>
-<time datetime="{{ article.created_at|date:'c' }}" aria-label="{{ MSG.article.published_at_aria }}" itemprop="datePublished">🕒 发布于 {{ article.created_at|date:"Y-m-d H:i" }}</time>
-                        {# 11. 最后编辑：仅当确实编辑过（updated_at != created_at）才显示相对时间 #}
-                        {% if article.updated_at != article.created_at %}
-                        {# 第4轮迭代#116: 自定义过滤器——{{ date|time_ago }} 相对时间过滤器（已注册于 blog_extras） #}
-                        {# 第4轮迭代#117: 自定义过滤器——{{ date|format_date }} 等价于内置 |date:'Y-m-d H:i' 格式化 #}
-<span title="{{ MSG.article.edited_at_title }}" itemprop="dateModified" content="{{ article.updated_at|date:'c' }}">✏️ 最后编辑: {{ article.updated_at|time_ago }}</span>
-                        {% endif %}
-                        <span itemprop="interactionCount">👁 {{ article.views }}</span>
-                        {# Round4-C2: 字数统计 + 预计阅读时长（萌系文案）。优先用后端注入的 word_count/reading_time 上下文变量；未注入时回退 article 模型属性，避免空白 #}
-                        <span class="word-count-meta" title="全文约 {{ word_count|default:article.word_count }} 字" role="timer" aria-label="{{ MSG.article.read_time_aria }}">
+                                <span>✍ {{ article.author.nickname|default:article.author.username }}</span>
+                            </a>
+                            <time datetime="{{ article.created_at|date:'c' }}"
+                                  aria-label="{{ MSG.article.published_at_aria }}" itemprop="datePublished">🕒
+                                发布于 {{ article.created_at|date:"Y-m-d H:i" }}</time>
+                            {# 11. 最后编辑：仅当确实编辑过（updated_at != created_at）才显示相对时间 #}
+                            {% if article.updated_at != article.created_at %}
+                                {# 第4轮迭代#116: 自定义过滤器——{{ date|time_ago }} 相对时间过滤器（已注册于 blog_extras） #}
+                                {# 第4轮迭代#117: 自定义过滤器——{{ date|format_date }} 等价于内置 |date:'Y-m-d H:i' 格式化 #}
+                                <span title="{{ MSG.article.edited_at_title }}" itemprop="dateModified"
+                                      content="{{ article.updated_at|date:'c' }}">✏️ 最后编辑: {{ article.updated_at|time_ago }}</span>
+                            {% endif %}
+                            <span itemprop="interactionCount">👁 {{ article.views }}</span>
+                            {# Round4-C2: 字数统计 + 预计阅读时长（萌系文案）。优先用后端注入的 word_count/reading_time 上下文变量；未注入时回退 article 模型属性，避免空白 #}
+                            <span class="word-count-meta" title="全文约 {{ word_count|default:article.word_count }} 字"
+                                  role="timer" aria-label="{{ MSG.article.read_time_aria }}">
                             <img src="{% static 'assets/icons/edit.svg' %}" alt="" class="icon icon-sm">
                             约 {{ word_count|default:article.word_count }} 字 · 预计 {{ reading_time|default:article.reading_time }} {{ MSG.auto.分钟读完 }}喵
                         </span>
-                        {# 点赞数（heart 图标），数字随 AJAX 刷新 #}
-                        <span title="{{ MSG.article.like_title }}" aria-live="polite"><img src="{% static 'assets/icons/heart.svg' %}" alt="" class="icon"> <span id="like-count">{{ article.likes }}</span></span>
-                        {% if can_edit %}
-                        <span class="article-actions">
+                            {# 点赞数（heart 图标），数字随 AJAX 刷新 #}
+                            <span title="{{ MSG.article.like_title }}" aria-live="polite"><img
+                                    src="{% static 'assets/icons/heart.svg' %}" alt="" class="icon"> <span
+                                    id="like-count">{{ article.likes }}</span></span>
+                            {% if can_edit %}
+                                <span class="article-actions">
                             <a class="btn-sm" href="{% url 'article_edit' article.pk %}">{{ MSG.btn.edit }}</a>
                             <form method="post" action="{% url 'article_delete' article.pk %}" class="inline-form"
                                   data-confirm="{{ MSG.article.delete_confirm }}"
@@ -235,569 +286,698 @@
                                 <button type="submit" class="btn-sm btn-danger">{{ MSG.btn.delete }}</button>
                             </form>
                         </span>
-                        {% endif %}
-                        {# Bug1：管理员直接切换置顶/精华/热门；作者本人发起申请（弹窗填理由） #}
-                        {% if user.is_staff and not qa_view_as_author %}
-                        <div class="promo-manage" data-pk="{{ article.pk }}"
-                             data-toggle-url="{% url 'api:api_toggle_promotion' article.pk %}">
-                            <button type="button" class="btn-sm promo-toggle {% if article.is_pinned %}promo-on{% endif %}"
-                                    data-action-on="pin" data-action-off="unpin">📌 置顶</button>
-                            <button type="button" class="btn-sm promo-toggle {% if article.is_featured %}promo-on{% endif %}"
-                                    data-action-on="feature" data-action-off="unfeature">⭐ 精华</button>
-                            <button type="button" class="btn-sm promo-toggle {% if article.is_hot %}promo-on{% endif %}"
-                                    data-action-on="hot" data-action-off="unhot">🔥 热门</button>
-                        </div>
-                        {% elif can_edit %}
-                        {% comment %}Bug8 修复：三个按钮始终可见，状态由 promo_state 决定；已生效（已经置顶/精华/热门）或审核中时按钮禁用不可再点，文案同步改为「已经置顶 / 置顶审核中」，避免重复申请。{% endcomment %}
-                        <div class="promo-apply" data-pk="{{ article.pk }}"
-                             data-request-url="{% url 'api:api_promotion_request' article.pk %}"
-                             data-status-url="{% url 'api:api_promotion_status' article.pk %}">
-                            {% with st=promo_state.pin %}
-                            <button type="button"
-                                    class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
-                                    data-kind="pin" data-label="{{ MSG.promo.pin }}"
-                                    data-state="{{ st.state|default:'open' }}"
-                                    {% if st.state == 'applied' or st.state == 'pending' %}disabled aria-disabled="true"{% endif %}
-                                    title="{% if st.state == 'applied' %}这篇文章已经置顶啦，无需再次申请{% elif st.state == 'pending' %}置顶申请正在审核中，请耐心等待{% else %}点这里申请把文章置顶{% endif %}">
-                                {% if st.state == 'applied' %}📌 已经置顶{% elif st.state == 'pending' %}⏳ 置顶审核中{% else %}{{ MSG.promo.apply_pin }}{% endif %}
-                            </button>
-                            {% endwith %}
-                            {% with st=promo_state.feature %}
-                            <button type="button"
-                                    class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
-                                    data-kind="feature" data-label="{{ MSG.promo.feature }}"
-                                    data-state="{{ st.state|default:'open' }}"
-                                    {% if st.state == 'applied' or st.state == 'pending' %}disabled aria-disabled="true"{% endif %}
-                                    title="{% if st.state == 'applied' %}这篇文章已经是精华啦，无需再次申请{% elif st.state == 'pending' %}精华申请正在审核中，请耐心等待{% else %}点这里申请把文章加精{% endif %}">
-                                {% if st.state == 'applied' %}⭐ 已经精华{% elif st.state == 'pending' %}⏳ 精华审核中{% else %}{{ MSG.promo.apply_feature }}{% endif %}
-                            </button>
-                            {% endwith %}
-                            {% with st=promo_state.hot %}
-                            <button type="button"
-                                    class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
-                                    data-kind="hot" data-label="{{ MSG.promo.hot }}"
-                                    data-state="{{ st.state|default:'open' }}"
-                                    {% if st.state == 'applied' or st.state == 'pending' %}disabled aria-disabled="true"{% endif %}
-                                    title="{% if st.state == 'applied' %}这篇文章已经是热门啦，无需再次申请{% elif st.state == 'pending' %}热门申请正在审核中，请耐心等待{% else %}点这里申请加入热门{% endif %}">
-                                {% if st.state == 'applied' %}🔥 已经热门{% elif st.state == 'pending' %}⏳ 热门审核中{% else %}{{ MSG.promo.apply_hot }}{% endif %}
-                            </button>
-                            {% endwith %}
-                            {# 名额已满的即时提醒：仅在置顶仍可申请但名额已满时展示（Bug8） #}
-                            {% if promo_state.pin.state == 'open' and promo_state.pin.limit_full %}
-                            <span class="promo-limit-hint" role="status">📌 置顶名额已满（{{ promo_state.pin.pinned_count }}/{{ promo_state.pin.max_pinned }}），审核通过也可能暂不生效喵~</span>
+                            {% endif %}
+                            {# Bug1：管理员直接切换置顶/精华/热门；作者本人发起申请（弹窗填理由） #}
+                            {% if user.is_staff and not qa_view_as_author %}
+                                <div class="promo-manage" data-pk="{{ article.pk }}"
+                                     data-toggle-url="{% url 'api:api_toggle_promotion' article.pk %}">
+                                    <button type="button"
+                                            class="btn-sm promo-toggle {% if article.is_pinned %}promo-on{% endif %}"
+                                            data-action-on="pin" data-action-off="unpin">📌 置顶
+                                    </button>
+                                    <button type="button"
+                                            class="btn-sm promo-toggle {% if article.is_featured %}promo-on{% endif %}"
+                                            data-action-on="feature" data-action-off="unfeature">⭐ 精华
+                                    </button>
+                                    <button type="button"
+                                            class="btn-sm promo-toggle {% if article.is_hot %}promo-on{% endif %}"
+                                            data-action-on="hot" data-action-off="unhot">🔥 热门
+                                    </button>
+                                </div>
+                            {% elif can_edit %}
+                                {% comment %}Bug8 修复：三个按钮始终可见，状态由 promo_state 决定；已生效（已经置顶/精华/热门）或审核中时按钮禁用不可再点，文案同步改为「已经置顶 / 置顶审核中」，避免重复申请。{% endcomment %}
+                                <div class="promo-apply" data-pk="{{ article.pk }}"
+                                     data-request-url="{% url 'api:api_promotion_request' article.pk %}"
+                                     data-status-url="{% url 'api:api_promotion_status' article.pk %}">
+                                    {% with st=promo_state.pin %}
+                                        <button type="button"
+                                                class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
+                                                data-kind="pin" data-label="{{ MSG.promo.pin }}"
+                                                data-state="{{ st.state|default:'open' }}"
+                                                {% if st.state == 'applied' or st.state == 'pending' %}disabled
+                                                aria-disabled="true"{% endif %}
+                                                title="{% if st.state == 'applied' %}这篇文章已经置顶啦，无需再次申请{% elif st.state == 'pending' %}置顶申请正在审核中，请耐心等待{% else %}点这里申请把文章置顶{% endif %}">
+                                            {% if st.state == 'applied' %}📌 已经置顶{% elif st.state == 'pending' %}⏳
+                                                置顶审核中{% else %}{{ MSG.promo.apply_pin }}{% endif %}
+                                        </button>
+                                    {% endwith %}
+                                    {% with st=promo_state.feature %}
+                                        <button type="button"
+                                                class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
+                                                data-kind="feature" data-label="{{ MSG.promo.feature }}"
+                                                data-state="{{ st.state|default:'open' }}"
+                                                {% if st.state == 'applied' or st.state == 'pending' %}disabled
+                                                aria-disabled="true"{% endif %}
+                                                title="{% if st.state == 'applied' %}这篇文章已经是精华啦，无需再次申请{% elif st.state == 'pending' %}精华申请正在审核中，请耐心等待{% else %}点这里申请把文章加精{% endif %}">
+                                            {% if st.state == 'applied' %}⭐ 已经精华{% elif st.state == 'pending' %}⏳
+                                                精华审核中{% else %}{{ MSG.promo.apply_feature }}{% endif %}
+                                        </button>
+                                    {% endwith %}
+                                    {% with st=promo_state.hot %}
+                                        <button type="button"
+                                                class="btn-sm promo-apply-btn promo-state-{{ st.state|default:'open' }}"
+                                                data-kind="hot" data-label="{{ MSG.promo.hot }}"
+                                                data-state="{{ st.state|default:'open' }}"
+                                                {% if st.state == 'applied' or st.state == 'pending' %}disabled
+                                                aria-disabled="true"{% endif %}
+                                                title="{% if st.state == 'applied' %}这篇文章已经是热门啦，无需再次申请{% elif st.state == 'pending' %}热门申请正在审核中，请耐心等待{% else %}点这里申请加入热门{% endif %}">
+                                            {% if st.state == 'applied' %}🔥 已经热门{% elif st.state == 'pending' %}⏳
+                                                热门审核中{% else %}{{ MSG.promo.apply_hot }}{% endif %}
+                                        </button>
+                                    {% endwith %}
+                                    {# 名额已满的即时提醒：仅在置顶仍可申请但名额已满时展示（Bug8） #}
+                                    {% if promo_state.pin.state == 'open' and promo_state.pin.limit_full %}
+                                        <span class="promo-limit-hint"
+                                              role="status">📌 置顶名额已满（{{ promo_state.pin.pinned_count }}/{{ promo_state.pin.max_pinned }}），审核通过也可能暂不生效喵~</span>
+                                    {% endif %}
+                                </div>
                             {% endif %}
                         </div>
+                        {# bug9：标签移到作者信息下一行（原在正文之后，已删除该处） #}
+                        {% if article.tags.all %}
+                            <div class="article-tags-row" aria-label="{{ MSG.article.tag_list_aria }}"
+                                 itemprop="keywords">
+                                <span class="tags-row-label">{{ MSG.article.tags_prefix }}</span>
+                                {% for tag in article.tags.all %}
+                                    <a class="chip tag-color-{% cycle '1' '2' '3' '4' '5' %}"
+                                       href="{% url 'tag_detail' tag.pk %}">{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
                         {% endif %}
-                    </div>
-                    {# bug9：标签移到作者信息下一行（原在正文之后，已删除该处） #}
-                    {% if article.tags.all %}
-                    <div class="article-tags-row" aria-label="{{ MSG.article.tag_list_aria }}" itemprop="keywords">
-                        <span class="tags-row-label">{{ MSG.article.tags_prefix }}</span>
-                        {% for tag in article.tags.all %}
-                        <a class="chip tag-color-{% cycle '1' '2' '3' '4' '5' %}" href="{% url 'tag_detail' tag.pk %}">{{ tag.name }}</a>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    {# 文章操作条：点赞按钮 + 分享按钮组（微博 / Twitter / 复制链接） #}
-                    <div class="article-extra-bar">
-                        {# 点赞按钮：AJAX，session 防重，toggle 语义（已赞可再点取消，D2修复） #}
-                        <button type="button" class="like-btn {% if already_liked %}liked{% endif %}"
-                                id="like-btn" data-pk="{{ article.pk }}" data-article-id="{{ article.pk }}" aria-label="{{ MSG.article.share_like_aria }}"
-                                data-url="{% url 'api:api_article_like' article.pk %}"
-                                {% if already_liked %}title="再点一下取消赞喵~"{% else %}title="点赞这篇文章"{% endif %}>
-                            <span class="like-icon"><img src="{% static 'assets/icons/heart.svg' %}" alt="" class="icon icon-md"></span>
-                            <span class="like-text">{% if already_liked %}{{ MSG.interact.liked }}{% else %}{{ MSG.interact.like }}{% endif %}</span>
-                        </button>
-                        {# Bug7: 踩按钮上移，与点赞并排；data-dislike-url 由 interaction.js C1 绑定（D2修复补全属性） #}
-                        <button type="button" class="like-btn dislike-btn {% if already_disliked %}disliked{% endif %}" id="dislike-btn"
-                                data-article-id="{{ article.pk }}" aria-label="{{ MSG.article.share_dislike_aria }}"
-                                data-url="{% url 'api:api_article_dislike' article.pk %}"
-                                data-dislike-url="{% url 'api:api_article_dislike' article.pk %}"
-                                {% if already_disliked %}title="再点一下取消踩喵~"{% else %}title="踩一下这篇文章"{% endif %}>
-                            <span class="like-icon">👎</span>
-                            <span class="like-text">{% if already_disliked %}{{ MSG.interact.disliked }}{% else %}{{ MSG.interact.dislike }}{% endif %}</span>
-                            <span class="dislike-count" id="dislike-count" data-dislike-count="{{ article.dislikes|default:0 }}">{{ article.dislikes|default:0 }}</span>
-                        </button>
-                        {# 收藏按钮 #}
-                        <button type="button" class="fav-btn {% if is_favorited %}favorited{% endif %}"
-                                id="fav-btn" data-pk="{{ article.pk }}" data-article-id="{{ article.pk }}" aria-label="{{ MSG.article.share_fav_aria }}"
-                                data-url="{% url 'toggle_favorite' article.pk %}">
-                            <span class="fav-icon">{% if is_favorited %}⭐{% else %}☆{% endif %}</span>
-                            <span class="fav-text">{% if is_favorited %}已收藏{% else %}收藏{% endif %}</span>
-                            <span class="fav-count" id="fav-count">{{ article.favorites.count }}</span>
-                        </button>
-                        {# 分享按钮组：微博 / Twitter(X) / 复制链接 / 分享次数 #}
-                        <div class="share-group" id="share-group" aria-label="{{ MSG.article.share_open_aria }}" role="toolbar"
-                             data-url="{{ request.build_absolute_uri }}"
-                             data-title="{{ article.title|escapejs }}"
-                             data-share-url="{% url 'api:api_article_share' article.pk %}">
-                            <span class="share-label">{{ MSG.article.share_btn }}</span>
-                            <a class="share-btn share-weibo" href="#" id="share-weibo" target="_blank" rel="noopener noreferrer" title="{{ MSG.article.share_weibo_title }}">{{ MSG.article.share_weibo }}</a>
-                            <a class="share-btn share-twitter" href="#" id="share-twitter" target="_blank" rel="noopener noreferrer" title="{{ MSG.article.share_twitter_title }}">🐦 Twitter</a>
-                            <button type="button" class="share-btn share-copy" id="share-copy" title="{{ MSG.article.share_copy_title }}">{{ MSG.interact.copy_link }}</button>
-                            <span class="share-count" id="shareCount">{{ article.share_count|default:0 }} 次分享</span>
-                        </div>
-                        {# Bug23: 专注阅读模式（focus_mode.js） #}
-                        <button type="button" class="focus-toggle share-btn" id="focusToggle" aria-label="{{ MSG.reading.focus_aria }}" aria-pressed="false">
-                            <img src="{% static 'assets/icons/focus.svg' %}" alt="" class="icon icon-sm">
-                            <span class="focus-text">{{ MSG.reading.focus_btn }}</span>
-                        </button>
-                        {# Bug23: 阅读设置面板开关（reading.js） #}
-                        <button type="button" class="share-btn" id="reading-settings-btn" aria-label="{{ MSG.reading.settings_open_aria }}" aria-haspopup="dialog">
-                            ⚙️ 阅读设置喵
-                        </button>
-                        {# Bug23: TTS 朗读快捷开关（reading.js） #}
-                        <button type="button" class="share-btn" id="tts-toggle-btn" aria-label="{{ MSG.reading.tts_aria }}" aria-pressed="false">
-                            🔊 朗读喵
-                        </button>
-                        {# Bug7: 导出/更多 收纳下拉（全文复制 / PDF / MD / 打印） #}
-                        <div class="export-dropdown" id="export-dropdown">
-                            <button type="button" class="share-btn export-toggle" id="export-toggle"
-                                    aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu">
-                                {{ MSG.btn.more }} <span class="export-caret">▾</span>
+                        {# 文章操作条：点赞按钮 + 分享按钮组（微博 / Twitter / 复制链接） #}
+                        <div class="article-extra-bar">
+                            {# 点赞按钮：AJAX，session 防重，toggle 语义（已赞可再点取消，D2修复） #}
+                            <button type="button" class="like-btn {% if already_liked %}liked{% endif %}"
+                                    id="like-btn" data-pk="{{ article.pk }}" data-article-id="{{ article.pk }}"
+                                    aria-label="{{ MSG.article.share_like_aria }}"
+                                    data-url="{% url 'api:api_article_like' article.pk %}"
+                                    {% if already_liked %}title="再点一下取消赞喵~"
+                                    {% else %}title="点赞这篇文章"{% endif %}>
+                                <span class="like-icon"><img src="{% static 'assets/icons/heart.svg' %}" alt=""
+                                                             class="icon icon-md"></span>
+                                <span class="like-text">{% if already_liked %}{{ MSG.interact.liked }}{% else %}
+                                    {{ MSG.interact.like }}{% endif %}</span>
                             </button>
-                            <div class="export-menu" id="export-menu" role="menu" hidden>
-                                <button type="button" class="export-menu-item" role="menuitem" data-copy-all>{{ MSG.reading.copy_all }}</button>
-                                <button type="button" class="export-menu-item" role="menuitem" id="export-pdf-btn">{{ MSG.reading.export_pdf }}</button>
-                                <button type="button" class="export-menu-item" role="menuitem" data-export-md>{{ MSG.reading.export_md }}</button>
-                                <button type="button" class="export-menu-item" role="menuitem" id="print-btn">{{ MSG.reading.print }}</button>
+                            {# Bug7: 踩按钮上移，与点赞并排；data-dislike-url 由 interaction.js C1 绑定（D2修复补全属性） #}
+                            <button type="button"
+                                    class="like-btn dislike-btn {% if already_disliked %}disliked{% endif %}"
+                                    id="dislike-btn"
+                                    data-article-id="{{ article.pk }}" aria-label="{{ MSG.article.share_dislike_aria }}"
+                                    data-url="{% url 'api:api_article_dislike' article.pk %}"
+                                    data-dislike-url="{% url 'api:api_article_dislike' article.pk %}"
+                                    {% if already_disliked %}title="再点一下取消踩喵~"
+                                    {% else %}title="踩一下这篇文章"{% endif %}>
+                                <span class="like-icon">👎</span>
+                                <span class="like-text">{% if already_disliked %}{{ MSG.interact.disliked }}{% else %}
+                                    {{ MSG.interact.dislike }}{% endif %}</span>
+                                <span class="dislike-count" id="dislike-count"
+                                      data-dislike-count="{{ article.dislikes|default:0 }}">{{ article.dislikes|default:0 }}</span>
+                            </button>
+                            {# 收藏按钮 #}
+                            <button type="button" class="fav-btn {% if is_favorited %}favorited{% endif %}"
+                                    id="fav-btn" data-pk="{{ article.pk }}" data-article-id="{{ article.pk }}"
+                                    aria-label="{{ MSG.article.share_fav_aria }}"
+                                    data-url="{% url 'toggle_favorite' article.pk %}">
+                                <span class="fav-icon">{% if is_favorited %}⭐{% else %}☆{% endif %}</span>
+                                <span class="fav-text">{% if is_favorited %}已收藏{% else %}收藏{% endif %}</span>
+                                <span class="fav-count" id="fav-count">{{ article.favorites.count }}</span>
+                            </button>
+                            {# 分享按钮组：微博 / Twitter(X) / 复制链接 / 分享次数 #}
+                            <div class="share-group" id="share-group" aria-label="{{ MSG.article.share_open_aria }}"
+                                 role="toolbar"
+                                 data-url="{{ request.build_absolute_uri }}"
+                                 data-title="{{ article.title|escapejs }}"
+                                 data-share-url="{% url 'api:api_article_share' article.pk %}">
+                                <span class="share-label">{{ MSG.article.share_btn }}</span>
+                                <a class="share-btn share-weibo" href="#" id="share-weibo" target="_blank"
+                                   rel="noopener noreferrer"
+                                   title="{{ MSG.article.share_weibo_title }}">{{ MSG.article.share_weibo }}</a>
+                                <a class="share-btn share-twitter" href="#" id="share-twitter" target="_blank"
+                                   rel="noopener noreferrer" title="{{ MSG.article.share_twitter_title }}">🐦 Twitter</a>
+                                <button type="button" class="share-btn share-copy" id="share-copy"
+                                        title="{{ MSG.article.share_copy_title }}">{{ MSG.interact.copy_link }}</button>
+                                <span class="share-count"
+                                      id="shareCount">{{ article.share_count|default:0 }} 次分享</span>
+                            </div>
+                            {# Bug23: 专注阅读模式（focus_mode.js） #}
+                            <button type="button" class="focus-toggle share-btn" id="focusToggle"
+                                    aria-label="{{ MSG.reading.focus_aria }}" aria-pressed="false">
+                                <img src="{% static 'assets/icons/focus.svg' %}" alt="" class="icon icon-sm">
+                                <span class="focus-text">{{ MSG.reading.focus_btn }}</span>
+                            </button>
+                            {# Bug23: 阅读设置面板开关（reading.js） #}
+                            <button type="button" class="share-btn" id="reading-settings-btn"
+                                    aria-label="{{ MSG.reading.settings_open_aria }}" aria-haspopup="dialog">
+                                ⚙️ 阅读设置喵
+                            </button>
+                            {# Bug23: TTS 朗读快捷开关（reading.js） #}
+                            <button type="button" class="share-btn" id="tts-toggle-btn"
+                                    aria-label="{{ MSG.reading.tts_aria }}" aria-pressed="false">
+                                🔊 朗读喵
+                            </button>
+                            {# Bug7: 导出/更多 收纳下拉（全文复制 / PDF / MD / 打印） #}
+                            <div class="export-dropdown" id="export-dropdown">
+                                <button type="button" class="share-btn export-toggle" id="export-toggle"
+                                        aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu">
+                                    {{ MSG.btn.more }} <span class="export-caret">▾</span>
+                                </button>
+                                <div class="export-menu" id="export-menu" role="menu" hidden>
+                                    <button type="button" class="export-menu-item" role="menuitem"
+                                            data-copy-all>{{ MSG.reading.copy_all }}</button>
+                                    <button type="button" class="export-menu-item" role="menuitem"
+                                            id="export-pdf-btn">{{ MSG.reading.export_pdf }}</button>
+                                    <button type="button" class="export-menu-item" role="menuitem"
+                                            data-export-md>{{ MSG.reading.export_md }}</button>
+                                    <button type="button" class="export-menu-item" role="menuitem"
+                                            id="print-btn">{{ MSG.reading.print }}</button>
+                                </div>
                             </div>
                         </div>
+                        {# 63. 星级评分组件：5 颗星，登录用户点击评分；已评分显示当前分数 #}
+                        {# Round4-C8: 容器升级为 .rating-stars#ratingStars；保留服务端渲染的 .star 子元素以兼容既有点击 JS；补 rating-avg#ratingAvg / rating-count#ratingCount #}
+                        <div class="rating-widget" id="rating-widget" role="slider" aria-label="{{ MSG.auto.文章评分 }}"
+                             aria-valuemin="1" aria-valuemax="5" aria-valuenow="{{ my_rating|default:0 }}"
+                             data-url="{% url 'api:api_article_rate' article.pk %}"
+                             data-my="{{ my_rating|default:'' }}">
+                            <span class="rating-label">{{ MSG.reading.rating_heading }}</span>
+                            <div class="rating-stars" id="ratingStars">
+                                {% for i in "12345" %}
+                                    <span class="star" data-value="{{ forloop.counter }}">★</span>
+                                {% endfor %}
+                            </div>
+                            <span class="rating-avg" id="ratingAvg">{% if article.rating_count %}
+                                {{ article.rating_avg|floatformat:1 }}{% else %}-{% endif %}</span>
+                            <span class="rating-count" id="ratingCount">{% if article.rating_count %}（
+                                {{ article.rating_count }}人评分）{% else %}（还没人评分喵）{% endif %}</span>
                         </div>
-                    {# 63. 星级评分组件：5 颗星，登录用户点击评分；已评分显示当前分数 #}
-                    {# Round4-C8: 容器升级为 .rating-stars#ratingStars；保留服务端渲染的 .star 子元素以兼容既有点击 JS；补 rating-avg#ratingAvg / rating-count#ratingCount #}
-<div class="rating-widget" id="rating-widget" role="slider" aria-label="{{ MSG.auto.文章评分 }}" aria-valuemin="1" aria-valuemax="5" aria-valuenow="{{ my_rating|default:0 }}"
-                         data-url="{% url 'api:api_article_rate' article.pk %}"
-                         data-my="{{ my_rating|default:'' }}">
-                        <span class="rating-label">{{ MSG.reading.rating_heading }}</span>
-                        <div class="rating-stars" id="ratingStars">
-                            {% for i in "12345" %}
-                            <span class="star" data-value="{{ forloop.counter }}">★</span>
-                            {% endfor %}
+                        {# ===== Round5 B1-B8: 阅读设置浮动面板（默认隐藏） ===== #}
+                        <div class="reading-settings-mask" id="reading-settings-mask" hidden role="dialog"
+                             aria-modal="true" aria-labelledby="rs-title">
+                            <div class="reading-settings-panel" role="document">
+                                <div class="reading-settings-head">
+                                    <strong id="rs-title">{{ MSG.reading.settings_title }}</strong>
+                                    <button type="button" class="reading-settings-close" id="rs-close"
+                                            aria-label="{{ MSG.reading.settings_close_aria }}">✕
+                                    </button>
+                                </div>
+                                <div class="rs-group">
+                                    <label class="rs-group-label">{{ MSG.reading.font_size }}</label>
+                                    <div class="font-size-controls rs-btn-row" role="group"
+                                         aria-label="{{ MSG.reading.font_size_aria }}">
+                                        <button type="button" class="btn-sm rs-pill" data-act="font-dec"
+                                                aria-label="{{ MSG.reading.font_minus_aria }}">A-
+                                        </button>
+                                        <span class="fs-value rs-fs-value" aria-live="polite">100%</span>
+                                        <button type="button" class="btn-sm rs-pill" data-act="font-inc"
+                                                aria-label="{{ MSG.reading.font_plus_aria }}">A+
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="rs-group">
+                                    <label class="rs-group-label"
+                                           for="rs-line-height">{{ MSG.reading.line_height }}</label>
+                                    <input type="range" id="rs-line-height" class="line-height-slider" min="1.4"
+                                           max="2.4" step="0.05" value="1.8"
+                                           aria-label="{{ MSG.reading.line_height_aria }}">
+                                </div>
+                                <div class="rs-group">
+                                    <label class="rs-group-label">{{ MSG.reading.font_family }}</label>
+                                    <div class="rs-btn-row" role="group"
+                                         aria-label="{{ MSG.reading.font_family_aria }}">
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-font="sans">{{ MSG.reading.font_sans }}</button>
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-font="song">{{ MSG.reading.font_serif }}</button>
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-font="mono">{{ MSG.reading.font_mono }}</button>
+                                    </div>
+                                </div>
+                                <div class="rs-group">
+                                    <label class="rs-group-label">{{ MSG.reading.theme_color }}</label>
+                                    <div class="rs-theme-colors" role="group"
+                                         aria-label="{{ MSG.reading.theme_color_aria }}">
+                                        <button type="button" class="swatch rs-color-swatch" data-theme-color=""
+                                                aria-label="{{ MSG.reading.theme_default_aria }}"></button>
+                                        <button type="button" class="swatch rs-color-swatch"
+                                                data-theme-color="blue_green"
+                                                aria-label="{{ MSG.reading.theme_blue_aria }}"></button>
+                                        <button type="button" class="swatch rs-color-swatch"
+                                                data-theme-color="orange_yellow"
+                                                aria-label="{{ MSG.reading.theme_orange_aria }}"></button>
+                                        <button type="button" class="swatch rs-color-swatch" data-theme-color="rose"
+                                                aria-label="{{ MSG.reading.theme_rose_aria }}"></button>
+                                    </div>
+                                </div>
+                                <div class="rs-group">
+                                    <label class="rs-group-label">{{ MSG.reading.a11y_mode }}</label>
+                                    <div class="rs-btn-row rs-toggle-row">
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-act="eye">{{ MSG.reading.eye_care }}</button>
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-act="amoled">{{ MSG.reading.amoled }}</button>
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-act="paper">{{ MSG.reading.paper }}</button>
+                                    </div>
+                                </div>
+                                <div class="rs-group tts-bar">
+                                    <label class="rs-group-label">{{ MSG.reading.tts_aria }}</label>
+                                    <div class="rs-btn-row">
+                                        <button type="button" class="btn-sm rs-pill" data-tts="play"
+                                                aria-pressed="false">{{ MSG.reading.tts_toggle }}</button>
+                                        <button type="button" class="btn-sm rs-pill"
+                                                data-tts="stop">{{ MSG.reading.tts_stop }}</button>
+                                    </div>
+                                    <input type="range" class="tts-speed" min="0.5" max="2" step="0.1" value="1"
+                                           aria-label="{{ MSG.reading.tts_rate_aria }}">
+                                    <span class="tts-status rs-tts-status">{{ MSG.reading.tts_idle }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <span class="rating-avg" id="ratingAvg">{% if article.rating_count %}{{ article.rating_avg|floatformat:1 }}{% else %}-{% endif %}</span>
-                        <span class="rating-count" id="ratingCount">{% if article.rating_count %}（{{ article.rating_count }}人评分）{% else %}（还没人评分喵）{% endif %}</span>
-                    </div>
-                    {# ===== Round5 B1-B8: 阅读设置浮动面板（默认隐藏） ===== #}
-                    <div class="reading-settings-mask" id="reading-settings-mask" hidden role="dialog" aria-modal="true" aria-labelledby="rs-title">
-                        <div class="reading-settings-panel" role="document">
-                            <div class="reading-settings-head">
-                                <strong id="rs-title">{{ MSG.reading.settings_title }}</strong>
-                                <button type="button" class="reading-settings-close" id="rs-close" aria-label="{{ MSG.reading.settings_close_aria }}">✕</button>
-                            </div>
-                            <div class="rs-group">
-                                <label class="rs-group-label">{{ MSG.reading.font_size }}</label>
-                                <div class="font-size-controls rs-btn-row" role="group" aria-label="{{ MSG.reading.font_size_aria }}">
-                                    <button type="button" class="btn-sm rs-pill" data-act="font-dec" aria-label="{{ MSG.reading.font_minus_aria }}">A-</button>
-                                    <span class="fs-value rs-fs-value" aria-live="polite">100%</span>
-                                    <button type="button" class="btn-sm rs-pill" data-act="font-inc" aria-label="{{ MSG.reading.font_plus_aria }}">A+</button>
-                                </div>
-                            </div>
-                            <div class="rs-group">
-                                <label class="rs-group-label" for="rs-line-height">{{ MSG.reading.line_height }}</label>
-                                <input type="range" id="rs-line-height" class="line-height-slider" min="1.4" max="2.4" step="0.05" value="1.8" aria-label="{{ MSG.reading.line_height_aria }}">
-                            </div>
-                            <div class="rs-group">
-                                <label class="rs-group-label">{{ MSG.reading.font_family }}</label>
-                                <div class="rs-btn-row" role="group" aria-label="{{ MSG.reading.font_family_aria }}">
-                                    <button type="button" class="btn-sm rs-pill" data-font="sans">{{ MSG.reading.font_sans }}</button>
-                                    <button type="button" class="btn-sm rs-pill" data-font="song">{{ MSG.reading.font_serif }}</button>
-                                    <button type="button" class="btn-sm rs-pill" data-font="mono">{{ MSG.reading.font_mono }}</button>
-                                </div>
-                            </div>
-                            <div class="rs-group">
-                                <label class="rs-group-label">{{ MSG.reading.theme_color }}</label>
-                                <div class="rs-theme-colors" role="group" aria-label="{{ MSG.reading.theme_color_aria }}">
-                                    <button type="button" class="swatch rs-color-swatch" data-theme-color="" aria-label="{{ MSG.reading.theme_default_aria }}"></button>
-                                    <button type="button" class="swatch rs-color-swatch" data-theme-color="blue_green" aria-label="{{ MSG.reading.theme_blue_aria }}"></button>
-                                    <button type="button" class="swatch rs-color-swatch" data-theme-color="orange_yellow" aria-label="{{ MSG.reading.theme_orange_aria }}"></button>
-                                    <button type="button" class="swatch rs-color-swatch" data-theme-color="rose" aria-label="{{ MSG.reading.theme_rose_aria }}"></button>
-                                </div>
-                            </div>
-                            <div class="rs-group">
-                                <label class="rs-group-label">{{ MSG.reading.a11y_mode }}</label>
-                                <div class="rs-btn-row rs-toggle-row">
-                                    <button type="button" class="btn-sm rs-pill" data-act="eye">{{ MSG.reading.eye_care }}</button>
-                                    <button type="button" class="btn-sm rs-pill" data-act="amoled">{{ MSG.reading.amoled }}</button>
-                                    <button type="button" class="btn-sm rs-pill" data-act="paper">{{ MSG.reading.paper }}</button>
-                                </div>
-                            </div>
-                            <div class="rs-group tts-bar">
-                                <label class="rs-group-label">{{ MSG.reading.tts_aria }}</label>
-                                <div class="rs-btn-row">
-                                    <button type="button" class="btn-sm rs-pill" data-tts="play" aria-pressed="false">{{ MSG.reading.tts_toggle }}</button>
-                                    <button type="button" class="btn-sm rs-pill" data-tts="stop">{{ MSG.reading.tts_stop }}</button>
-                                </div>
-                                <input type="range" class="tts-speed" min="0.5" max="2" step="0.1" value="1" aria-label="{{ MSG.reading.tts_rate_aria }}">
-                                <span class="tts-status rs-tts-status">{{ MSG.reading.tts_idle }}</span>
-                            </div>
-                        </div>
-                    </div>
 
-                </header>
-                {# 富文本正文：含图片、图文混排、表格（HTML 整体存储于 content）#}
-<div class="article-body reading-body highlight-body code-enhanced" id="article-body" aria-label="{{ MSG.reading.body_aria }}" itemprop="articleBody" data-article-id="{{ article.pk }}">
-                    {# 第4轮迭代#120: 自定义过滤器——{{ text|safe_html }} 等价于内置 |safe（内容已由后端 bleach 净化） #}
-{{ article.content|portable_media|lazy_images|safe }}
-                </div>
-                {# 萌系装饰：正文与标签之间的轻量分割线（sparkle + 樱花） #}
-                <div class="article-divider" aria-hidden="true">
-                    <span class="article-divider-line"></span>
-                    <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon-md">
-                    <img src="{% static 'assets/icons/sparkle.svg' %}" alt="" class="icon-sm">
-                    <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon-md">
-                    <span class="article-divider-line"></span>
-                </div>
-                {# bug9：标签已上移到作者信息下一行，此处不再重复输出 #}
-                {# 22. 本文作者卡片：圆形头像 + 昵称 + 简介 + 文章数/阅读量 + 主页链接 #}
-<div class="author-card" itemscope itemtype="https://schema.org/Person">
-                    <a class="author-card-avatar" href="{% url 'user_profile' article.author.username %}" itemprop="url">
+                    </header>
+                    {# 富文本正文：含图片、图文混排、表格（HTML 整体存储于 content）#}
+                    <div class="article-body reading-body highlight-body code-enhanced" id="article-body"
+                         aria-label="{{ MSG.reading.body_aria }}" itemprop="articleBody"
+                         data-article-id="{{ article.pk }}">
+                        {# 第4轮迭代#120: 自定义过滤器——{{ text|safe_html }} 等价于内置 |safe（内容已由后端 bleach 净化） #}
+                        {{ article.content|portable_media|lazy_images|safe }}
+                    </div>
+                    {# 萌系装饰：正文与标签之间的轻量分割线（sparkle + 樱花） #}
+                    <div class="article-divider" aria-hidden="true">
+                        <span class="article-divider-line"></span>
+                        <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon-md">
+                        <img src="{% static 'assets/icons/sparkle.svg' %}" alt="" class="icon-sm">
+                        <img src="{% static 'assets/icons/cherry-blossom.svg' %}" alt="" class="icon-md">
+                        <span class="article-divider-line"></span>
+                    </div>
+                    {# bug9：标签已上移到作者信息下一行，此处不再重复输出 #}
+                    {# 22. 本文作者卡片：圆形头像 + 昵称 + 简介 + 文章数/阅读量 + 主页链接 #}
+                    <div class="author-card" itemscope itemtype="https://schema.org/Person">
+                        <a class="author-card-avatar" href="{% url 'user_profile' article.author.username %}"
+                           itemprop="url">
                         <span class="avatar-circle avatar-md">
                             {% if article.author.avatar %}
-                            <img src="{{ article.author.avatar.url }}" alt="{{ article.author.nickname|default:article.author.username }}" loading="lazy" decoding="async" fetchpriority="low" width="64" height="64" itemprop="image">
+                                <img src="{{ article.author.avatar.url }}"
+                                     alt="{{ article.author.nickname|default:article.author.username }}" loading="lazy"
+                                     decoding="async" fetchpriority="low" width="64" height="64" itemprop="image">
                             {% else %}
-                            <span class="avatar-initial">{{ article.author.nickname|default:article.author.username|slice:":1" }}</span>
+                                <span class="avatar-initial">{{ article.author.nickname|default:article.author.username|slice:":1" }}</span>
                             {% endif %}
                         </span>
-                    </a>
-                    <div class="author-card-info">
-                        <div class="author-card-name" itemprop="name">{{ article.author.nickname|default:article.author.username }}</div>
-                        {# 第4轮迭代#112: 自定义过滤器——{{ text|truncate_chars }} 等价于内置 |truncatechars:100 截断字符 #}
-                        <address class="author-card-intro" style="font-style:normal;" itemprop="knowsAbout">{% if article.author.introduction %}{{ article.author.introduction|truncatechars:100  }}{% else %}{{ MSG.user.no_bio }}{% endif %}</address>
-                        <meta itemprop="jobTitle" content="博主">
-                        <meta itemprop="worksFor" content="{{ site_name|default:'萌语博客' }}">
-                        <meta itemprop="sameAs" content="">
-                        <meta itemprop="email" content="">
-                        <meta itemprop="nationality" content="CN">
-                        <div class="author-card-meta">
-                            <span>📝 {{ author_article_count }} 篇文章</span>
-                            <span>👁 共 {{ author_views_total }} 阅读</span>
-                        </div>
-                    </div>
-                    <a class="author-card-link" href="{% url 'user_profile' article.author.username %}" aria-label="{{ MSG.article.author_home_aria }}">{{ MSG.article.author_home }}</a>
-                </div>
-                {# 67. 系列目录导航卡片：当前文章属于系列时显示，按序号列出系列全部文章 #}
-                {% if series_articles %}
-                <div class="series-nav-card">
-                    <div class="series-nav-title">📚 系列：{{ article.series.title }}</div>
-                    {% if article.series.description %}<p class="series-nav-desc">{{ article.series.description }}</p>{% endif %}
-                    <ol class="series-article-list" aria-label="{{ MSG.article.series_list_aria }}">
-                        {% for sa in series_articles %}
-                        <li class="{% if sa.pk == article.pk %}current{% endif %}">
-                            <span class="series-idx">{{ sa.series_order }}</span>
-                            {% if sa.pk == article.pk %}
-                            <span class="series-cur-title">📍 {{ sa.title }}</span>
-                            {% else %}
-                            <a href="{{ sa.get_absolute_url }}">{{ sa.title }}</a>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ol>
-                </div>
-                {% endif %}
-                {# 轻量修改日志：修改人 + 时间；55. 有快照的条目可"查看快照"对比 #}
-                {% if edit_logs %}
-<div class="edit-log" role="region" aria-label="{{ MSG.article.edit_logs_aria }}">
-                    <h3>📝 修改记录（最近 {{ edit_logs|length }} 条）</h3>
-                    <ol aria-label="{{ MSG.article.edit_logs_list_aria }}">
-                        {% for log in edit_logs %}
-                        <li>
-                            {{ log.editor.nickname|default:log.editor.username }} · {{ log.edited_at|date:"Y-m-d H:i" }}
-                            {# 55. 有内容快照时显示"查看快照"按钮，点击弹窗对比修改前/后 #}
-                            {% if log.content_snapshot %}
-                            <button type="button" class="snapshot-btn"
-                                    data-title="修改于 {{ log.edited_at|date:'Y-m-d H:i' }}"
-                                    data-before="{{ log.snapshot_plain|escapejs }}"
-                                    data-after="{{ article.plain_text|escapejs }}">
-                                查看快照
-                            </button>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ol>
-                </div>
-                {% endif %}
-                {# 55. 快照对比弹窗：默认隐藏，点击"查看快照"后填充并显示 #}
-<div class="snapshot-modal-mask" id="snapshot-modal" hidden role="dialog" aria-modal="true" aria-labelledby="snapshot-modal-title" aria-describedby="snapshot-modal-desc">
-                    <div class="snapshot-modal">
-                        <div class="snapshot-modal-head">
-                            <span id="snapshot-modal-title">{{ MSG.article.snapshot_title }}</span>
-                            <button type="button" class="snapshot-close" id="snapshot-close" aria-label="{{ MSG.btn.close }}">✕</button>
-                        </div>
-                        <div class="snapshot-cols">
-                            <div class="snapshot-col">
-                                <h4>{{ MSG.article.snapshot_before }}</h4>
-                                <pre class="snapshot-text" id="snapshot-before"></pre>
-                            </div>
-                            <div class="snapshot-col">
-                                <h4>{{ MSG.article.snapshot_now }}</h4>
-                                <pre class="snapshot-text" id="snapshot-after"></pre>
+                        </a>
+                        <div class="author-card-info">
+                            <div class="author-card-name"
+                                 itemprop="name">{{ article.author.nickname|default:article.author.username }}</div>
+                            {# 第4轮迭代#112: 自定义过滤器——{{ text|truncate_chars }} 等价于内置 |truncatechars:100 截断字符 #}
+                            <address class="author-card-intro" style="font-style:normal;" itemprop="knowsAbout">
+                                {% if article.author.introduction %}
+                                    {{ article.author.introduction|truncatechars:100 }}{% else %}
+                                    {{ MSG.user.no_bio }}{% endif %}</address>
+                            <meta itemprop="jobTitle" content="博主">
+                            <meta itemprop="worksFor" content="{{ site_name|default:'萌语博客' }}">
+                            <meta itemprop="sameAs" content="">
+                            <meta itemprop="email" content="">
+                            <meta itemprop="nationality" content="CN">
+                            <div class="author-card-meta">
+                                <span>📝 {{ author_article_count }} 篇文章</span>
+                                <span>👁 共 {{ author_views_total }} 阅读</span>
                             </div>
                         </div>
+                        <a class="author-card-link" href="{% url 'user_profile' article.author.username %}"
+                           aria-label="{{ MSG.article.author_home_aria }}">{{ MSG.article.author_home }}</a>
                     </div>
-                </div>
-                {# 上一篇 / 下一篇导航卡片：粉紫蓝配色，显示方向箭头与标题 #}
-<nav class="post-nav" aria-label="{{ MSG.article.pager_aria }}">
-                    {% if prev_article %}
-                    <a class="post-nav-card post-nav-prev" href="{{ prev_article.get_absolute_url }}" aria-label="上一篇：{{ prev_article.title }}">
-                        <span class="post-nav-dir">← 上一篇</span>
-                        <span class="post-nav-title">{{ prev_article.title }}</span>
-                    </a>
-                    {% else %}
-                    <span class="post-nav-card post-nav-prev is-disabled">
+                    {# 67. 系列目录导航卡片：当前文章属于系列时显示，按序号列出系列全部文章 #}
+                    {% if series_articles %}
+                        <div class="series-nav-card">
+                            <div class="series-nav-title">📚 系列：{{ article.series.title }}</div>
+                            {% if article.series.description %}
+                                <p class="series-nav-desc">{{ article.series.description }}</p>{% endif %}
+                            <ol class="series-article-list" aria-label="{{ MSG.article.series_list_aria }}">
+                                {% for sa in series_articles %}
+                                    <li class="{% if sa.pk == article.pk %}current{% endif %}">
+                                        <span class="series-idx">{{ sa.series_order }}</span>
+                                        {% if sa.pk == article.pk %}
+                                            <span class="series-cur-title">📍 {{ sa.title }}</span>
+                                        {% else %}
+                                            <a href="{{ sa.get_absolute_url }}">{{ sa.title }}</a>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                    {% endif %}
+                    {# 轻量修改日志：修改人 + 时间；55. 有快照的条目可"查看快照"对比 #}
+                    {% if edit_logs %}
+                        <div class="edit-log" role="region" aria-label="{{ MSG.article.edit_logs_aria }}">
+                            <h3>📝 修改记录（最近 {{ edit_logs|length }} 条）</h3>
+                            <ol aria-label="{{ MSG.article.edit_logs_list_aria }}">
+                                {% for log in edit_logs %}
+                                    <li>
+                                        {{ log.editor.nickname|default:log.editor.username }}
+                                        · {{ log.edited_at|date:"Y-m-d H:i" }}
+                                        {# 55. 有内容快照时显示"查看快照"按钮，点击弹窗对比修改前/后 #}
+                                        {% if log.content_snapshot %}
+                                            <button type="button" class="snapshot-btn"
+                                                    data-title="修改于 {{ log.edited_at|date:'Y-m-d H:i' }}"
+                                                    data-before="{{ log.snapshot_plain|escapejs }}"
+                                                    data-after="{{ article.plain_text|escapejs }}">
+                                                查看快照
+                                            </button>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                    {% endif %}
+                    {# 55. 快照对比弹窗：默认隐藏，点击"查看快照"后填充并显示 #}
+                    <div class="snapshot-modal-mask" id="snapshot-modal" hidden role="dialog" aria-modal="true"
+                         aria-labelledby="snapshot-modal-title" aria-describedby="snapshot-modal-desc">
+                        <div class="snapshot-modal">
+                            <div class="snapshot-modal-head">
+                                <span id="snapshot-modal-title">{{ MSG.article.snapshot_title }}</span>
+                                <button type="button" class="snapshot-close" id="snapshot-close"
+                                        aria-label="{{ MSG.btn.close }}">✕
+                                </button>
+                            </div>
+                            <div class="snapshot-cols">
+                                <div class="snapshot-col">
+                                    <h4>{{ MSG.article.snapshot_before }}</h4>
+                                    <pre class="snapshot-text" id="snapshot-before"></pre>
+                                </div>
+                                <div class="snapshot-col">
+                                    <h4>{{ MSG.article.snapshot_now }}</h4>
+                                    <pre class="snapshot-text" id="snapshot-after"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {# 上一篇 / 下一篇导航卡片：粉紫蓝配色，显示方向箭头与标题 #}
+                    <nav class="post-nav" aria-label="{{ MSG.article.pager_aria }}">
+                        {% if prev_article %}
+                            <a class="post-nav-card post-nav-prev" href="{{ prev_article.get_absolute_url }}"
+                               aria-label="上一篇：{{ prev_article.title }}">
+                                <span class="post-nav-dir">← 上一篇</span>
+                                <span class="post-nav-title">{{ prev_article.title }}</span>
+                            </a>
+                        {% else %}
+                            <span class="post-nav-card post-nav-prev is-disabled">
                         <span class="post-nav-dir">← 上一篇</span>
                         <span class="post-nav-title">{{ MSG.article.prev_none }}</span>
                     </span>
-                    {% endif %}
-                    {% if next_article %}
-                    <a class="post-nav-card post-nav-next" href="{{ next_article.get_absolute_url }}" aria-label="下一篇：{{ next_article.title }}">
-                        <span class="post-nav-dir">下一篇 →</span>
-                        <span class="post-nav-title">{{ next_article.title }}</span>
-                    </a>
-                    {% else %}
-                    <span class="post-nav-card post-nav-next is-disabled">
+                        {% endif %}
+                        {% if next_article %}
+                            <a class="post-nav-card post-nav-next" href="{{ next_article.get_absolute_url }}"
+                               aria-label="下一篇：{{ next_article.title }}">
+                                <span class="post-nav-dir">下一篇 →</span>
+                                <span class="post-nav-title">{{ next_article.title }}</span>
+                            </a>
+                        {% else %}
+                            <span class="post-nav-card post-nav-next is-disabled">
                         <span class="post-nav-dir">下一篇 →</span>
                         <span class="post-nav-title">{{ MSG.article.next_none }}</span>
                     </span>
-                    {% endif %}
-                </nav>
-                {# Round4-C1: 相关文章推荐（粉系网格卡片）。优先使用后端注入的 related_articles；未注入时回退旧 related 结构，避免空白 #}
-                {% if related_articles %}
-                <section class="related-articles" aria-label="相关推荐" aria-labelledby="related-title">
-                    <h3 class="related-title" id="related-title">{{ MSG.article.related_you_may_like }}</h3>
-                    <div class="related-grid">
-                        {% for ra in related_articles %}
-                        {# 工单6：缩略图由后端按「封面→正文首图→纯文字」统一预算为 ra.rel_thumb #}
-                        <a class="related-card{% if not ra.rel_thumb %} no-cover{% endif %}" href="{% url 'article_detail' ra.pk %}">
-                            {% if ra.rel_thumb %}
-                            <img class="related-cover" src="{{ ra.rel_thumb }}" alt="{{ ra.title }}" loading="lazy">
-                            {% endif %}
-                            <div class="related-info">
-                                <h4 class="related-card-title">{{ ra.title }}</h4>
-                                <span class="related-meta">{% if ra.category %}{{ ra.category.name }} · {% endif %}{{ ra.created_at|date:"m-d" }}</span>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </section>
-                {% elif related %}
-                {# 兼容回退：后端尚未把 related 重命名为 related_articles 时，沿用旧横向滚动卡片结构 #}
-                <section class="related related--h" aria-label="相关推荐" aria-labelledby="related-title">
-                    <h3 id="related-title">{{ MSG.article.related_aria }}</h3>
-                    <div class="related-scroll" aria-label="{{ MSG.article.related_list_aria }}">
-                        {% for r in related %}
-                        <a class="related-card" href="{{ r.get_absolute_url }}">
-                            {% if r.cover_image %}
-                            <div class="related-card-cover"><img src="{{ r.cover_image.url }}" alt="{{ r.title }}" loading="lazy" decoding="async" fetchpriority="low" width="200" height="130"></div>
-                            {% else %}
-                            <div class="related-card-cover related-card-cover--ph"><span>🌸</span></div>
-                            {% endif %}
-                            <div class="related-card-title">{{ r.title }}</div>
-                            <div class="related-card-meta">👁 {{ r.views }} 阅读</div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </section>
-                {% endif %}
-                {# ===== Round5 G5/G6/G7: 分享增强面板 ===== #}
-                <div class="snapshot-modal-mask" id="share-modal" hidden role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-                    <div class="snapshot-modal" style="width:420px;">
-                        <div class="snapshot-modal-head">
-                            <span id="share-modal-title">{{ MSG.article.share_panel_title }}</span>
-                            <button type="button" class="snapshot-close" id="share-modal-close" aria-label="{{ MSG.article.share_panel_aria }}">✕</button>
-                        </div>
-                        <div style="padding:16px;text-align:center;">
-                            <button type="button" class="btn-primary" id="share-card-btn" aria-label="{{ MSG.article.share_card }}">{{ MSG.article.share_card }}</button>
-                            <div class="share-qrcode-area" id="share-qrcode-area" style="margin-top:12px;">
-                                <div id="qrcode-canvas" style="display:inline-block;"></div>
-                                <p class="muted" style="font-size:.82rem;">{{ MSG.article.share_qr_hint }}</p>
-                            </div>
-                            <div class="share-short-link">
-                                <input type="text" id="short-link-input" readonly value="" aria-label="{{ MSG.article.shortlink_aria }}">
-                                <button type="button" class="btn-sm" id="short-link-copy" aria-label="{{ MSG.article.copy_shortlink_aria }}">{{ MSG.article.copy }}</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="toast-container" id="toast-container" aria-live="polite"></div>
-            </div>
-            {# ================= 评论区 ================= #}
-<section class="comments-section" id="comments" aria-label="{{ MSG.comment.section_aria }}" aria-busy="false"
-                     data-article-pk="{{ article.pk }}"
-                     data-post-url="{% url 'comment_create' article.pk %}">
-                <h3 class="comments-title">💬 <span id="comments-count" aria-live="polite" itemprop="commentCount">{{ comment_count }}</span> {{ MSG.comment.count_suffix }}</h3>
-                {# ===== Round5 C2/C4/C8: 评论工具栏（排序/搜索/只看楼主） ===== #}
-                <div class="comment-toolbar" role="toolbar" aria-label="{{ MSG.comment.toolbar_aria }}">
-                    <div class="comment-sort" role="group" aria-label="{{ MSG.comment.sort_aria }}">
-                        <button type="button" class="btn-sm sort-btn active" data-sort="latest" aria-label="{{ MSG.comment.sort_new_aria }}">{{ MSG.comment.sort_new }}</button>
-                        <button type="button" class="btn-sm sort-btn" data-sort="hottest" aria-label="{{ MSG.comment.sort_hot_aria }}">{{ MSG.comment.sort_hot }}</button>
-                    </div>
-                    <div class="comment-search-box">
-                        <input type="search" id="comment-search-input" placeholder="{{ MSG.comment.search_placeholder }}" aria-label="{{ MSG.comment.search_aria }}">
-                    </div>
-                    <label class="comment-filter-label">
-                        <input type="checkbox" id="only-author" aria-label="{{ MSG.comment.only_op }}"> 只看楼主
-                    </label>
-                </div>
-                {% if user.is_authenticated %}
-{# 第3轮迭代#221: CSRF token（{% csrf_token %} 已注入） #}
-<form class="comment-form" id="comment-form" method="post" aria-label="{{ MSG.comment.form_aria }}" aria-controls="comment-list" novalidate
-                      data-url="{% url 'comment_create' article.pk %}">
-                    {% csrf_token %}
-                    {# Bug4：主评论轻量富文本工具栏（加粗/斜体/行内代码/链接），仅主评论有；子评论保持纯文本 #}
-                    <div class="comment-rt-toolbar" role="toolbar" aria-label="{{ MSG.comment.format_aria }}">
-                        <button type="button" class="crt-btn" data-fmt="strong" title="{{ MSG.comment.bold }}" aria-label="{{ MSG.comment.bold_aria }}"><b>B</b></button>
-                        <button type="button" class="crt-btn" data-fmt="em" title="{{ MSG.comment.italic }}" aria-label="{{ MSG.comment.italic_aria }}"><i>I</i></button>
-                        <button type="button" class="crt-btn" data-fmt="code" title="{{ MSG.comment.code }}" aria-label="{{ MSG.comment.code_aria }}"><code>&lt;/&gt;</code></button>
-                        <button type="button" class="crt-btn" data-fmt="link" title="{{ MSG.comment.link }}" aria-label="{{ MSG.comment.link_aria }}">🔗</button>
-                    </div>
-                    <textarea name="content" id="comment-input" rows="3" required
-                              aria-label="{{ MSG.comment.content_aria }}"
-                              placeholder="{{ MSG.auto.说点什么吧_可用上方工具栏加粗_斜体_链接_代码 }}"
-                              maxlength="10000"></textarea>
-                    {# Round4-C6: 评论表情包触发按钮（表情面板由 emoji_panel.min.js 动态生成） #}
-                    <div class="emoji-row">
-                        <button type="button" class="emoji-trigger" id="emojiTrigger" aria-label="{{ MSG.comment.emoji_aria }}" aria-haspopup="true" aria-expanded="false">
-                            <img src="{% static 'assets/icons/emoji.svg' %}" alt="" class="icon icon-sm">
-                            表情喵
-                        </button>
-                        {# Bug4：图片按钮改用独立类，避免被表情面板误触发；文件框补齐 data 属性以接通上传 #}
-                        <button type="button" class="comment-tool-btn" id="comment-image-btn" aria-label="{{ MSG.comment.upload_aria }}">
-                            🖼 图片喵
-                        </button>
-                        <input type="file" id="comment-image-input" data-comment-image-input hidden
-                               accept="image/*" aria-label="{{ MSG.comment.pick_image_aria }}"
-                               data-upload-url="/api/comment/image/upload/">
-                    </div>
-                    <div class="emoji-panel" id="emojiPanel" hidden></div>
-                    <div class="comment-form-bar">
-                        <span class="muted" id="comment-hint">以 {{ user.nickname|default:user.username }} 的身份发表</span>
-                        {# 27. 评论字数统计（0/10000），接近上限变黄，超限变红 #}
-                        <span class="comment-wc" id="comment-wc"><span id="comment-wc-num">0</span>/10000</span>
-                        <button type="submit" class="like-btn" id="comment-submit">
-                            <span class="like-icon">🚀</span><span class="like-text">{{ MSG.comment.submit }}</span>
-                        </button>
-                    </div>
-                    {# Bug11修复：Markdown 基本语法提示改为按钮+折叠面板，按钮始终可见，点击多少次都不会把自身隐藏 #}
-                    <div class="comment-md-help">
-                        <button type="button" class="md-help-btn" data-collapse-target="md-help-panel"
-                                aria-expanded="false" aria-controls="md-help-panel">
-                            <span>{{ MSG.comment.md_help }}</span><span class="md-help-caret" data-text-open="点击收起 ▴" data-text-closed="点击展开 ▾">{{ MSG.comment.md_expand }}</span>
-                        </button>
-                        <div class="comment-md-hint" id="md-help-panel" hidden>
-                            选中文字后点上方工具栏：<b>B</b> {{ MSG.comment.md_bold }}<i>I</i> {{ MSG.comment.md_italic }}<code>&lt;/&gt;</code> 行内代码、🔗 插入链接；表情点「表情喵」，图片点「图片喵」。
-                        </div>
-                    </div>
-                </form>
-                {% else %}
-                <div class="comment-login-tip">
-                    🌸 <a href="{% url 'login' %}?next={{ request.path }}">{{ MSG.nav.login }}</a> 后即可参与评论喵~
-                </div>
-                {% endif %}
-                {# Bug3：评论列表改为「楼中楼线程」——父子同框、回复可折叠、缩进封顶 1 级 #}
-<div class="comment-list" id="comment-list" role="log" aria-live="polite" aria-label="{{ MSG.comment.list_aria }}">
-                    {% for thread in comment_threads %}
-                    <div class="comment-thread" data-thread>
-                        {# 顶级（父）评论：depth=0，带楼层号 #}
-                        {% with comment=thread.parent depth=0 floor=thread.parent.floor is_reply=0 %}
-                        {% include 'partials/_comment_item.html' %}
-                        {% endwith %}
-                        {% if thread.replies %}
-                        <div class="comment-replies">
-                            {# Bug3：所有回复统一 depth=1（只比父多缩进一级）；前 3 条默认可见，第 4 条起加 is-extra 折叠 #}
-                            {% for c in thread.replies %}
-                            {% with comment=c depth=1 floor='' is_reply=1 %}
-                            <div class="comment-reply-row{% if forloop.counter > 3 %} is-extra{% endif %}">
-                            {% include 'partials/_comment_item.html' %}
-                            </div>
-                            {% endwith %}
-                            {% endfor %}
-                            {% if thread.extra_count %}
-                            <button type="button" class="comment-replies-toggle" data-collapsed="true" aria-expanded="false">💬 展开其余 {{ thread.extra_count }} 条回复</button>
-                            {% endif %}
-                        </div>
                         {% endif %}
+                    </nav>
+                    {# Round4-C1: 相关文章推荐（粉系网格卡片）。优先使用后端注入的 related_articles；未注入时回退旧 related 结构，避免空白 #}
+                    {% if related_articles %}
+                        <section class="related-articles" aria-label="相关推荐" aria-labelledby="related-title">
+                            <h3 class="related-title" id="related-title">{{ MSG.article.related_you_may_like }}</h3>
+                            <div class="related-grid">
+                                {% for ra in related_articles %}
+                                    {# 工单6：缩略图由后端按「封面→正文首图→纯文字」统一预算为 ra.rel_thumb #}
+                                    <a class="related-card{% if not ra.rel_thumb %} no-cover{% endif %}"
+                                       href="{% url 'article_detail' ra.pk %}">
+                                        {% if ra.rel_thumb %}
+                                            <img class="related-cover" src="{{ ra.rel_thumb }}" alt="{{ ra.title }}"
+                                                 loading="lazy">
+                                        {% endif %}
+                                        <div class="related-info">
+                                            <h4 class="related-card-title">{{ ra.title }}</h4>
+                                            <span class="related-meta">{% if ra.category %}{{ ra.category.name }}
+                                                · {% endif %}{{ ra.created_at|date:"m-d" }}</span>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </section>
+                    {% elif related %}
+                        {# 兼容回退：后端尚未把 related 重命名为 related_articles 时，沿用旧横向滚动卡片结构 #}
+                        <section class="related related--h" aria-label="相关推荐" aria-labelledby="related-title">
+                            <h3 id="related-title">{{ MSG.article.related_aria }}</h3>
+                            <div class="related-scroll" aria-label="{{ MSG.article.related_list_aria }}">
+                                {% for r in related %}
+                                    <a class="related-card" href="{{ r.get_absolute_url }}">
+                                        {% if r.cover_image %}
+                                            <div class="related-card-cover"><img src="{{ r.cover_image.url }}"
+                                                                                 alt="{{ r.title }}" loading="lazy"
+                                                                                 decoding="async" fetchpriority="low"
+                                                                                 width="200" height="130"></div>
+                                        {% else %}
+                                            <div class="related-card-cover related-card-cover--ph"><span>🌸</span></div>
+                                        {% endif %}
+                                        <div class="related-card-title">{{ r.title }}</div>
+                                        <div class="related-card-meta">👁 {{ r.views }} 阅读</div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </section>
+                    {% endif %}
+                    {# ===== Round5 G5/G6/G7: 分享增强面板 ===== #}
+                    <div class="snapshot-modal-mask" id="share-modal" hidden role="dialog" aria-modal="true"
+                         aria-labelledby="share-modal-title">
+                        <div class="snapshot-modal" style="width:420px;">
+                            <div class="snapshot-modal-head">
+                                <span id="share-modal-title">{{ MSG.article.share_panel_title }}</span>
+                                <button type="button" class="snapshot-close" id="share-modal-close"
+                                        aria-label="{{ MSG.article.share_panel_aria }}">✕
+                                </button>
+                            </div>
+                            <div style="padding:16px;text-align:center;">
+                                <button type="button" class="btn-primary" id="share-card-btn"
+                                        aria-label="{{ MSG.article.share_card }}">{{ MSG.article.share_card }}</button>
+                                <div class="share-qrcode-area" id="share-qrcode-area" style="margin-top:12px;">
+                                    <div id="qrcode-canvas" style="display:inline-block;"></div>
+                                    <p class="muted" style="font-size:.82rem;">{{ MSG.article.share_qr_hint }}</p>
+                                </div>
+                                <div class="share-short-link">
+                                    <input type="text" id="short-link-input" readonly value=""
+                                           aria-label="{{ MSG.article.shortlink_aria }}">
+                                    <button type="button" class="btn-sm" id="short-link-copy"
+                                            aria-label="{{ MSG.article.copy_shortlink_aria }}">{{ MSG.article.copy }}</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    {% empty %}
-                    <div class="comment-empty">
-                        <img src="{% static 'assets/images/empty-state.svg' %}" alt="{{ MSG.comment.empty_alt }}" class="empty-illust">
-                        <p>{{ MSG.comment.empty }}</p>
-                    </div>
-                    {% endfor %}
+                    <div class="toast-container" id="toast-container" aria-live="polite"></div>
                 </div>
-            </section>
-        </article>
-    </div>
-    {# ---------- 右栏：自动目录（toc.js 依据正文 h1-h5 自动生成，可折叠） ---------- #}
-<aside class="col-right" role="complementary" aria-label="{{ MSG.article.toc_aria }}">
-        <div class="toc-sidebar" id="toc-sidebar">
-            {# ===== Round5 A5: TOC 拖拽手柄 ===== #}
-            <div class="toc-title toc-toggle" id="toc-toggle" aria-expanded="true" aria-controls="toc-list">
-                <span class="toc-drag-handle" id="toc-drag-handle" aria-label="{{ MSG.article.toc_drag_aria }}">⠿</span> {{ MSG.article.toc_title }} <span class="toc-caret">▾</span>
+                {# ================= 评论区 ================= #}
+                <section class="comments-section" id="comments" aria-label="{{ MSG.comment.section_aria }}"
+                         aria-busy="false"
+                         data-article-pk="{{ article.pk }}"
+                         data-post-url="{% url 'comment_create' article.pk %}">
+                    <h3 class="comments-title">💬 <span id="comments-count" aria-live="polite"
+                                                       itemprop="commentCount">{{ comment_count }}</span> {{ MSG.comment.count_suffix }}
+                    </h3>
+                    {# ===== Round5 C2/C4/C8: 评论工具栏（排序/搜索/只看楼主） ===== #}
+                    <div class="comment-toolbar" role="toolbar" aria-label="{{ MSG.comment.toolbar_aria }}">
+                        <div class="comment-sort" role="group" aria-label="{{ MSG.comment.sort_aria }}">
+                            <button type="button" class="btn-sm sort-btn active" data-sort="latest"
+                                    aria-label="{{ MSG.comment.sort_new_aria }}">{{ MSG.comment.sort_new }}</button>
+                            <button type="button" class="btn-sm sort-btn" data-sort="hottest"
+                                    aria-label="{{ MSG.comment.sort_hot_aria }}">{{ MSG.comment.sort_hot }}</button>
+                        </div>
+                        <div class="comment-search-box">
+                            <input type="search" id="comment-search-input"
+                                   placeholder="{{ MSG.comment.search_placeholder }}"
+                                   aria-label="{{ MSG.comment.search_aria }}">
+                        </div>
+                        <label class="comment-filter-label">
+                            <input type="checkbox" id="only-author" aria-label="{{ MSG.comment.only_op }}"> 只看楼主
+                        </label>
+                    </div>
+                    {% if user.is_authenticated %}
+                        {# 第3轮迭代#221: CSRF token（{% csrf_token %} 已注入） #}
+                        <form class="comment-form" id="comment-form" method="post"
+                              aria-label="{{ MSG.comment.form_aria }}" aria-controls="comment-list" novalidate
+                              data-url="{% url 'comment_create' article.pk %}">
+                            {% csrf_token %}
+                            {# Bug4：主评论轻量富文本工具栏（加粗/斜体/行内代码/链接），仅主评论有；子评论保持纯文本 #}
+                            <div class="comment-rt-toolbar" role="toolbar" aria-label="{{ MSG.comment.format_aria }}">
+                                <button type="button" class="crt-btn" data-fmt="strong" title="{{ MSG.comment.bold }}"
+                                        aria-label="{{ MSG.comment.bold_aria }}"><b>B</b></button>
+                                <button type="button" class="crt-btn" data-fmt="em" title="{{ MSG.comment.italic }}"
+                                        aria-label="{{ MSG.comment.italic_aria }}"><i>I</i></button>
+                                <button type="button" class="crt-btn" data-fmt="code" title="{{ MSG.comment.code }}"
+                                        aria-label="{{ MSG.comment.code_aria }}"><code>&lt;/&gt;</code></button>
+                                <button type="button" class="crt-btn" data-fmt="link" title="{{ MSG.comment.link }}"
+                                        aria-label="{{ MSG.comment.link_aria }}">🔗
+                                </button>
+                            </div>
+                            <textarea name="content" id="comment-input" rows="3" required
+                                      aria-label="{{ MSG.comment.content_aria }}"
+                                      placeholder="{{ MSG.auto.说点什么吧_可用上方工具栏加粗_斜体_链接_代码 }}"
+                                      maxlength="10000"></textarea>
+                            {# Round4-C6: 评论表情包触发按钮（表情面板由 emoji_panel.min.js 动态生成） #}
+                            <div class="emoji-row">
+                                <button type="button" class="emoji-trigger" id="emojiTrigger"
+                                        aria-label="{{ MSG.comment.emoji_aria }}" aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <img src="{% static 'assets/icons/emoji.svg' %}" alt="" class="icon icon-sm">
+                                    表情喵
+                                </button>
+                                {# Bug4：图片按钮改用独立类，避免被表情面板误触发；文件框补齐 data 属性以接通上传 #}
+                                <button type="button" class="comment-tool-btn" id="comment-image-btn"
+                                        aria-label="{{ MSG.comment.upload_aria }}">
+                                    🖼 图片喵
+                                </button>
+                                <input type="file" id="comment-image-input" data-comment-image-input hidden
+                                       accept="image/*" aria-label="{{ MSG.comment.pick_image_aria }}"
+                                       data-upload-url="/api/comment/image/upload/">
+                            </div>
+                            <div class="emoji-panel" id="emojiPanel" hidden></div>
+                            <div class="comment-form-bar">
+                                <span class="muted"
+                                      id="comment-hint">以 {{ user.nickname|default:user.username }} 的身份发表</span>
+                                {# 27. 评论字数统计（0/10000），接近上限变黄，超限变红 #}
+                                <span class="comment-wc" id="comment-wc"><span id="comment-wc-num">0</span>/10000</span>
+                                <button type="submit" class="like-btn" id="comment-submit">
+                                    <span class="like-icon">🚀</span><span
+                                        class="like-text">{{ MSG.comment.submit }}</span>
+                                </button>
+                            </div>
+                            {# Bug11修复：Markdown 基本语法提示改为按钮+折叠面板，按钮始终可见，点击多少次都不会把自身隐藏 #}
+                            <div class="comment-md-help">
+                                <button type="button" class="md-help-btn" data-collapse-target="md-help-panel"
+                                        aria-expanded="false" aria-controls="md-help-panel">
+                                    <span>{{ MSG.comment.md_help }}</span><span class="md-help-caret"
+                                                                                data-text-open="点击收起 ▴"
+                                                                                data-text-closed="点击展开 ▾">{{ MSG.comment.md_expand }}</span>
+                                </button>
+                                <div class="comment-md-hint" id="md-help-panel" hidden>
+                                    选中文字后点上方工具栏：<b>B</b> {{ MSG.comment.md_bold }}<i>I</i> {{ MSG.comment.md_italic }}<code>&lt;/&gt;</code>
+                                    行内代码、🔗 插入链接；表情点「表情喵」，图片点「图片喵」。
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="comment-login-tip">
+                            🌸 <a href="{% url 'login' %}?next={{ request.path }}">{{ MSG.nav.login }}</a> 后即可参与评论喵~
+                        </div>
+                    {% endif %}
+                    {# Bug3：评论列表改为「楼中楼线程」——父子同框、回复可折叠、缩进封顶 1 级 #}
+                    <div class="comment-list" id="comment-list" role="log" aria-live="polite"
+                         aria-label="{{ MSG.comment.list_aria }}">
+                        {% for thread in comment_threads %}
+                            <div class="comment-thread" data-thread>
+                                {# 顶级（父）评论：depth=0，带楼层号 #}
+                                {% with comment=thread.parent depth=0 floor=thread.parent.floor is_reply=0 %}
+                                    {% include 'partials/_comment_item.html' %}
+                                {% endwith %}
+                                {% if thread.replies %}
+                                    <div class="comment-replies">
+                                        {# Bug3：所有回复统一 depth=1（只比父多缩进一级）；前 3 条默认可见，第 4 条起加 is-extra 折叠 #}
+                                        {% for c in thread.replies %}
+                                            {% with comment=c depth=1 floor='' is_reply=1 %}
+                                                <div class="comment-reply-row{% if forloop.counter > 3 %} is-extra{% endif %}">
+                                                    {% include 'partials/_comment_item.html' %}
+                                                </div>
+                                            {% endwith %}
+                                        {% endfor %}
+                                        {% if thread.extra_count %}
+                                            <button type="button" class="comment-replies-toggle" data-collapsed="true"
+                                                    aria-expanded="false">💬 展开其余 {{ thread.extra_count }} 条回复
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <div class="comment-empty">
+                                <img src="{% static 'assets/images/empty-state.svg' %}"
+                                     alt="{{ MSG.comment.empty_alt }}" class="empty-illust">
+                                <p>{{ MSG.comment.empty }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </article>
+        </div>
+        {# ---------- 右栏：自动目录（toc.js 依据正文 h1-h5 自动生成，可折叠） ---------- #}
+        <aside class="col-right" role="complementary" aria-label="{{ MSG.article.toc_aria }}">
+            <div class="toc-sidebar" id="toc-sidebar">
+                {# ===== Round5 A5: TOC 拖拽手柄 ===== #}
+                <div class="toc-title toc-toggle" id="toc-toggle" aria-expanded="true" aria-controls="toc-list">
+                    <span class="toc-drag-handle" id="toc-drag-handle"
+                          aria-label="{{ MSG.article.toc_drag_aria }}">⠿</span> {{ MSG.article.toc_title }} <span
+                        class="toc-caret">▾</span>
+                </div>
+                <ul class="toc-list" id="toc-list"></ul>
+                {# 65. 复制目录按钮：把正文标题导出为 Markdown 目录复制到剪贴板 #}
+                <button type="button" class="toc-copy-btn" id="toc-copy-btn"
+                        aria-label="{{ MSG.article.toc_copy_aria }}">{{ MSG.article.toc_copy }}</button>
+                {# ===== Round5 G9: 导出大纲按钮 ===== #}
+                <button type="button" class="toc-copy-btn" id="toc-export-btn" data-export-outline
+                        aria-label="{{ MSG.article.toc_export_aria }}">{{ MSG.article.toc_export }}</button>
             </div>
-            <ul class="toc-list" id="toc-list"></ul>
-            {# 65. 复制目录按钮：把正文标题导出为 Markdown 目录复制到剪贴板 #}
-            <button type="button" class="toc-copy-btn" id="toc-copy-btn" aria-label="{{ MSG.article.toc_copy_aria }}">{{ MSG.article.toc_copy }}</button>
-            {# ===== Round5 G9: 导出大纲按钮 ===== #}
-            <button type="button" class="toc-copy-btn" id="toc-export-btn" data-export-outline aria-label="{{ MSG.article.toc_export_aria }}">{{ MSG.article.toc_export }}</button>
-        </div>
-    </aside>
-</div>
-{# Bug1：推广申请理由弹窗（作者申请置顶/精华/热门时填写） #}
-<div class="moe-modal" id="promo-modal" hidden>
-    <div class="moe-modal__backdrop" data-promo-close></div>
-    <div class="moe-modal__box" role="dialog" aria-modal="true" aria-labelledby="promo-modal-title">
-        <h3 id="promo-modal-title">{{ MSG.promo.dialog_apply }}<span id="promo-modal-kind"></span></h3>
-        <label for="promo-modal-reason">{{ MSG.promo.dialog_reason }}</label>
-        <textarea id="promo-modal-reason" maxlength="500" rows="4"
-                  placeholder="{{ MSG.promo.reason_placeholder }}"></textarea>
-        <div class="moe-modal__btns">
-            <button type="button" class="btn-sm" data-promo-close>{{ MSG.promo.unset }}</button>
-            <button type="button" class="btn-sm btn-primary" id="promo-modal-submit">{{ MSG.promo.dialog_submit }}</button>
+        </aside>
+    </div>
+    {# Bug1：推广申请理由弹窗（作者申请置顶/精华/热门时填写） #}
+    <div class="moe-modal" id="promo-modal" hidden>
+        <div class="moe-modal__backdrop" data-promo-close></div>
+        <div class="moe-modal__box" role="dialog" aria-modal="true" aria-labelledby="promo-modal-title">
+            <h3 id="promo-modal-title">{{ MSG.promo.dialog_apply }}<span id="promo-modal-kind"></span></h3>
+            <label for="promo-modal-reason">{{ MSG.promo.dialog_reason }}</label>
+            <textarea id="promo-modal-reason" maxlength="500" rows="4"
+                      placeholder="{{ MSG.promo.reason_placeholder }}"></textarea>
+            <div class="moe-modal__btns">
+                <button type="button" class="btn-sm" data-promo-close>{{ MSG.promo.unset }}</button>
+                <button type="button" class="btn-sm btn-primary"
+                        id="promo-modal-submit">{{ MSG.promo.dialog_submit }}</button>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}
 {# 页面级脚本：详情页加载 toc.js（目录增强）与 features.js（点赞/分享/代码复制） #}
 {% block extra_js %}
-<script defer src="{% static 'assets/js/toc.min.js' %}"></script>
-<script defer src="{% static 'assets/js/features.min.js' %}"></script>
-<script defer src="{% static 'assets/js/comments.min.js' %}"></script>
-{# 63/65/55/60: 评分 / 复制目录 / 快照弹窗 / 打印；64: 阅读历史记录 #}
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页"},{"@type":"ListItem","position":2,"name":"{{ article.title }}"}]}
-</script>
-<script defer src="{% static 'assets/js/article_features.min.js' %}"
-        data-article-id="{{ article.pk }}"
-        data-article-title="{{ article.title|escapejs }}"
-        data-article-cover="{% if article.cover_image %}{{ article.cover_image.url }}{% endif %}"
-        data-article-views="{{ article.views }}"></script>
-<script defer src="{% static 'assets/js/reading_history.min.js' %}"></script>
-{# 第3轮新增：阅读进度记忆恢复 + 图片灯箱 #}
-<script defer src="{% static 'assets/js/read_progress.min.js' %}"></script>
-<script defer src="{% static 'assets/js/image_lightbox.min.js' %}"></script>
-{# Round4 新增：代码块一键复制 / 评论表情包面板 / 专注阅读模式（均由前端 Agent 提供 min.js，按钮与面板由 JS 注入） #}
-<script defer src="{% static 'assets/js/emoji_panel.min.js' %}"></script>
-<script defer src="{% static 'assets/js/focus_mode.min.js' %}"></script>
-{# ===== Round5: 详情页按需加载功能 JS（阅读/交互/工具） ===== #}
-<script defer src="{% static 'assets/js/features/reading.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-<script defer src="{% static 'assets/js/features/interaction.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-{# 第6轮: PDF 导出改为前端 jsPDF + html2canvas（中文像素渲染，无乱码） #}
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script defer src="{% static 'assets/js/features/tools.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <script defer src="{% static 'assets/js/toc.min.js' %}"></script>
+    <script defer src="{% static 'assets/js/features.min.js' %}"></script>
+    <script defer src="{% static 'assets/js/comments.min.js' %}"></script>
+    {# 63/65/55/60: 评分 / 复制目录 / 快照弹窗 / 打印；64: 阅读历史记录 #}
+    <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页"},{"@type":"ListItem","position":2,"name":"{{ article.title }}"}]}
+    </script>
+    <script defer src="{% static 'assets/js/article_features.min.js' %}"
+            data-article-id="{{ article.pk }}"
+            data-article-title="{{ article.title|escapejs }}"
+            data-article-cover="{% if article.cover_image %}{{ article.cover_image.url }}{% endif %}"
+            data-article-views="{{ article.views }}"></script>
+    <script defer src="{% static 'assets/js/reading_history.min.js' %}"></script>
+    {# 第3轮新增：阅读进度记忆恢复 + 图片灯箱 #}
+    <script defer src="{% static 'assets/js/read_progress.min.js' %}"></script>
+    <script defer src="{% static 'assets/js/image_lightbox.min.js' %}"></script>
+    {# Round4 新增：代码块一键复制 / 评论表情包面板 / 专注阅读模式（均由前端 Agent 提供 min.js，按钮与面板由 JS 注入） #}
+    <script defer src="{% static 'assets/js/emoji_panel.min.js' %}"></script>
+    <script defer src="{% static 'assets/js/focus_mode.min.js' %}"></script>
+    {# ===== Round5: 详情页按需加载功能 JS（阅读/交互/工具） ===== #}
+    <script defer src="{% static 'assets/js/features/reading.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <script defer src="{% static 'assets/js/features/interaction.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    {# 第6轮: PDF 导出改为前端 jsPDF + html2canvas（中文像素渲染，无乱码） #}
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="{% static 'assets/js/features/tools.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 
-{# ===== 调试：片段缓存明细（?debug_cache=1，仅 DEBUG） ===== #}
-{% if cache_debug %}
-<div class="cache-debug-panel">
-  <div class="cache-debug-title">{{ MSG.article.cache_debug }}</div>
-  {% for row in cache_debug.rows %}
-  <div>{{ row.label }}: <code>{{ row.key }}</code> — {{ row.cached|yesno:'已缓存,未缓存' }}</div>
-  {% endfor %}
-  <div style="margin-top:6px;color:#888;">
-    进程内命中统计：
-    {% for key, s in cache_debug.stats.items %}{{ key }} hits={{ s.hits }} misses={{ s.misses }}；{% empty %}暂无{% endfor %}
-  </div>
-</div>
-{% endif %}
+    {# ===== 调试：片段缓存明细（?debug_cache=1，仅 DEBUG） ===== #}
+    {% if cache_debug %}
+        <div class="cache-debug-panel">
+            <div class="cache-debug-title">{{ MSG.article.cache_debug }}</div>
+            {% for row in cache_debug.rows %}
+                <div>{{ row.label }}: <code>{{ row.key }}</code> — {{ row.cached|yesno:'已缓存,未缓存' }}</div>
+            {% endfor %}
+            <div style="margin-top:6px;color:#888;">
+                进程内命中统计：
+                {% for key, s in cache_debug.stats.items %}{{ key }} hits={{ s.hits }} misses={{ s.misses }}；{% empty %}
+                    暂无{% endfor %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

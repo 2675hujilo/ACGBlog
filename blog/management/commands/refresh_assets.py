@@ -68,6 +68,23 @@ CSS_BUNDLES = {
     ],
 }
 
+# ---------------- JS bundle（顺序敏感：引擎依赖链） ----------------
+# live2d 引擎 6 个 JS 文件合并为单一 bundle，减少首页 5 个 HTTP 请求。
+# 合并顺序严格遵循 base.html 引用顺序（pixi → core → cubismcore → display → renderer），
+# 改动必须同步 base.html 中的 <script> 引用。
+JS_BUNDLES = {
+    'live2d_engine_bundle': {
+        'dir': os.path.join('assets', 'live2d', 'engine'),
+        'files': [
+            'pixi.min.js',
+            'live2d.core.min.js',
+            'live2dcubismcore.min.js',
+            'pixi-live2d-display.min.js',
+            'renderer.js',
+        ],
+    },
+}
+
 
 # ---------------- CSS 压缩 ----------------
 def minify_css(text):
@@ -197,6 +214,35 @@ class Command(BaseCommand):
                 continue
         return written
 
+    # -------------------- JS bundle 生成 --------------------
+    def _build_js_bundles(self, js_base_dir):
+        """按 JS_BUNDLES 清单拼接源 JS → 输出 <name>.min.js（已压缩则直接拼接）。"""
+        results = []
+        for bundle_name, cfg in JS_BUNDLES.items():
+            parts, missing, used = [], [], []
+            src_dir = os.path.join(settings.BASE_DIR, 'static', cfg['dir'])
+            for name in cfg['files']:
+                src = os.path.join(src_dir, name)
+                if not os.path.exists(src):
+                    missing.append(name)
+                    continue
+                parts.append(open(src, encoding='utf-8').read())
+                used.append(name)
+            if not parts:
+                results.append({'bundle': bundle_name, 'ok': False,
+                                'reason': '全部源文件缺失', 'missing': missing})
+                continue
+            dst = os.path.join(js_base_dir, bundle_name + '.min.js')
+            content = '\n'.join(parts)
+            with open(dst, 'w', encoding='utf-8') as fh:
+                fh.write(content)
+            results.append({
+                'bundle': bundle_name, 'ok': True, 'path': dst,
+                'bytes': len(content.encode('utf-8')),
+                'sources': len(used), 'missing': missing,
+            })
+        return results
+
     # -------------------- 全局样式 bundle 生成 --------------------
     def _build_css_bundles(self, css_dir):
         """按 CSS_BUNDLES 清单顺序拼接源 .css → 压缩 → 输出 <name>.min.css。
@@ -249,10 +295,11 @@ class Command(BaseCommand):
             opts['no_css'] = opts['no_js'] = True
             opts['no_gz'] = True
 
-        # --bundle-only：只重建全局样式 bundle，跳过逐文件压缩与缓存清理
+        # --bundle-only：只重建全局样式 + JS bundle，跳过逐文件压缩与缓存清理
         if opts.get('bundle_only'):
             opts['no_css'] = opts['no_js'] = True
             opts['no_cache'] = True
+            # CSS bundle
             bundle_results = self._build_css_bundles(css_dir)
             bundle_paths = [r['path'] for r in bundle_results if r.get('ok')]
             for r in bundle_results:
@@ -264,6 +311,19 @@ class Command(BaseCommand):
                 else:
                     self.stdout.write(self.style.ERROR(
                         'bundle %s 生成失败：%s' % (r['bundle'], r.get('reason'))))
+            # JS bundle
+            js_results = self._build_js_bundles(js_dir)
+            js_paths = [r['path'] for r in js_results if r.get('ok')]
+            for r in js_results:
+                if r.get('ok'):
+                    self.stdout.write(self.style.SUCCESS(
+                        '已生成 bundle %s.min.js：源 %d 个，%.1f KB%s' % (
+                            r['bundle'], r['sources'], r['bytes'] / 1024,
+                            ('，缺失 %s' % r['missing']) if r['missing'] else '')))
+                else:
+                    self.stdout.write(self.style.ERROR(
+                        'bundle %s 生成失败：%s' % (r['bundle'], r.get('reason'))))
+            bundle_paths.extend(js_paths)
             if bundle_paths and not opts.get('no_gz'):
                 gz_done = self._write_gz(bundle_paths)
                 self.stdout.write(self.style.SUCCESS(
@@ -319,6 +379,16 @@ class Command(BaseCommand):
                     js_count += 1
                     js_before += len(raw.encode('utf-8'))
                     js_after += len(mini.encode('utf-8'))
+
+        # ---- JS bundle（引擎合并） ----
+        if not opts.get('no_js'):
+            js_bundle_results = self._build_js_bundles(js_dir)
+            for r in js_bundle_results:
+                if r.get('ok'):
+                    gz_targets.append(r['path'])
+                    self.stdout.write(self.style.SUCCESS(
+                        '已生成 JS bundle %s.min.js：源 %d 个，%.1f KB' % (
+                            r['bundle'], r['sources'], r['bytes'] / 1024)))
 
         # ---- .gz 预压缩副本（与 .min 产物同目录同名 + .gz） ----
         if not opts['no_gz']:

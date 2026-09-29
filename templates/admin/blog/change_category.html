@@ -5,34 +5,37 @@
 {% endcomment %}
 
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-  &rsaquo; <a href="{% url 'admin:blog_article_changelist' %}">{{ MSG.brand.stats_articles }}</a>
-  &rsaquo; 批量修改分类
-</div>
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        &rsaquo; <a href="{% url 'admin:blog_article_changelist' %}">{{ MSG.brand.stats_articles }}</a>
+        &rsaquo; 批量修改分类
+    </div>
 {% endblock %}
 
 {% block content %}
-<div id="content-main">
-  <h1>{{ MSG.auto.批量修改分类 }}</h1>
-  <p>{{ MSG.auto.即将对选中的 }} <strong>{{ posts|length }}</strong> {{ MSG.auto.篇文章执行分类变更 }}</p>
-  <ul style="margin:0 0 16px 20px;">
-    {% for p in posts %}<li>{{ p.title }}</li>{% endfor %}
-  </ul>
-  <form action="" method="post">{% csrf_token %}
-    {# 保留被选中的文章 id（admin action 标准隐藏字段） #}
-    {% for obj in posts %}<input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}">{% endfor %}
-    <div>
-      <label for="id_category">{{ MSG.auto.选择新分类 }}</label>
-      <select name="category" id="id_category">
-        <option value="">{{ MSG.auto.未分类_清空分类 }}</option>
-        {% for cat in cats %}<option value="{{ cat.pk }}">{{ cat.name }}</option>{% endfor %}
-      </select>
+    <div id="content-main">
+        <h1>{{ MSG.auto.批量修改分类 }}</h1>
+        <p>{{ MSG.auto.即将对选中的 }} <strong>{{ posts|length }}</strong> {{ MSG.auto.篇文章执行分类变更 }}</p>
+        <ul style="margin:0 0 16px 20px;">
+            {% for p in posts %}
+                <li>{{ p.title }}</li>{% endfor %}
+        </ul>
+        <form action="" method="post">{% csrf_token %}
+            {# 保留被选中的文章 id（admin action 标准隐藏字段） #}
+            {% for obj in posts %}
+                <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}">{% endfor %}
+            <div>
+                <label for="id_category">{{ MSG.auto.选择新分类 }}</label>
+                <select name="category" id="id_category">
+                    <option value="">{{ MSG.auto.未分类_清空分类 }}</option>
+                    {% for cat in cats %}
+                        <option value="{{ cat.pk }}">{{ cat.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div style="margin-top:16px;">
+                <input type="submit" name="apply" value="应用" class="default">
+                <a href="{{ cancel_url }}" class="button" style="float:right;">{{ MSG.promo.unset }}</a>
+            </div>
+        </form>
     </div>
-    <div style="margin-top:16px;">
-      <input type="submit" name="apply" value="应用" class="default">
-      <a href="{{ cancel_url }}" class="button" style="float:right;">{{ MSG.promo.unset }}</a>
-    </div>
-  </form>
-</div>
 {% endblock %}

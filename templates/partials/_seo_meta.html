@@ -8,24 +8,33 @@ SEO / Open Graph meta 片段。
 抛 VariableDoesNotExist；改用 {% if %}/{% else %} 显式判空，对未传参的页面（登录/编辑等）安全兜底。
 {% endcomment %}
 {# 页面描述：未传 meta_description 时回退站点默认描述 #}
-<meta name="description" content="{% if meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
+<meta name="description"
+      content="{% if meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
 {# 页面关键词：未传 meta_keywords 时回退站点默认关键词 #}
 <meta name="keywords" content="{% if meta_keywords %}{{ meta_keywords }}{% else %}{{ site_keywords }}{% endif %}">
 {# Open Graph：社交分享 / 搜索引擎富媒体摘要 #}
 <meta property="og:type" content="{% if og_type %}{{ og_type }}{% else %}website{% endif %}">
 <meta property="og:site_name" content="{{ site_name }}">
-<meta property="og:title" content="{% if og_title %}{{ og_title }}{% elif meta_title %}{{ meta_title }}{% else %}{{ site_name }}{% endif %}">
-<meta property="og:description" content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
-{% if og_url %}<meta property="og:url" content="{{ og_url }}">{% endif %}
-{% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+<meta property="og:title" content="
+        {% if og_title %}{{ og_title }}{% elif meta_title %}{{ meta_title }}{% else %}{{ site_name }}{% endif %}">
+<meta property="og:description" content="
+        {% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
+{% if og_url %}
+    <meta property="og:url" content="{{ og_url }}">{% endif %}
+{% if og_image %}
+    <meta property="og:image" content="{{ og_image }}">{% endif %}
 <meta property="og:locale" content="zh_CN">
-{% if og_updated_time %}<meta property="og:updated_time" content="{{ og_updated_time }}">{% endif %}
+{% if og_updated_time %}
+    <meta property="og:updated_time" content="{{ og_updated_time }}">{% endif %}
 {# Twitter Card：与 OG 复用同一份摘要，summary 类型 #}
 <meta name="twitter:card" content="summary">
 <meta name="twitter:locale" content="zh_CN">
-<meta name="twitter:title" content="{% if og_title %}{{ og_title }}{% elif meta_title %}{{ meta_title }}{% else %}{{ site_name }}{% endif %}">
-<meta name="twitter:description" content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
-{% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+<meta name="twitter:title" content="
+        {% if og_title %}{{ og_title }}{% elif meta_title %}{{ meta_title }}{% else %}{{ site_name }}{% endif %}">
+<meta name="twitter:description" content="
+        {% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}{{ site_description }}{% endif %}">
+{% if og_image %}
+    <meta name="twitter:image" content="{{ og_image }}">{% endif %}
 <meta name="twitter:site" content="">
 <meta name="twitter:creator" content="">
 <meta property="og:site_name" content="{{ site_name }}">
@@ -38,6 +47,6 @@ SEO / Open Graph meta 片段。
 <meta property="fb:app_id" content="">
 <meta name="instagram:owner" content="">
 {% if og_image %}
-<meta property="og:image:alt" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
-<meta name="twitter:image:alt" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+    <meta property="og:image:alt" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
+    <meta name="twitter:image:alt" content="{% if og_title %}{{ og_title }}{% else %}{{ site_name }}{% endif %}">
 {% endif %}

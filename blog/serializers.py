@@ -145,13 +145,13 @@ class EditLogSerializer(serializers.ModelSerializer):
         fields = ['id', 'editor_name', 'edited_at']
 
 
-
 # ============================ 第2轮迭代#161-#170: 序列化器增强 ============================
 
 
 # 第2轮迭代#161: 自定义字段——字数展示字段
 class WordCountField(serializers.IntegerField):
     """只读字段：在序列化时实时计算文章字数。"""
+
     def to_representation(self, value):
         # value 为 Article 实例
         return getattr(value, 'word_count', 0)
@@ -160,6 +160,7 @@ class WordCountField(serializers.IntegerField):
 # 第2轮迭代#166: 动态字段序列化基类——通过 context['fields'] 控制输出字段子集
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """支持按 context['fields'] 动态裁剪返回字段的 ModelSerializer 基类。"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         fields = self.context.get('fields')
@@ -181,6 +182,7 @@ class ArticleDetailV2Serializer(DynamicFieldsModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='api_article_detail')
     # 第2轮迭代#161: 自定义字段
     word_count = WordCountField(read_only=True)
+
     # 第2轮迭代#170: 只读字段在 Meta.read_only_fields 中声明
 
     class Meta:

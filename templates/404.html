@@ -2,53 +2,57 @@
 <!DOCTYPE html>
 <html lang="zh-hans">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="404 - 你要找的页面不存在">
-<meta name="robots" content="noindex,follow">
-{# Bug9 任务2：错误页文案统一取自后端文案表 {{ MSG.err.* }}，不再硬编码中文 #}
-<title>{{ MSG.err.404_title }}</title>
-{# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
-<script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-<link rel="stylesheet" href="{% static 'assets/css/error404.min.css' %}?v={{ BUILD_TOKEN }}">
-{# 静态资源瘦身：错误页此前无 favicon 声明，浏览器会额外请求 /favicon.ico 并得到 404（控制台报错 + 无效请求），此处补齐 #}
-<link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="404 - 你要找的页面不存在">
+    <meta name="robots" content="noindex,follow">
+    {# Bug9 任务2：错误页文案统一取自后端文案表 {{ MSG.err.* }}，不再硬编码中文 #}
+    <title>{{ MSG.err.404_title }}</title>
+    {# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
+    <script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <link rel="stylesheet" href="{% static 'assets/css/error404.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# 静态资源瘦身：错误页此前无 favicon 声明，浏览器会额外请求 /favicon.ico 并得到 404（控制台报错 + 无效请求），此处补齐 #}
+    <link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
 </head>
 <body>
-    <span class="petal" aria-hidden="true"></span>
-    <span class="petal"></span>
-    <span class="petal"></span>
-    <span class="petal"></span>
-    <span class="petal"></span>
-    <span class="petal"></span>
-    <div class="card">
-        <noscript><div class="noscript-banner" role="alert" >{{ MSG.auto.javascript_已禁用_樱花飘落动画与热门 }}</div></noscript>
-        <div class="illust" role="img" aria-label="{{ MSG.auto.被喵吃掉的页面 }}">🐱🌸✨</div>
-        <h1>{{ MSG.err.404_heading }}</h1>
-        <p class="sub">{{ MSG.err.404_desc }}</p>
-        <p class="sub">{{ MSG.err.404_hint }}</p>
-        {# 6. 直接在 404 页搜索：提交到 /search/ #}
-        <form class="err-search" action="/search/" method="get" role="search">
-            <input type="search" name="q" placeholder="{{ MSG.err.search_placeholder }}" aria-label="{{ MSG.auto.站内搜索 }}" autocomplete="off">
-            <button type="submit" aria-label="{{ MSG.auto.搜索 }}">{{ MSG.nav.search_btn }}</button>
-        </form>
-        {# 6. 热门文章快捷链接（视图传入{{ MSG.user.views_total }}量最高的 5 篇） #}
-        {% if hot_articles %}
+<span class="petal" aria-hidden="true"></span>
+<span class="petal"></span>
+<span class="petal"></span>
+<span class="petal"></span>
+<span class="petal"></span>
+<span class="petal"></span>
+<div class="card">
+    <noscript>
+        <div class="noscript-banner" role="alert">{{ MSG.auto.javascript_已禁用_樱花飘落动画与热门 }}</div>
+    </noscript>
+    <div class="illust" role="img" aria-label="{{ MSG.auto.被喵吃掉的页面 }}">🐱🌸✨</div>
+    <h1>{{ MSG.err.404_heading }}</h1>
+    <p class="sub">{{ MSG.err.404_desc }}</p>
+    <p class="sub">{{ MSG.err.404_hint }}</p>
+    {# 6. 直接在 404 页搜索：提交到 /search/ #}
+    <form class="err-search" action="/search/" method="get" role="search">
+        <input type="search" name="q" placeholder="{{ MSG.err.search_placeholder }}"
+               aria-label="{{ MSG.auto.站内搜索 }}" autocomplete="off">
+        <button type="submit" aria-label="{{ MSG.auto.搜索 }}">{{ MSG.nav.search_btn }}</button>
+    </form>
+    {# 6. 热门文章快捷链接（视图传入{{ MSG.user.views_total }}量最高的 5 篇） #}
+    {% if hot_articles %}
         <div class="hot-links" aria-label="{{ MSG.auto.热门文章推荐 }}">
             <div class="hot-t">{{ MSG.err.hot_articles }}</div>
             {% for hot in hot_articles %}
-            <a href="{{ hot.get_absolute_url }}">📖 {{ hot.title }}</a>
+                <a href="{{ hot.get_absolute_url }}">📖 {{ hot.title }}</a>
             {% endfor %}
         </div>
-        {% endif %}
-        <p style="margin-top:18px;"><a class="btn-home" href="/" aria-label="{{ MSG.auto.返回首页 }}">{{ MSG.btn.back_home }}</a></p>
-    </div>
-    {# ===== Round5 H5: 404 接樱花小游戏 ===== #}
-    <div class="error-game-wrap">
-        <button type="button" id="game-start-btn" class="error-game-start-btn">{{ MSG.err.play_game }}</button>
-        <canvas id="game-canvas" width="320" height="200" class="error-game-canvas"></canvas>
-        <p id="game-score" class="error-game-score">{{ MSG.err.game_score }}<span id="game-score-num">0</span></p>
-    </div>
-    <script src="{% static 'assets/js/error_game.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    {% endif %}
+    <p style="margin-top:18px;"><a class="btn-home" href="/"
+                                   aria-label="{{ MSG.auto.返回首页 }}">{{ MSG.btn.back_home }}</a></p>
+</div>
+{# ===== Round5 H5: 404 接樱花小游戏 ===== #}
+<div class="error-game-wrap">
+    <button type="button" id="game-start-btn" class="error-game-start-btn">{{ MSG.err.play_game }}</button>
+    <canvas id="game-canvas" width="320" height="200" class="error-game-canvas"></canvas>
+    <p id="game-score" class="error-game-score">{{ MSG.err.game_score }}<span id="game-score-num">0</span></p>
+</div>
+<script src="{% static 'assets/js/error_game.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 </body>
 </html>

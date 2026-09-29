@@ -25,7 +25,9 @@
         toastEl.textContent = text;
         toastEl.className = 'l2d-toast show' + (isErr ? ' err' : '');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(function () { toastEl.className = 'l2d-toast'; }, 2200);
+        toastTimer = setTimeout(function () {
+            toastEl.className = 'l2d-toast';
+        }, 2200);
     }
 
     function renderStats(s) {
@@ -37,7 +39,9 @@
     function post(params) {
         var body = new URLSearchParams();
         body.append('csrfmiddlewaretoken', csrf);
-        Object.keys(params).forEach(function (k) { body.append(k, params[k]); });
+        Object.keys(params).forEach(function (k) {
+            body.append(k, params[k]);
+        });
         return fetch(window.location.pathname, {
             method: 'POST',
             credentials: 'same-origin',
@@ -67,7 +71,7 @@
             card.querySelector('.l2d-state').textContent = isOn ? '已启用' : '已关闭';
             if (isOn) on++;
         });
-        renderStats({ enabled: on, disabled: cards.length - on });
+        renderStats({enabled: on, disabled: cards.length - on});
     }
 
     // ---- 单款开关 ----
@@ -78,7 +82,7 @@
         var id = input.getAttribute('data-model-id');
         var want = input.checked;
         card.classList.add('saving');
-        post({ action: 'toggle', model_id: id, enabled: want ? 1 : 0 }).then(function (res) {
+        post({action: 'toggle', model_id: id, enabled: want ? 1 : 0}).then(function (res) {
             card.classList.remove('saving');
             if (!res.ok) {
                 input.checked = !want;      // 回滚
@@ -104,9 +108,12 @@
         var want = btn.getAttribute('data-bulk') === '1';
         var group = btn.getAttribute('data-group') || '';
         btn.disabled = true;
-        post({ action: 'bulk', enabled: want ? 1 : 0, group: group }).then(function (res) {
+        post({action: 'bulk', enabled: want ? 1 : 0, group: group}).then(function (res) {
             btn.disabled = false;
-            if (!res.ok) { toast(res.note || '操作失败', true); return; }
+            if (!res.ok) {
+                toast(res.note || '操作失败', true);
+                return;
+            }
             if (group) {
                 var section = wrap.querySelector('.l2d-group[data-group="' + group + '"]');
                 var map = {};

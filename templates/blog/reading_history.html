@@ -2,24 +2,28 @@
 {% load static %}
 {% block title %}阅读历史 · {{ site_name }}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope itemtype="https://schema.org/BreadcrumbList">
-    <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span><meta itemprop="position" content="1"></a>
-    <span class="crumb-sep">›</span>
-    <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name">{{ MSG.toolbox.menu_history }}</span><meta itemprop="position" content="2"></span>
-</nav>
+    <nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}" itemscope
+         itemtype="https://schema.org/BreadcrumbList">
+        <a href="{% url 'index' %}"><span itemprop="name">{{ MSG.footer.nav_home }}</span>
+            <meta itemprop="position" content="1">
+        </a>
+        <span class="crumb-sep">›</span>
+        <span class="crumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span
+                itemprop="name">{{ MSG.toolbox.menu_history }}</span><meta itemprop="position" content="2"></span>
+    </nav>
 {% endblock %}
 {% block content %}
-<div class="notif-center-head">
-    <h1 class="my-page-title">{{ MSG.toolbox.menu_history }}</h1>
-    <button type="button" class="btn-sm" id="rh-clear-all">{{ MSG.auto.清空历史 }}</button>
-</div>
-<ul class="reading-history-full" id="rh-full-list" aria-label="{{ MSG.auto.阅读历史列表 }}"></ul>
-<div class="empty-state my-empty" id="rh-empty" hidden>
-    <div class="my-empty-emoji" aria-hidden="true">📚</div>
-    <p>{{ MSG.auto.还没有阅读记录_去读点什么吧 }}</p>
-    <a class="btn-primary" href="{% url 'index' %}">{{ MSG.auto.去首页逛逛 }}</a>
-</div>
+    <div class="notif-center-head">
+        <h1 class="my-page-title">{{ MSG.toolbox.menu_history }}</h1>
+        <button type="button" class="btn-sm" id="rh-clear-all">{{ MSG.auto.清空历史 }}</button>
+    </div>
+    <ul class="reading-history-full" id="rh-full-list" aria-label="{{ MSG.auto.阅读历史列表 }}"></ul>
+    <div class="empty-state my-empty" id="rh-empty" hidden>
+        <div class="my-empty-emoji" aria-hidden="true">📚</div>
+        <p>{{ MSG.auto.还没有阅读记录_去读点什么吧 }}</p>
+        <a class="btn-primary" href="{% url 'index' %}">{{ MSG.auto.去首页逛逛 }}</a>
+    </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'assets/js/reading_history_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <script src="{% static 'assets/js/reading_history_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {% endblock %}

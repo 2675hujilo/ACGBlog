@@ -3,137 +3,138 @@
 {% block title %}{{ meta_title }}{% endblock %}
 {% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
-    <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
-    <span class="crumb-sep">›</span>
-    <a href="{% url 'staff_console' %}">{{ MSG.toolbox.menu_console }}</a>
-    <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.toolbox.menu_site_settings }}</span>
-</nav>
+    <nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
+        <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
+        <span class="crumb-sep">›</span>
+        <a href="{% url 'staff_console' %}">{{ MSG.toolbox.menu_console }}</a>
+        <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.toolbox.menu_site_settings }}</span>
+    </nav>
 {% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'assets/css/site_settings.min.css' %}?v={{ BUILD_TOKEN }}">
+    <link rel="stylesheet" href="{% static 'assets/css/site_settings.min.css' %}?v={{ BUILD_TOKEN }}">
 {% endblock %}
 
 {% block content %}
-<div class="settings-wrap">
+    <div class="settings-wrap">
 
-  <div class="settings-head">
-    <h1>{{ MSG.toolbox.menu_site_settings }}<span class="badge-admin-only">{{ MSG.moderation.admin_only_badge }}</span></h1>
-    <div class="sub">{{ MSG.auto.网站名_logo_介绍与页脚文案都在这里修改_保 }}</div>
-  </div>
-
-  <form method="post" id="site-settings-form" novalidate>
-    {% csrf_token %}
-
-    {# ========== 品牌展示 ========== #}
-    <div class="settings-card">
-      <h2>{{ MSG.auto.品牌展示 }}</h2>
-
-      <div class="setting-row inline-two">
-        <div>
-          <label for="id_logo_emoji">{{ MSG.auto.logo_表情 }}</label>
-          <input type="text" id="id_logo_emoji" name="logo_emoji"
-                 value="{{ info.logo_emoji }}" maxlength="8"
-                 placeholder="🌸">
-          <span class="hint">{{ MSG.auto.名称前的_emoji }}</span>
+        <div class="settings-head">
+            <h1>{{ MSG.toolbox.menu_site_settings }}<span
+                    class="badge-admin-only">{{ MSG.moderation.admin_only_badge }}</span></h1>
+            <div class="sub">{{ MSG.auto.网站名_logo_介绍与页脚文案都在这里修改_保 }}</div>
         </div>
-        <div>
-          <label for="id_site_name">{{ MSG.auto.网站名称 }}</label>
-          <input type="text" id="id_site_name" name="site_name"
-                 value="{{ info.site_name }}" maxlength="60"
-                 placeholder="{{ MSG.brand.name }}" required>
-          <span class="hint">{{ MSG.auto.显示在左上角_版权与浏览器标题 }}</span>
-        </div>
-      </div>
 
-      <div class="setting-row">
-        <label for="id_tagline">{{ MSG.auto.网站副标题_一句话介绍 }}</label>
-        <input type="text" id="id_tagline" name="tagline"
-               value="{{ info.tagline }}" maxlength="120"
-               placeholder="{{ MSG.auto.一个粉紫蓝萌系的二次元小站 }}">
-        <span class="hint">{{ MSG.auto.首页与导航处展示的一句话介绍 }}</span>
-      </div>
+        <form method="post" id="site-settings-form" novalidate>
+            {% csrf_token %}
 
-      {# 实时预览左上角品牌 #}
-      <div class="site-preview" aria-label="{{ MSG.auto.品牌实时预览 }}">
-        <span class="pv-logo" id="pv-logo">{{ info.logo_emoji }}</span>
-        <span>
+            {# ========== 品牌展示 ========== #}
+            <div class="settings-card">
+                <h2>{{ MSG.auto.品牌展示 }}</h2>
+
+                <div class="setting-row inline-two">
+                    <div>
+                        <label for="id_logo_emoji">{{ MSG.auto.logo_表情 }}</label>
+                        <input type="text" id="id_logo_emoji" name="logo_emoji"
+                               value="{{ info.logo_emoji }}" maxlength="8"
+                               placeholder="🌸">
+                        <span class="hint">{{ MSG.auto.名称前的_emoji }}</span>
+                    </div>
+                    <div>
+                        <label for="id_site_name">{{ MSG.auto.网站名称 }}</label>
+                        <input type="text" id="id_site_name" name="site_name"
+                               value="{{ info.site_name }}" maxlength="60"
+                               placeholder="{{ MSG.brand.name }}" required>
+                        <span class="hint">{{ MSG.auto.显示在左上角_版权与浏览器标题 }}</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <label for="id_tagline">{{ MSG.auto.网站副标题_一句话介绍 }}</label>
+                    <input type="text" id="id_tagline" name="tagline"
+                           value="{{ info.tagline }}" maxlength="120"
+                           placeholder="{{ MSG.auto.一个粉紫蓝萌系的二次元小站 }}">
+                    <span class="hint">{{ MSG.auto.首页与导航处展示的一句话介绍 }}</span>
+                </div>
+
+                {# 实时预览左上角品牌 #}
+                <div class="site-preview" aria-label="{{ MSG.auto.品牌实时预览 }}">
+                    <span class="pv-logo" id="pv-logo">{{ info.logo_emoji }}</span>
+                    <span>
           <span class="pv-name" id="pv-name">{{ info.site_name }}</span><br>
           <span class="pv-tagline" id="pv-tagline">{{ info.tagline }}</span>
         </span>
-      </div>
-    </div>
+                </div>
+            </div>
 
-    {# ========== SEO 搜索引擎 ========== #}
-    <div class="settings-card">
-      <h2>{{ MSG.auto.搜索引擎_seo }}</h2>
-      <div class="setting-row">
-        <label for="id_description">{{ MSG.auto.网站描述 }}</label>
-        <textarea id="id_description" name="description"
-                  placeholder="{{ MSG.auto.网站的整体介绍_会写入_meta_descrip }}">{{ info.description }}</textarea>
-        <span class="hint">{{ MSG.auto.meta_description_建议_8016 }}</span>
-      </div>
-      <div class="setting-row">
-        <label for="id_keywords">{{ MSG.auto.网站关键词 }}</label>
-        <input type="text" id="id_keywords" name="keywords"
-               value="{{ info.keywords }}" maxlength="200"
-               placeholder="{{ MSG.auto.博客技术二次元 }}">
-        <span class="hint">{{ MSG.auto.英文逗号分隔_例如_博客技术二次元 }}</span>
-      </div>
-    </div>
+            {# ========== SEO 搜索引擎 ========== #}
+            <div class="settings-card">
+                <h2>{{ MSG.auto.搜索引擎_seo }}</h2>
+                <div class="setting-row">
+                    <label for="id_description">{{ MSG.auto.网站描述 }}</label>
+                    <textarea id="id_description" name="description"
+                              placeholder="{{ MSG.auto.网站的整体介绍_会写入_meta_descrip }}">{{ info.description }}</textarea>
+                    <span class="hint">{{ MSG.auto.meta_description_建议_8016 }}</span>
+                </div>
+                <div class="setting-row">
+                    <label for="id_keywords">{{ MSG.auto.网站关键词 }}</label>
+                    <input type="text" id="id_keywords" name="keywords"
+                           value="{{ info.keywords }}" maxlength="200"
+                           placeholder="{{ MSG.auto.博客技术二次元 }}">
+                    <span class="hint">{{ MSG.auto.英文逗号分隔_例如_博客技术二次元 }}</span>
+                </div>
+            </div>
 
-    {# ========== 页脚 ========== #}
-    <div class="settings-card">
-      <h2>{{ MSG.auto.页脚内容 }}</h2>
-      <div class="setting-row">
-        <label for="id_footer_about">{{ MSG.auto.关于小站文案 }}</label>
-        <textarea id="id_footer_about" name="footer_about"
-                  placeholder="{{ MSG.auto.页脚关于小站的介绍文案 }}">{{ info.footer_about }}</textarea>
-        <span class="hint">{{ MSG.auto.显示在网站底部关于小站区块 }}</span>
-      </div>
-      <div class="setting-row inline-two">
-        <div>
-          <label for="id_footer_icp">{{ MSG.auto.备案号_选填 }}</label>
-          <input type="text" id="id_footer_icp" name="footer_icp"
-                 value="{{ info.footer_icp }}" maxlength="80"
-                 placeholder="{{ MSG.auto.浙icp备xxxx号 }}">
-        </div>
-        <div>
-          <label for="id_copyright_holder">{{ MSG.auto.版权归属_选填 }}</label>
-          <input type="text" id="id_copyright_holder" name="copyright_holder"
-                 value="{{ info.copyright_holder }}" maxlength="60"
-                 placeholder="{{ MSG.auto.留空则用网站名称 }}">
-        </div>
-      </div>
-    </div>
+            {# ========== 页脚 ========== #}
+            <div class="settings-card">
+                <h2>{{ MSG.auto.页脚内容 }}</h2>
+                <div class="setting-row">
+                    <label for="id_footer_about">{{ MSG.auto.关于小站文案 }}</label>
+                    <textarea id="id_footer_about" name="footer_about"
+                              placeholder="{{ MSG.auto.页脚关于小站的介绍文案 }}">{{ info.footer_about }}</textarea>
+                    <span class="hint">{{ MSG.auto.显示在网站底部关于小站区块 }}</span>
+                </div>
+                <div class="setting-row inline-two">
+                    <div>
+                        <label for="id_footer_icp">{{ MSG.auto.备案号_选填 }}</label>
+                        <input type="text" id="id_footer_icp" name="footer_icp"
+                               value="{{ info.footer_icp }}" maxlength="80"
+                               placeholder="{{ MSG.auto.浙icp备xxxx号 }}">
+                    </div>
+                    <div>
+                        <label for="id_copyright_holder">{{ MSG.auto.版权归属_选填 }}</label>
+                        <input type="text" id="id_copyright_holder" name="copyright_holder"
+                               value="{{ info.copyright_holder }}" maxlength="60"
+                               placeholder="{{ MSG.auto.留空则用网站名称 }}">
+                    </div>
+                </div>
+            </div>
 
-    {# ========== 操作条 ========== #}
-    <div class="settings-actions">
-      <button type="submit" class="btn-save-settings">{{ MSG.auto.保存设置 }}</button>
-      <a href="{% url 'staff_console' %}" class="back-link">{{ MSG.auto.回看板 }}</a>
-    </div>
-  </form>
+            {# ========== 操作条 ========== #}
+            <div class="settings-actions">
+                <button type="submit" class="btn-save-settings">{{ MSG.auto.保存设置 }}</button>
+                <a href="{% url 'staff_console' %}" class="back-link">{{ MSG.auto.回看板 }}</a>
+            </div>
+        </form>
 
-  {% comment %}
+        {% comment %}
   Bug9 追加：全站文案总表入口。
   本页只放「站点级少量字段」（站名 / SEO / 页脚）；全站提示词近 300 条，
   需要搜索与按域分组，因此单独一页管理，这里给出显眼入口。
   {% endcomment %}
-  <div class="settings-card">
-    <h2 class="settings-card-title">{{ MSG.auto.全站文案总表_提示词 }}</h2>
-    <p class="sub">
-      错误页 / 表单 / flash / 按钮 / 弹窗 / 空状态 / 徽章等所有用户可见文案，
-      共约 300 条，全部可以在这里在线修改，<strong>{{ MSG.auto.保存即生效 }}</strong>，
-      无需改代码或重启；支持关键词搜索、按域筛选与一键恢复默认。
-    </p>
-    <div class="settings-actions" style="margin-top:10px;">
-      <a href="{% url 'site_messages' %}" class="btn-save-settings">{{ MSG.auto.打开文案总表 }}</a>
+        <div class="settings-card">
+            <h2 class="settings-card-title">{{ MSG.auto.全站文案总表_提示词 }}</h2>
+            <p class="sub">
+                错误页 / 表单 / flash / 按钮 / 弹窗 / 空状态 / 徽章等所有用户可见文案，
+                共约 300 条，全部可以在这里在线修改，<strong>{{ MSG.auto.保存即生效 }}</strong>，
+                无需改代码或重启；支持关键词搜索、按域筛选与一键恢复默认。
+            </p>
+            <div class="settings-actions" style="margin-top:10px;">
+                <a href="{% url 'site_messages' %}" class="btn-save-settings">{{ MSG.auto.打开文案总表 }}</a>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'assets/js/site_settings.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <script src="{% static 'assets/js/site_settings.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {% endblock %}

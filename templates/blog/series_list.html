@@ -3,56 +3,60 @@
 {% block title %}文章系列 · {{ site_name }}{% endblock %}
 {% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
-    <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
-    <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.auto.文章系列 }}</span>
-</nav>
+    <nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
+        <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
+        <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.auto.文章系列 }}</span>
+    </nav>
 {% endblock %}
 {% block extra_head %}
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ItemList","name":"文章系列 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
-</script>
+    <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"ItemList","name":"文章系列 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
+    </script>
 {% endblock %}
 {% block content %}
-{# 67. 系列列表页：封面 + 标题 + 文章数 #}
-<div class="series-list-wrap">
-    <div class="series-list-head">
-        <div>
-            <h1 style="margin:0;">{{ MSG.auto.文章系列_2 }}</h1>
-            <p class="muted" style="margin:6px 0 0;">{{ MSG.auto.把同主题文章整理成系列_按顺序阅读更系统喵 }}</p>
-        </div>
-        {% if user.is_authenticated %}
-        {# Bug2：创建系列主按钮统一用全局 .btn-primary，去除重复 class 与失效的 .btn #}
-        <a href="{% url 'series_create' %}" class="btn-primary series-create-btn"
-           style="white-space:nowrap;text-decoration:none;">{{ MSG.auto.创建系列喵 }}</a>
-        {% endif %}
-    </div>
-    <div class="series-grid" aria-label="{{ MSG.auto.文章系列列表 }}">
-        {% for s in series_list %}
-        <a class="series-card" href="{% url 'series_detail' s.pk %}" data-series-id="{{ s.pk }}">
-            <div class="series-card-cover">
-                {% if s.cover_image %}
-                <img src="{{ s.cover_image.url }}" alt="{{ s.title }}" loading="lazy" decoding="async" fetchpriority="low" width="300" height="200">
-                {% else %}
-                                <span class="series-card-emoji">📚</span>
-                {% endif %}
+    {# 67. 系列列表页：封面 + 标题 + 文章数 #}
+    <div class="series-list-wrap">
+        <div class="series-list-head">
+            <div>
+                <h1 style="margin:0;">{{ MSG.auto.文章系列_2 }}</h1>
+                <p class="muted" style="margin:6px 0 0;">{{ MSG.auto.把同主题文章整理成系列_按顺序阅读更系统喵 }}</p>
             </div>
-            <div class="series-card-body">
-                <h3>{{ s.title }}</h3>
-                <p class="muted">{% if s.description %}{{ s.description|truncatechars:60 }}{% else %}{{ MSG.empty.series_intro }}{% endif %}</p>
-                <div class="series-card-meta">📄 {{ s.n }} 篇文章 · ✍ {{ s.author.nickname|default:s.author.username }}</div>
-            </div>
-        </a>
-        {% empty %}
-        <div class="empty-state">
-            <div class="empty-emoji">📚</div>
-            <h3 class="empty-title">{{ MSG.auto.还没有文章系列呢 }}</h3>
-            <p class="empty-sub">{{ MSG.auto.写文章时就可以把它归入一个系列啦 }}</p>
             {% if user.is_authenticated %}
-            <a href="{% url 'series_create' %}" class="btn-primary" style="text-decoration:none;">{{ MSG.auto.创建第一个系列喵 }}</a>
+                {# Bug2：创建系列主按钮统一用全局 .btn-primary，去除重复 class 与失效的 .btn #}
+                <a href="{% url 'series_create' %}" class="btn-primary series-create-btn"
+                   style="white-space:nowrap;text-decoration:none;">{{ MSG.auto.创建系列喵 }}</a>
             {% endif %}
         </div>
-        {% endfor %}
+        <div class="series-grid" aria-label="{{ MSG.auto.文章系列列表 }}">
+            {% for s in series_list %}
+                <a class="series-card" href="{% url 'series_detail' s.pk %}" data-series-id="{{ s.pk }}">
+                    <div class="series-card-cover">
+                        {% if s.cover_image %}
+                            <img src="{{ s.cover_image.url }}" alt="{{ s.title }}" loading="lazy" decoding="async"
+                                 fetchpriority="low" width="300" height="200">
+                        {% else %}
+                            <span class="series-card-emoji">📚</span>
+                        {% endif %}
+                    </div>
+                    <div class="series-card-body">
+                        <h3>{{ s.title }}</h3>
+                        <p class="muted">{% if s.description %}{{ s.description|truncatechars:60 }}{% else %}
+                            {{ MSG.empty.series_intro }}{% endif %}</p>
+                        <div class="series-card-meta">📄 {{ s.n }} 篇文章 ·
+                            ✍ {{ s.author.nickname|default:s.author.username }}</div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-emoji">📚</div>
+                    <h3 class="empty-title">{{ MSG.auto.还没有文章系列呢 }}</h3>
+                    <p class="empty-sub">{{ MSG.auto.写文章时就可以把它归入一个系列啦 }}</p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'series_create' %}" class="btn-primary"
+                           style="text-decoration:none;">{{ MSG.auto.创建第一个系列喵 }}</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
 {% endblock %}

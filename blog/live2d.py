@@ -112,34 +112,34 @@ def get_model(request, model=None, skin=None):
     """
     model_id = model or request.GET.get('model', 'shizuku')
     skin_idx = skin if skin is not None else request.GET.get('skin', '0')
-    
+
     try:
         skin_idx = int(skin_idx)
     except (ValueError, TypeError):
         skin_idx = 0
-    
+
     model = get_model_by_id(model_id)
     skin_idx = max(0, min(skin_idx, model['skin_count'] - 1))
-    
+
     # 模型所在目录的静态URL前缀
     model_dir_url = '/static/assets/live2d/models/' + model_id + '/'
-    
+
     # 读取原始模型JSON
     model_json_path = model['model_path'].replace('/static/', '')
     json_path = os.path.join('static', model_json_path)
-    
+
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             model_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return JsonResponse({'error': msg('live2d.model_missing')}, status=404)
-    
+
     # 将所有相对路径转换为绝对路径
     def to_abs(rel_path):
         if rel_path and not rel_path.startswith('/') and not rel_path.startswith('http'):
             return model_dir_url + rel_path
         return rel_path
-    
+
     if 'model' in model_data:
         model_data['model'] = to_abs(model_data['model'])
     if 'physics' in model_data:
@@ -157,11 +157,11 @@ def get_model(request, model=None, skin=None):
                     motion['file'] = to_abs(motion['file'])
                 if 'sound' in motion:
                     motion['sound'] = to_abs(motion['sound'])
-    
+
     # 替换textures为指定皮肤
     texture_url = f"/static/{model['texture_dir']}/{model['texture_prefix']}{skin_idx:02d}.png"
     model_data['textures'] = [texture_url]
-    
+
     response = HttpResponse(json.dumps(model_data, ensure_ascii=False), content_type='application/json')
     response['Cache-Control'] = 'no-cache'
     return response
@@ -178,10 +178,10 @@ def switch_model(request):
     current_idx = get_model_index(current_id)
     next_idx = (current_idx + 1) % len(MODELS)
     next_model = MODELS[next_idx]
-    
+
     # 返回动态模型URL（皮肤0）
     model_url = f'/api/live2d/model/{next_model["id"]}/0.json'
-    
+
     return JsonResponse({
         'model_id': next_model['id'],
         'model_name': next_model['name'],
@@ -200,15 +200,15 @@ def rand_model(request):
     返回：随机模型的信息和动态模型JSON URL
     """
     current_id = request.GET.get('current', 'shizuku')
-    
+
     # 随机选择一个不同的模型
     available = [m for m in MODELS if m['id'] != current_id]
     if not available:
         available = MODELS
     next_model = random.choice(available)
-    
+
     model_url = f'/api/live2d/model/{next_model["id"]}/0.json'
-    
+
     return JsonResponse({
         'model_id': next_model['id'],
         'model_name': next_model['name'],
@@ -228,17 +228,17 @@ def switch_skin(request):
     """
     model_id = request.GET.get('model', 'shizuku')
     current_skin = request.GET.get('current', '0')
-    
+
     try:
         current_skin = int(current_skin)
     except (ValueError, TypeError):
         current_skin = 0
-    
+
     model = get_model_by_id(model_id)
     next_skin = (current_skin + 1) % model['skin_count']
-    
+
     model_url = f'/api/live2d/model/{model_id}/{next_skin}.json'
-    
+
     return JsonResponse({
         'model_id': model_id,
         'model_name': model['name'],
@@ -258,22 +258,22 @@ def rand_skin(request):
     """
     model_id = request.GET.get('model', 'shizuku')
     current_skin = request.GET.get('current', '0')
-    
+
     try:
         current_skin = int(current_skin)
     except (ValueError, TypeError):
         current_skin = 0
-    
+
     model = get_model_by_id(model_id)
-    
+
     # 随机选择一个不同的皮肤
     available = [i for i in range(model['skin_count']) if i != current_skin]
     if not available:
         available = [current_skin]
     next_skin = random.choice(available)
-    
+
     model_url = f'/api/live2d/model/{model_id}/{next_skin}.json'
-    
+
     return JsonResponse({
         'model_id': model_id,
         'model_name': model['name'],
@@ -297,26 +297,26 @@ def game_play(request):
         user_choice = data.get('choice', '').strip()
     except (json.JSONDecodeError, AttributeError):
         user_choice = request.POST.get('choice', '').strip()
-    
+
     choices = ['石头', '剪刀', '布']
     if user_choice not in choices:
         return JsonResponse({'error': msg('live2d.bad_choice')}, status=400)
-    
+
     waifu_choice = random.choice(choices)
-    
+
     # 判断胜负
     if user_choice == waifu_choice:
         result = '平局'
         message = '哎呀，平局了~再来一局喵！'
     elif (user_choice == '石头' and waifu_choice == '剪刀') or \
-         (user_choice == '剪刀' and waifu_choice == '布') or \
-         (user_choice == '布' and waifu_choice == '石头'):
+            (user_choice == '剪刀' and waifu_choice == '布') or \
+            (user_choice == '布' and waifu_choice == '石头'):
         result = '胜利'
         message = '你赢了喵~好厉害！'
     else:
         result = '失败'
         message = '嘿嘿，人家赢了~再来一局吗？'
-    
+
     return JsonResponse({
         'user_choice': user_choice,
         'waifu_choice': waifu_choice,

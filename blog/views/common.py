@@ -360,7 +360,11 @@ def _safe_paginate(qs, page_size, page_param):
 # 第2轮迭代#73: PageNotAnInteger 处理说明——get_page 自动把非法页码回退第 1 页
 def _paginate_cached(qs, page_size, page_num):
     # 第2轮迭代#74: 分页缓存——对分页结果做短 TTL 缓存（key 含页码）
-    key = f'page_{hash(str(qs.query)) & 0xffffffff}_{page_size}_{page_num}'
+    # 注意：hash() 受 PYTHONHASHSEED 随机化影响，跨进程键漂移；改用 hashlib.md5 保证稳定
+    import hashlib
+    query_str = str(qs.query)
+    stable_key = hashlib.md5(query_str.encode('utf-8')).hexdigest()[:12]
+    key = f'page_{stable_key}_{page_size}_{page_num}'
     return cache.get_or_set(
         key, lambda: _safe_paginate(qs, page_size, page_num), 60)
 

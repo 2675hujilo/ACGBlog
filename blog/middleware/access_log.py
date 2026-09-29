@@ -28,6 +28,7 @@ UA / 来源等），并按下面的三层降级策略投递入库，**永不阻�
 """
 import logging
 import time
+import threading
 
 from django.utils.deprecation import MiddlewareMixin
 
@@ -36,6 +37,74 @@ from ..services.access_log_service import (broker_available, enqueue_fallback,
 
 logger = logging.getLogger(__name__)
 
+# ---- Redis 在线用户计数器（HyperLogLog 滑动窗口）----
+# 设计：两个交替 key，各 300 秒 TTL，读当前时刻 5 分钟窗口内较小计数。
+# 任何 Redis 异常立即降级，绝不影响日志投递主流程。
+_ONLINE_HLL_A = 'acgblog:online_ip:hll_a'
+_ONLINE_HLL_B = 'acgblog:online_ip:hll_b'
+_ONLINE_SWITCH_AT = 0.0
+_ONLINE_LOCK = threading.Lock()
+_ONLINE_FALLBACK_TS = 0.0
+
+
+def _online_redis():
+    """获取 Redis 连接（从 django-redis 缓存后端取底层客户端）。"""
+    try:
+        from django.core.cache import cache
+        client = cache.client.get_client()  # django-redis 提供的方法
+        client.ping()
+        return client
+    except Exception:
+        return None
+
+
+def _current_online_key():
+    """返回当前应写入的 HLL key（双 key 交替，每 300 秒切换）。"""
+    global _ONLINE_HLL_A, _ONLINE_HLL_B, _ONLINE_SWITCH_AT, _ONLINE_LOCK
+    now = time.time()
+    if _ONLINE_SWITCH_AT == 0.0:
+        _ONLINE_SWITCH_AT = now
+    with _ONLINE_LOCK:
+        if now - _ONLINE_SWITCH_AT >= 300:
+            _ONLINE_HLL_A, _ONLINE_HLL_B = _ONLINE_HLL_B, _ONLINE_HLL_A
+            _ONLINE_SWITCH_AT = now
+    return _ONLINE_HLL_A
+
+
+def track_online_ip(ip_address):
+    """在 Redis 中记录一次 IP 访问（HyperLogLog），用于实时在线人数统计。
+
+    任何异常静默降级，绝不阻塞请求。
+    """
+    global _ONLINE_FALLBACK_TS
+    try:
+        client = _online_redis()
+        if client is None:
+            return
+        key = _current_online_key()
+        from redis.client import Pipeline
+        pipe = client.pipeline()
+        pipe.pfadd(key, ip_address)
+        pipe.pexpire(key, 300)
+        pipe.execute()
+    except Exception:
+        # Redis 故障 → 静默降级，不影响任何功能
+        _ONLINE_FALLBACK_TS = time.time()
+        pass
+
+
+def get_online_ip_count():
+    """读取当前 5 分钟窗口的独立 IP 数量（HyperLogLog PFCOUNT）。"""
+    global _ONLINE_FALLBACK_TS
+    try:
+        client = _online_redis()
+        if client is None:
+            return 0
+        key = _current_online_key()
+        n = client.pfcount(key)
+        return max(int(n or 0), 1)
+    except Exception:
+        return 0
 
 class AccessLogMiddleware(MiddlewareMixin):
     """访问日志中间件：异步优先 → Redis 兜底 → 极端同步（三层，见模块 docstring）。"""
@@ -88,6 +157,11 @@ class AccessLogMiddleware(MiddlewareMixin):
         }
 
         self._dispatch(log_data, request.path)
+
+        # ---- Redis 在线用户追踪（附加操作，不影响日志投递主流程）----
+        if ip_address:
+            track_online_ip(ip_address)
+
         return response
 
     # ------------------------------------------------------------------

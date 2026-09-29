@@ -3,41 +3,43 @@
 {% block title %}API 文档 · {{ site_name }}{% endblock %}
 {% block seo_meta %}{% include 'partials/_seo_meta.html' %}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
-    <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
-    <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.footer.api_docs }}</span>
-</nav>
+    <nav class="breadcrumb" aria-label="{{ MSG.search.crumb_aria }}">
+        <a href="{% url 'index' %}">{{ MSG.footer.nav_home }}</a>
+        <span class="crumb-sep">›</span><span class="crumb-current">{{ MSG.footer.api_docs }}</span>
+    </nav>
 {% endblock %}
 {% block extra_head %}
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"APIReference","name":"开放 API 文档 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
-</script>
+    <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"APIReference","name":"开放 API 文档 - {{ site_name|default:'萌语博客' }}","url":"{{ request.build_absolute_uri }}"}
+    </script>
 {% endblock %}
 {% block content %}
-{# 70. API 文档页：可折叠端点卡片 + 搜索框过滤 #}
-<div class="apidocs-wrap">
-    <h1 id="api-docs-heading">{{ MSG.auto.开放_api_文档 }}</h1>
-    <p class="muted">{{ MSG.auto.本站所有_restful_接口一览_支持前端搜索 }}</p>
-    <input type="search" id="apidocs-search" class="apidocs-search" role="searchbox" aria-label="{{ MSG.auto.过滤接口文档 }}"
-           placeholder="{{ MSG.auto.输入方法_路径_说明关键词过滤 }}">
-    <div id="apidocs-list" role="region" aria-label="{{ MSG.auto.接口列表 }}">
-        {% for ep in endpoints %}
-        <details class="api-card" aria-label="{{ MSG.auto.接口文档 }}" data-key="{{ ep.method }} {{ ep.path }} {{ ep.desc }}">
-            <summary>
-                <span class="api-method method-{{ ep.method|lower|cut:'/'|first }}">{{ ep.method }}</span>
-                <code class="api-path">{{ ep.path }}</code>
-                <span class="api-desc">{{ ep.desc }}</span>
-            </summary>
-            <div class="api-body">
-                <p><b>{{ MSG.auto.参数 }}</b>{{ ep.params }}</p>
-                <p><b>{{ MSG.auto.请求示例 }}</b></p>
-                <pre class="api-code">{{ ep.curl }}</pre>
-                <p><b>{{ MSG.auto.响应示例 }}</b></p>
-                <pre class="api-code">{{ ep.resp }}</pre>
-            </div>
-        </details>
-        {% endfor %}
+    {# 70. API 文档页：可折叠端点卡片 + 搜索框过滤 #}
+    <div class="apidocs-wrap">
+        <h1 id="api-docs-heading">{{ MSG.auto.开放_api_文档 }}</h1>
+        <p class="muted">{{ MSG.auto.本站所有_restful_接口一览_支持前端搜索 }}</p>
+        <input type="search" id="apidocs-search" class="apidocs-search" role="searchbox"
+               aria-label="{{ MSG.auto.过滤接口文档 }}"
+               placeholder="{{ MSG.auto.输入方法_路径_说明关键词过滤 }}">
+        <div id="apidocs-list" role="region" aria-label="{{ MSG.auto.接口列表 }}">
+            {% for ep in endpoints %}
+                <details class="api-card" aria-label="{{ MSG.auto.接口文档 }}"
+                         data-key="{{ ep.method }} {{ ep.path }} {{ ep.desc }}">
+                    <summary>
+                        <span class="api-method method-{{ ep.method|lower|cut:'/'|first }}">{{ ep.method }}</span>
+                        <code class="api-path">{{ ep.path }}</code>
+                        <span class="api-desc">{{ ep.desc }}</span>
+                    </summary>
+                    <div class="api-body">
+                        <p><b>{{ MSG.auto.参数 }}</b>{{ ep.params }}</p>
+                        <p><b>{{ MSG.auto.请求示例 }}</b></p>
+                        <pre class="api-code">{{ ep.curl }}</pre>
+                        <p><b>{{ MSG.auto.响应示例 }}</b></p>
+                        <pre class="api-code">{{ ep.resp }}</pre>
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
     </div>
-</div>
-<script src="{% static 'assets/js/api_docs_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <script src="{% static 'assets/js/api_docs_inline.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {% endblock %}

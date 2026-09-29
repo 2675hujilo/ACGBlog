@@ -86,10 +86,10 @@ class Command(BaseCommand):
             text = io.open(path, encoding='utf-8').read()
             for i, line in enumerate(text.split('\n'), 1):
                 if '{{ MSG.' in line:
-                    continue                      # 已使用文案变量
+                    continue  # 已使用文案变量
                 stripped = line.strip()
                 if stripped.startswith(('{#', '{%', '//')):
-                    continue                      # 注释 / 标签行
+                    continue  # 注释 / 标签行
                 if not any(w in line for w in _HINT_WORDS):
                     continue
                 # 只关心「文本节点」形态：标签之间出现中文提示语特征词
@@ -109,9 +109,9 @@ class Command(BaseCommand):
             for i, line in enumerate(text.split('\n'), 1):
                 stripped = line.strip()
                 if stripped.startswith(('*', '/*', '//')):
-                    continue                      # 注释行
+                    continue  # 注释行
                 if 'moeMsg' in line or 'SITE_MSG' in line:
-                    continue                      # 已走文案变量
+                    continue  # 已走文案变量
                 if not any(w in line for w in _HINT_WORDS):
                     continue
                 if re.search(r"""['"`][^'"`]*[\u4e00-\u9fff][^'"`]*['"`]""", line):

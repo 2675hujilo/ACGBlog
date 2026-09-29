@@ -2,33 +2,33 @@
 <!DOCTYPE html>
 <html lang="zh-hans">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex,follow">
-{# Bug9 任务2：错误页文案取自后端文案表（{{ MSG.err.* }}） #}
-<title>{{ MSG.err.500_title }}</title>
-{# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
-<script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-<link rel="stylesheet" href="{% static 'assets/css/error500.min.css' %}?v={{ BUILD_TOKEN }}">
-{# 静态资源瘦身：补齐 favicon 声明，消除浏览器对 /favicon.ico 的无效请求（此前 404） #}
-<link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,follow">
+    {# Bug9 任务2：错误页文案取自后端文案表（{{ MSG.err.* }}） #}
+    <title>{{ MSG.err.500_title }}</title>
+    {# 防闪烁脚本：与 base.html 一致，首帧渲染前根据 localStorage/系统偏好设置 data-theme #}
+    <script src="{% static 'assets/js/error_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    <link rel="stylesheet" href="{% static 'assets/css/error500.min.css' %}?v={{ BUILD_TOKEN }}">
+    {# 静态资源瘦身：补齐 favicon 声明，消除浏览器对 /favicon.ico 的无效请求（此前 404） #}
+    <link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml">
 </head>
 <body>
-    <span class="spark" aria-hidden="true">⚡</span>
-    <span class="spark">✨</span>
-    <span class="spark">💫</span>
-    <span class="spark">⚡</span>
-    <span class="spark">✨</span>
-    <div class="card" role="group" aria-label="{{ MSG.auto.服务器错误提示 }}">
-        <div class="illust" role="img" aria-label="{{ MSG.auto.服务器错误 }}">😵‍💫💻⚡</div>
-        <h1>{{ MSG.err.500_heading }}</h1>
-        <p class="sub" id="err-desc">{{ MSG.err.500_desc }}</p>
-        <p class="sub">{{ MSG.err.500_hint }}</p>
-        <div class="err-btn-group">
-            {# 7. 返回上一页：调用 history.back() #}
-            <button type="button" class="btn-back" aria-label="{{ MSG.auto.返回上一页 }}">{{ MSG.btn.back_prev }}</button>
-            <a class="btn-home" href="/" aria-label="{{ MSG.auto.返回首页 }}">{{ MSG.btn.home }}</a>
-        </div>
+<span class="spark" aria-hidden="true">⚡</span>
+<span class="spark">✨</span>
+<span class="spark">💫</span>
+<span class="spark">⚡</span>
+<span class="spark">✨</span>
+<div class="card" role="group" aria-label="{{ MSG.auto.服务器错误提示 }}">
+    <div class="illust" role="img" aria-label="{{ MSG.auto.服务器错误 }}">😵‍💫💻⚡</div>
+    <h1>{{ MSG.err.500_heading }}</h1>
+    <p class="sub" id="err-desc">{{ MSG.err.500_desc }}</p>
+    <p class="sub">{{ MSG.err.500_hint }}</p>
+    <div class="err-btn-group">
+        {# 7. 返回上一页：调用 history.back() #}
+        <button type="button" class="btn-back" aria-label="{{ MSG.auto.返回上一页 }}">{{ MSG.btn.back_prev }}</button>
+        <a class="btn-home" href="/" aria-label="{{ MSG.auto.返回首页 }}">{{ MSG.btn.home }}</a>
     </div>
+</div>
 </body>
 </html>
