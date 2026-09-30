@@ -67,8 +67,8 @@
     维护提示：多行注释请用 comment 标签，单行 {# #} 跨行不会被识别，会原样输出到页面。
     {% endcomment %}
     <link rel="apple-touch-icon" href="{% static 'assets/apple-touch-icon.png' %}">
-    {# 防闪烁脚本：必须在样式表之前内联执行，首帧渲染前就根据 localStorage/系统偏好设置好 data-theme #}
-    <script src="{% static 'assets/js/base_theme_fix.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+    {# 防闪烁脚本：内联执行，首帧渲染前根据 localStorage/系统偏好设置 data-theme（仅366B，无需独立请求） #}
+    <script>(function(){'use strict';try{var s=localStorage.getItem('theme');var p=window.matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.setAttribute('data-theme',s||(p?'dark':'light'));}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
     {# ===== Round5: 用户偏好注入（在所有 JS 之前，供 features/*.min.js 读取） ===== #}
     <script>window.USER_PREFERENCES = {{ user_preferences_json|default:"{}"|safe }};</script>
     <link rel="stylesheet" href="{% static 'assets/css/base_inline_core.min.css' %}?v={{ BUILD_TOKEN }}">
@@ -506,22 +506,17 @@
 {% comment %}
 ===== 全局脚本：defer 异步加载，DOM 解析完成后执行 =====
 {% endcomment %}
-<script defer src="{% static 'assets/js/common.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+<script defer src="{% static 'assets/js/core_js_bundle.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {% comment %}Bug9 任务2：文案访问层必须在其它脚本之前同步加载（普通 script，非 defer），
    保证 common.js 里的 moeToast 等函数取词时 window.SITE_MSG 已就绪{% endcomment %}
 <script src="{% static 'assets/js/moe-messages.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-<script defer src="{% static 'assets/js/header-menus.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 
-<script defer src="{% static 'assets/js/theme.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-<script defer src="{% static 'assets/js/mouse-effect.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-{# 24. 樱花模式三档开关 #}
-<script defer src="{% static 'assets/js/sakura-mode.min.js' %}?v={{ BUILD_TOKEN }}"></script>
+{# 动效增强 bundle（moe-tooltip + mouse-effect + sakura-mode） #}
+<script defer src="{% static 'assets/js/effects_js_bundle.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# Round4-C9: 可关闭公告横幅增强（关闭动画/淡入），由前端 Agent 提供 #}
 <script defer src="{% static 'assets/js/announcement.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-{# ===== Round5: 全站动效 JS（粒子/打字机/萌系加载/滚动淡入/音效/高对比度/快捷键/Konami/节日检测） ===== #}
+{# Round5: 全站动效 JS（粒子/打字机/萌系加载/滚动淡入/音效/高对比度/快捷键/Konami/节日检测） #}
 <script defer src="{% static 'assets/js/features/effects.min.js' %}?v={{ BUILD_TOKEN }}"></script>
-{# 萌系气泡提示逻辑（bug1）：默认右侧显示，自动升级导航按钮 title #}
-<script defer src="{% static 'assets/js/moe-tooltip.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# Round6 交互：FAB 快捷菜单 / 标签防拖拽 / 榜单切换（bug2、bug22） #}
 <script defer src="{% static 'assets/js/round6.min.js' %}?v={{ BUILD_TOKEN }}"></script>
 {# analytics onerror 保留：script 加载失败须在标签上兜底移除，无法外移 #}

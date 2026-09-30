@@ -27,36 +27,67 @@ from django.views.decorators.http import require_http_methods
 # Bug9 任务2：用户可见提示统一取自 blog/site_messages.py
 from .services.site_messages import msg
 
-# 模型配置：分组 -> 模型列表
-# 每个模型包含：id, name, model_json路径, 皮肤目录, 皮肤数量
+# 模型配置：统一从 models_registry.json 动态读取（与后台管理页 / 前端共享同一数据源）。
+# 原 MODELS 硬编码列表已弃用，改为进程内缓存 + 文件 mtime 检测，零数据库依赖。
+import threading as _threading
+from pathlib import Path as _Path
+
+_REG_PATH = str(_Path(__file__).resolve().parent.parent / 'static' / 'assets' / 'live2d' / 'models_registry.json')
+_reg_cache = {'stamp': None, 'models': []}
+_reg_lock = _threading.Lock()
+
+
+def _load_registry():
+    """从 models_registry.json 加载 enabled=True 的模型（带 mtime 缓存）。"""
+    global _reg_cache
+    try:
+        stamp = os.path.getmtime(_REG_PATH)
+    except OSError:
+        return _reg_cache.get('models', [])
+    if _reg_cache.get('stamp') == stamp and _reg_cache['models']:
+        return _reg_cache['models']
+    try:
+        with open(_REG_PATH, encoding='utf-8') as f:
+            data = json.load(f)
+        models_raw = [m for m in data.get('models', [])
+                      if isinstance(m, dict) and m.get('enabled', True)]
+        with _reg_lock:
+            _reg_cache['stamp'] = stamp
+            _reg_cache['models'] = models_raw
+    except Exception:
+        return _reg_cache.get('models', [])
+    return _reg_cache['models']
+
+
+def _registry_as_mode_list():
+    """把 registry 的 dict 列表转为兼容旧 API 的模型配置列表。"""
+    reg = _load_registry()
+    out = []
+    for m in reg:
+        out.append({
+            'id': m.get('id', ''),
+            'name': m.get('name', ''),
+            'model_path': m.get('path', ''),
+            'texture_dir': '',
+            'texture_prefix': 'texture_',
+            'skin_count': int(m.get('skins', 1) or 1),
+            'group': {'builtin': 1, 'gfl': 2}.get(m.get('group', 'builtin'), 1),
+            'type': m.get('type', 'cubism2'),
+        })
+    return out
+
+
+# 兼容性常量：已注册的模型组（仅用于回退 / 日志，不再作为主数据源）
 MODELS = [
-    {
-        'id': 'shizuku',
-        'name': '雫',
-        'model_path': '/static/assets/live2d/models/shizuku/shizuku.model.json',
-        'texture_dir': 'assets/live2d/models/shizuku/moc/shizuku.1024',
-        'texture_prefix': 'texture_',
-        'skin_count': 6,
-        'group': 1
-    },
-    {
-        'id': 'koharu',
-        'name': '小春',
-        'model_path': '/static/assets/live2d/models/koharu/koharu.model.json',
-        'texture_dir': 'assets/live2d/models/koharu/moc/koharu.2048',
-        'texture_prefix': 'texture_',
-        'skin_count': 1,
-        'group': 1
-    },
-    {
-        'id': 'haru',
-        'name': '春',
-        'model_path': '/static/assets/live2d/models/haru/haru01.model.json',
-        'texture_dir': 'assets/live2d/models/haru/moc/haru01.1024',
-        'texture_prefix': 'texture_',
-        'skin_count': 3,
-        'group': 1
-    }
+    {'id': 'shizuku', 'name': '雫', 'model_path': '/static/assets/live2d/models/shizuku/shizuku.model.json',
+     'texture_dir': 'assets/live2d/models/shizuku/moc/shizuku.1024', 'texture_prefix': 'texture_',
+     'skin_count': 6, 'group': 1},
+    {'id': 'koharu', 'name': '小春', 'model_path': '/static/assets/live2d/models/koharu/koharu.model.json',
+     'texture_dir': 'assets/live2d/models/koharu/moc/koharu.2048', 'texture_prefix': 'texture_',
+     'skin_count': 1, 'group': 1},
+    {'id': 'haru', 'name': '春', 'model_path': '/static/assets/live2d/models/haru/haru01.model.json',
+     'texture_dir': 'assets/live2d/models/haru/moc/haru01.1024', 'texture_prefix': 'texture_',
+     'skin_count': 3, 'group': 1},
 ]
 
 # 看板娘台词库：每个动作随机挑选一句，保持角色活泼口语化的二次元语气
@@ -69,7 +100,10 @@ TALKS = {
 
 
 def get_model_by_id(model_id):
-    """根据模型ID获取模型配置"""
+    """根据模型ID获取模型配置（优先 registry，回退到硬编码 MODELS）。"""
+    for m in _registry_as_mode_list():
+        if m['id'] == model_id:
+            return m
     for m in MODELS:
         if m['id'] == model_id:
             return m
@@ -77,7 +111,11 @@ def get_model_by_id(model_id):
 
 
 def get_model_index(model_id):
-    """获取模型在列表中的索引"""
+    """获取模型在列表中的索引（优先 registry，回退到硬编码 MODELS）。"""
+    active = _registry_as_mode_list()
+    for i, m in enumerate(active):
+        if m['id'] == model_id:
+            return i
     for i, m in enumerate(MODELS):
         if m['id'] == model_id:
             return i
@@ -86,18 +124,16 @@ def get_model_index(model_id):
 
 @require_http_methods(["GET"])
 def model_list(request):
-    """获取模型列表"""
+    """获取模型列表（优先从 registry.json 读取，fallback 到硬编码 MODELS）。"""
+    active = _registry_as_mode_list() or MODELS
     result = {
-        'models': [],
-        'total': len(MODELS)
+        'models': [
+            {'id': m['id'], 'name': m['name'], 'skin_count': m['skin_count'],
+             'model_path': m['model_path']}
+            for m in active
+        ],
+        'total': len(active)
     }
-    for m in MODELS:
-        result['models'].append({
-            'id': m['id'],
-            'name': m['name'],
-            'skin_count': m['skin_count'],
-            'model_path': m['model_path']
-        })
     return JsonResponse(result)
 
 
@@ -121,8 +157,8 @@ def get_model(request, model=None, skin=None):
     model = get_model_by_id(model_id)
     skin_idx = max(0, min(skin_idx, model['skin_count'] - 1))
 
-    # 模型所在目录的静态URL前缀
-    model_dir_url = '/static/assets/live2d/models/' + model_id + '/'
+    # 模型所在目录的静态URL前缀（从 model_path 推导，兼容内置/少女前线等多组目录）
+    model_dir_url = '/'.join(model['model_path'].split('/')[:-1]) + '/'
 
     # 读取原始模型JSON
     model_json_path = model['model_path'].replace('/static/', '')

@@ -83,6 +83,16 @@ JS_BUNDLES = {
             'renderer.js',
         ],
     },
+    # 核心功能 bundle：common + header-menus + theme（已在 base.html 各处引用）
+    'core_js_bundle': {
+        'dir': 'assets/js',
+        'files': ['common.min.js', 'header-menus.min.js', 'theme.min.js'],
+    },
+    # 动效增强 bundle：moe-tooltip + mouse-effect + sakura-mode
+    'effects_js_bundle': {
+        'dir': 'assets/js',
+        'files': ['moe-tooltip.min.js', 'mouse-effect.min.js', 'sakura-mode.min.js'],
+    },
 }
 
 

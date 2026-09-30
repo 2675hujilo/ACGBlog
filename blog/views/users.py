@@ -257,7 +257,27 @@ def user_settings(request: HttpRequest) -> HttpResponse:
                     except Exception:
                         messages.error(request, msg('auth.avatar_not_image'))
                     else:
-                        request.user.avatar = avatar_file
+                        # 头像转 WebP（体积减 60-80%）；降级兜底不阻断上传
+                        import io, uuid as _uuid
+                        try:
+                            avatar_file.seek(0)
+                            _img = Image.open(avatar_file)
+                            if _img.mode == 'P':
+                                _img = _img.convert('RGBA')
+                            elif _img.mode in ('CMYK', 'YCbCr'):
+                                _img = _img.convert('RGB')
+                            _buf = io.BytesIO()
+                            _img.save(_buf, 'WEBP', quality=85, method=4)
+                            _buf.seek(0)
+                            from django.core.files.uploadedfile import InMemoryUploadedFile
+                            webp_file = InMemoryUploadedFile(
+                                _buf, 'avatar', f'{_uuid.uuid4().hex}.webp',
+                                'image/webp', _buf.getbuffer().nbytes, None)
+                            request.user.avatar = webp_file
+                        except Exception:
+                            # WebP 转换失败时回退到原格式
+                            avatar_file.seek(0)
+                            request.user.avatar = avatar_file
                         request.user.save(update_fields=['avatar'])
                         messages.success(request, msg('auth.avatar_updated'))
             return redirect('user_settings')

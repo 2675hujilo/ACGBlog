@@ -164,12 +164,18 @@ def site_nav(request):
         # 函数内导入，避免 App 加载期循环依赖；命中缓存时无任何 SQL
         from .views import _sidebar
         side = _sidebar()
+        # nav_article_count：优先从 sidebar_stats 缓存取（不触发 realtime_online_count），
+        # 缓存 miss 时直接 Count 查库（比复用 get_sidebar_stats() 更轻量）。
+        _cached_stats = cache.get(SIDEBAR_STATS_KEY)
+        nav_article_count = (
+            _cached_stats.get('article_count', 0) if _cached_stats
+            else Article.objects.filter(
+                status=Article.Status.PUBLISHED, is_deleted=False,
+                kind=Article.Kind.ARTICLE).count()
+        )
         return {
-            # nav_categories 来自缓存的侧边栏数据（视图已 annotate 文章数）
             'nav_categories': side.get('nav_categories', []),
-            # 8. 导航栏"文章"链接旁的小徽标：已发布文章总数
-            'nav_article_count': get_sidebar_stats().get('article_count', 0),
-            # 站点级 SEO 常量：各页面 meta 信息的兜底默认值
+            'nav_article_count': nav_article_count,
             'site_name': settings.SITE_NAME,
             'site_description': settings.SITE_DESCRIPTION,
             'site_keywords': settings.SITE_KEYWORDS,

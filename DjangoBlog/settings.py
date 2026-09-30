@@ -219,11 +219,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
-    # 渲染方式：JSON + 可浏览 API（调试页）
-    'DEFAULT_RENDERER_CLASSES': (
+    # 渲染方式：生产仅 JSON；DEBUG 时启用可浏览 API 供开发者调试
+    'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
+    ] + (['rest_framework.renderers.BrowsableAPIRenderer'] if DEBUG else []),
     # 接口返回的日期时间统一格式
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
     # 默认权限：匿名可读，登录后可写
